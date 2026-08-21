@@ -1,0 +1,5 @@
+---
+id: write-code-provider-defined-functions
+title: Fonctions définies par les providers
+description: Utiliser les fonctions exposées par un provider via la syntaxe provider::.
+  Objectifs Pro 2c et 5a.

@@ -1,0 +1,5 @@
+---
+id: state-state-locking
+title: Verrouillage du state, ce qu'il bloque vraiment
+description: Mesurer le périmètre exact du verrou sur un backend local, et énoncer
+  ce qui l'active sur S3.

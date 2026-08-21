@@ -1,0 +1,7 @@
+# Presentation Hcp Terraform (skeleton)
+
+> **Skeleton.** This lab is not written yet.
+
+Reference: [Presentation Hcp Terraform (skeleton)](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/hcp-terraform/presentation-hcp-terraform/)
+
+To produce via `/lab-create`: the guided tutorial, `scenario.md`, the challenge statement and the tests that prove the final state.

@@ -1,0 +1,8 @@
+---
+id: write-code-outputs
+title: Le secret que l'output ne cache pas
+description: 'Maîtriser le vrai bloc output : une contrainte de type (object), la
+  propagation de la sensibilité (un output qui référence un secret doit être
+  sensible, et sensitive n''est qu''un masque d''affichage, le clair reste dans le
+  state, -json et -raw), nonsensitive() pour exposer un hash volontairement, et un
+  precondition qui bloque le plan. Associate 2e et 2f.'

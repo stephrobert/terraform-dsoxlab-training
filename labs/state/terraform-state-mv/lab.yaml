@@ -1,0 +1,32 @@
+---
+id: state-terraform-state-mv
+title: terraform state mv and the moved block, refactor without destroying
+description: Reattach three existing objects to their new addresses, imperatively
+  then declaratively, and prove nothing was recreated.
+section: state
+level: l2
+difficulty: intermediate
+lab_type: lab
+estimated_time: 30m
+skills:
+- terraform
+- state-mv
+distros:
+- debian13
+doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/terraform-state-mv/
+certification_tags:
+- tf-associate
+- tf-professional
+runtime:
+  type: shell
+  workdir: challenge/work
+  fixtures:
+  - main.tf
+  - modules/secret/main.tf
+  - moved.tf
+  - terraform.tfstate
+  - reference/etat-initial.tfstate
+validation:
+  functional: true
+  security: false
+  persistence_after_reboot: false

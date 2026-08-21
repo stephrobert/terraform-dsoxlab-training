@@ -1,0 +1,7 @@
+---
+id: write-code-locals
+title: Le local qui ne se calcule pas au plan
+description: 'Centraliser les expressions dans des blocs locals : normaliser par
+  des fonctions HCL, garder un ternaire typé, générer une liste par expression
+  for, dériver d''un attribut de ressource (inconnu au plan), et hériter de la
+  sensibilité d''une variable. Sous-objectif Pro 2c.'

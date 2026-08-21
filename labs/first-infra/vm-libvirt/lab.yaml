@@ -1,0 +1,24 @@
+---
+id: first-infra-vm-libvirt
+title: Vm Libvirt (skeleton)
+description: Skeleton for the « Vm Libvirt » lab. Scenario and tests still to be written.
+section: first-infra
+level: l1
+difficulty: beginner
+lab_type: lab
+estimated_time: 30m
+skills:
+- terraform
+- vm-libvirt
+distros:
+- debian13
+doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/premieres-infras/vm-libvirt/
+certification_tags:
+- tf-associate
+runtime:
+  type: shell
+  workdir: challenge/work
+validation:
+  functional: true
+  security: false
+  persistence_after_reboot: false

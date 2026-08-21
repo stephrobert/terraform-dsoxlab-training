@@ -1,0 +1,429 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+#  Usually these files are written by a python script from a template
+#  before PyInstaller builds the exe, so as to inject date/other infos into it.
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+cover/
+
+# Translations
+*.mo
+*.pot
+
+# Django stuff:
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Flask stuff:
+instance/
+.webassets-cache
+
+# Scrapy stuff:
+.scrapy
+
+# Sphinx documentation
+docs/_build/
+
+# PyBuilder
+.pybuilder/
+target/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# pyenv
+#   For a library or package, you might want to ignore these files since the code is
+#   intended to run in multiple environments; otherwise, check them in:
+# .python-version
+
+# pipenv
+#   According to pypa/pipenv#598, it is recommended to include Pipfile.lock in version control.
+#   However, in case of collaboration, if having platform-specific dependencies or dependencies
+#   having no cross-platform support, pipenv may install dependencies that don't work, or not
+#   install all needed dependencies.
+#Pipfile.lock
+
+# UV
+#   Similar to Pipfile.lock, it is generally recommended to include uv.lock in version control.
+#   This is especially recommended for binary packages to ensure reproducibility, and is more
+#   commonly ignored for libraries.
+#uv.lock
+
+# poetry
+#   Similar to Pipfile.lock, it is generally recommended to include poetry.lock in version control.
+#   This is especially recommended for binary packages to ensure reproducibility, and is more
+#   commonly ignored for libraries.
+#   https://python-poetry.org/docs/basic-usage/#commit-your-poetrylock-file-to-version-control
+#poetry.lock
+
+# pdm
+#   Similar to Pipfile.lock, it is generally recommended to include pdm.lock in version control.
+#pdm.lock
+#   pdm stores project-wide configurations in .pdm.toml, but it is recommended to not include it
+#   in version control.
+#   https://pdm.fming.dev/latest/usage/project/#working-with-version-control
+.pdm.toml
+.pdm-python
+.pdm-build/
+
+# PEP 582; used by e.g. github.com/David-OConnor/pyflow and github.com/pdm-project/pdm
+__pypackages__/
+
+# Celery stuff
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath parsed files
+*.sage.py
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# pytype static type analyzer
+.pytype/
+
+# Cython debug symbols
+cython_debug/
+
+# PyCharm
+#  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
+#  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore
+#  and can be added to the global gitignore or merged into this file.  For a more nuclear
+#  option (not recommended) you can uncomment the following to ignore the entire idea folder.
+#.idea/
+
+# Abstra
+# Abstra is an AI-powered process automation framework.
+# Ignore directories containing user credentials, local state, and settings.
+# Learn more at https://abstra.io/docs
+.abstra/
+
+# Visual Studio Code
+#  Visual Studio Code specific template is maintained in a separate VisualStudioCode.gitignore
+#  that can be found at https://github.com/github/gitignore/blob/main/Global/VisualStudioCode.gitignore
+#  and can be added to the global gitignore or merged into this file. However, if you prefer,
+#  you could uncomment the following to ignore the enitre vscode folder
+# .vscode/
+
+# Ruff stuff:
+.ruff_cache/
+
+# PyPI configuration file
+.pypirc
+
+# Cursor
+#  Cursor is an AI-powered code editor. `.cursorignore` specifies files/directories to
+#  exclude from AI features like autocomplete and code analysis. Recommended for sensitive data
+#  refer to https://docs.cursor.com/context/ignore-files
+.cursorignore
+.cursorindexingignore
+.ansible/.lock
+.test.md
+# Note: solution/ est versionné mais TOUS ses .yml/.sh/.j2/.txt sont
+# chiffrés via ansible-vault (cf. .vault-pass + cibles `make solutions-lock`).
+# Ne jamais commiter en clair.
+.github/copilot-instructions.md
+# === Lab KVM/libvirt + Ansible ===
+# Cache et artefacts Ansible
+.ansible_facts/
+.ansible/
+*.retry
+
+# Logs et tempos labs
+labs/**/expected-output.tmp
+labs/**/*.log
+
+# Clé SSH du lab (regénérée par bootstrap)
+ssh/id_ed25519
+ssh/id_ed25519.pub
+
+# Cloud-init ISOs et fichiers générés par provision.sh
+# (les .tmpl sources restent versionnés)
+infra/virt-install/cloud-init/control-node/
+infra/virt-install/cloud-init/web1/
+infra/virt-install/cloud-init/web2/
+infra/virt-install/cloud-init/db1/
+
+# Logs provision
+infra/virt-install/logs/
+
+# Build/lint cache
+.ansible-lint-cache/
+
+# Solutions des challenges écrites par l'apprenant — ne jamais committer
+# (la solution officielle du formateur vit dans solution/, chiffrée via vault)
+labs/**/challenge/solution.yml
+labs/**/challenge/solution.sh
+labs/**/challenge/solution.py
+
+# Livrables des labs d'outillage écrits par l'apprenant : ne jamais committer
+# (les tests pytest vérifient ces fichiers/dossiers produits localement)
+labs/ee/debug/challenge/execution-environment.yml
+labs/ee/debug/challenge/requirements.yml
+labs/ee/debug/challenge/requirements.txt
+labs/ee/debug/challenge/bindep.txt
+labs/ee/inspection/inspect-output/
+labs/galaxy/ansible-galaxy-cli/challenge/build/
+labs/galaxy/installer-roles/challenge/deps/
+labs/galaxy/versionner-publier/challenge/work/
+labs/galaxy/auditer-role-existant/challenge/audit.yml
+labs/decouvrir/configuration-ansible/ansible.cfg
+
+# Le rôle que l'apprenant doit ÉCRIRE dans le challenge « créer son premier
+# rôle ». Il était commité fini : le challenge disait « créer vous-même un rôle
+# from scratch » et livrait le résultat, zéro `???`. La référence vit chiffrée
+# sous solution/roles/creer-premier-role/roles/.
+labs/roles/creer-premier-role/challenge/roles/
+
+# Fichiers que ces challenges disent « à créer » et qui étaient livrés FINIS,
+# zéro `???`. Les références vivent chiffrées sous solution/.
+labs/ecrire-code/jinja2-base/challenge/templates/
+labs/ecrire-code/module-template/challenge/templates/
+labs/ecrire-code/lineinfile-vs-template/challenge/templates/
+labs/ecrire-code/precedence-variables/challenge/vars/
+labs/ecrire-code/variables-base/challenge/vars/
+labs/collections/ci-tests/challenge/.gitlab-ci.yml
+labs/collections/ci-tests/challenge/.github/
+labs/collections/creer-custom/challenge/collection_root/
+labs/collections/migration-role/challenge/ansible_collections/
+
+# Artefacts que l'apprenant crée dans son scénario molecule. Ils traînaient
+# dans l'arbre (restes d'un run de référence) et CASSAIENT le contrôle négatif :
+# les tests passaient sans que personne n'ait travaillé.
+labs/molecule/installation-config/molecule/default/prepare.yml
+labs/molecule/installation-config/molecule/default/requirements.yml
+
+# Inventaire du capstone RHCE : c'est le LIVRABLE des tâches 1 et 2 de l'examen
+# blanc. Le committer revient à donner la réponse au candidat. La référence du
+# formateur vit dans solution/rhce/mock-ex294/inventory/, chiffrée.
+labs/rhce/mock-ex294/inventory/
+labs/rhce/mock-ex294-2/inventory/
+
+# Inventaire que l'apprenant ÉCRIT dans le lab « inventaire statique » : c'est le
+# livrable. La référence vit chiffrée sous solution/inventaires/statiques/.
+labs/inventaires/statiques/inventory/
+
+# Collections installées par ansible-galaxy pendant le lab collections/requirements.
+# 36 Mo de dépendances téléchargées : un `git add -A` les suit, et le hook
+# check-solutions-encrypted.sh refuse alors le commit en se plaignant du
+# chiffrement, message qui n'a rien à voir avec la cause.
+solution/collections/local_collections/
+labs/collections/requirements/local_collections/
+
+# Clé privée OpenPGP du lab Passbolt (exportée par l'apprenant) — jamais commit
+labs/**/.passbolt-private.asc
+
+# Dépôt Git local du lab ansible-pull (créé par l'apprenant)
+labs/pratiques/ansible-pull-gitops/repo-pull/
+
+# Artefacts générés par les challenges (ne jamais commit)
+#
+# Fichiers vault que le challenge demande a l'apprenant de CREER. Les
+# livrer chiffres ne protege rien : le mot de passe qui les ouvre est
+# celui que setup-lab-vault-passwords.sh distribue a tout le monde, donc
+# un `ansible-vault view` suffit a lire la reponse attendue.
+labs/vault/dans-roles/roles/secured_app/vars/main.yml
+labs/vault/playbooks-mixtes/inventory/group_vars/all/vault.yml
+labs/vault/playbooks-mixtes/inventory/group_vars/webservers/vault.yml
+labs/**/challenge/vault-secret.yml
+labs/**/challenge/.vault-pass
+labs/**/challenge/.vault_password
+labs/**/.vault_password
+# Les vault-id nommes suffixent le fichier (.vault_password_dev, _prod...).
+# Sans ce glob, la regle ci-dessus les rate et le secret part dans l index.
+labs/**/.vault_password_*
+labs/**/challenge/.vault_password_*
+labs/**/challenge/files/*.pub.key.pub
+
+# Clés SSH générées par les labs (PRIVÉES) — ne jamais commit.
+# Naming trompeur hérité du lab authorized-key : `alice.pub.key` est la clé
+# PRIVÉE (perms 600), `alice.pub.key.pub` est la clé PUBLIQUE (perms 644).
+# Le README du lab doit expliquer comment regénérer la paire :
+#   ssh-keygen -t ed25519 -f alice.pub.key -N "" -C alice@laptop
+labs/**/files/*.pub.key
+labs/**/files/*.pub.key.pub
+
+# Sortie des fetch (lab 34) — artefacts de tests
+collected/*
+!collected/.gitkeep
+
+# Mot de passe Vault du formateur — ne JAMAIS committer
+# Sert à chiffrer/déchiffrer les solutions de référence dans solution/
+# Sauvegarder le password ailleurs (gestionnaire de mots de passe, repo privé)
+.vault-pass
+.vault-pass.txt
+
+# ── CLI dsoxlab : état runtime local (par dépôt) ──
+# Contexte de session posé par `dsoxlab use` et base de progression locale.
+# Ne jamais versionner : c'est l'avancement d'un apprenant, pas du contenu.
+.dsoxlab-context.json
+.dsoxlab.db
+
+# Bases de progression héritées (dsoxlab < 0.1.x, stockage XDG désormais :
+# ~/.local/share/dsoxlab/progress.db, hors dépôt. Override via DSOXLAB_DB).
+.progress.db
+progress.db
+
+# Workdirs apprenant : générés par `dsoxlab run` depuis fixtures/, ils
+# contiennent le travail en cours. Le fixture est versionné, le workdir non.
+labs/**/challenge/work/
+
+# Clé SSH privée du lab : JAMAIS commitée.
+# Régénérée par `dsoxlab instructor bootstrap`.
+ssh/id_ed25519
+ssh/id_rsa
+ssh/*_key
+
+# Vestiges d'un terraform lancé à la racine. Terraform tourne normalement
+# dans ~/.local/state/dsoxlab/<repo-id>/ via `dsoxlab provision`.
+terraform.tfstate
+terraform.tfstate.backup
+# Tout state d'execution, quel que soit son nom (workspaces, -state=, backups).
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+
+# ── Environnement & caches ──
+.venv/
+.mypy_cache/
+.ruff_cache/
+labs/troubleshooting/verbosite/ansible.cfg
+
+# Exception : le state de DEPART d'un lab est une fixture pedagogique versionnee.
+# Il materialise une infrastructure "deja appliquee" que l'apprenant doit
+# refactorer sans rien detruire. Ce n'est pas un state d'execution.
+!labs/**/fixtures/terraform.tfstate
+
+# Meme raison un cran plus bas : un lab sur les WORKSPACES livre un workspace
+# herite, donc un state sous fixtures/terraform.tfstate.d/<nom>/.
+#
+# Il faut RE-INCLURE LE REPERTOIRE avant ses fichiers : `terraform.tfstate.d`
+# matche `*.tfstate.*` (ligne 358) en tant que repertoire, et git ne descend
+# jamais dans un repertoire exclu, donc une exception portant seulement sur le
+# fichier resterait sans effet.
+!labs/**/fixtures/terraform.tfstate.d/
+!labs/**/fixtures/terraform.tfstate.d/**
+
+# Et le verrou de providers d'une fixture : il fige les versions avec lesquelles
+# l'etat de depart a ete produit. Sans lui, un clone frais reinstalle autre
+# chose que ce que le state herite a connu.
+!labs/**/fixtures/.terraform.lock.hcl
+
+# Exception : le state FINAL d'une solution de reference est du CONTENU, pas un
+# artefact d'execution. Il est chiffre par ansible-vault comme le reste de
+# solution/, et `scripts/verify-solutions.py` en a besoin : les tests d'un lab
+# lisent `terraform output`, donc un rejeu sans state echoue. Sans cette
+# exception, les states de solution restaient sur le disque du formateur et
+# manquaient a tout clone frais.
+!solution/**/terraform.tfstate
+
+# Et les etats des WORKSPACES d'une solution, qui vivent un cran plus bas, sous
+# terraform.tfstate.d/<nom>/. Comme pour les fixtures, il faut re-inclure le
+# REPERTOIRE : il matche `*.tfstate.*` et git ne descend pas dans un repertoire
+# exclu.
+!solution/**/terraform.tfstate.d/
+!solution/**/terraform.tfstate.d/**
+
+# Meme raison pour le registre des modules et le module installe : un lab dont
+# les tests lisent `.terraform/modules/modules.json` (quelle reference Git a ete
+# resolue) ne peut pas etre rejoue sans lui. Seuls des fichiers TEXTE sont
+# deposes la, jamais un `.git` clone : ansible-vault corromprait le binaire.
+!solution/**/.terraform/
+!solution/**/.terraform/**
+
+# Meme raison pour le verrou de providers : `.terraform.lock.hcl` est ignore
+# partout ailleurs (ligne 360), ce qui emportait aussi celui des solutions. Or
+# c'est lui qui fige les versions de providers avec lesquelles une solution a
+# ete VERIFIEE. C'est du texte, chiffre comme le reste de solution/.
+!solution/**/.terraform.lock.hcl
+
+# ── Outillage de CORRECTION des guides du blog (pas du contenu du dépôt) ──
+# Ces fichiers servent à PRODUIRE et suivre la réécriture des guides
+# blog.stephane-robert.info ; ils ne font pas partie du catalogue de labs.
+# On ne commite que ce qui fait fonctionner le dépôt, pas ce qui le construit.
+#
+# - audit-terraform.md      : feuille de route (audit des guides à corriger)
+# - audit-corrections.json  : suivi des corrections déjà faites
+# - scripts/marquer-corrections.py : régénère la bannière de suivi de l'audit
+# - solution/verified-with.json    : artefact GÉNÉRÉ par verify-solutions.py
+#   (enregistre juste la version de Terraform ayant rejoué les solutions)
+audit-terraform.md
+audit-corrections.json
+scripts/marquer-corrections.py
+solution/verified-with.json

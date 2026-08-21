@@ -1,0 +1,3 @@
+# Configuration partielle du backend, alimentee par -backend-config.
+# ??? : le chemin du state pour l environnement dev.
+path = ???

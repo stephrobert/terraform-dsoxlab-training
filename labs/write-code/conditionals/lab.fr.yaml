@@ -1,0 +1,6 @@
+---
+id: write-code-conditionals
+title: La configuration qui refuse les valeurs absurdes
+description: 'Calculer des valeurs par expression conditionnelle, puis placer chaque
+  garde au bon niveau : validation, precondition, postcondition et bloc check. Objectif
+  Pro 2a.'

@@ -1,0 +1,34 @@
+---
+id: write-code-declare-resources
+title: Read a resource's lifecycle in the plan
+description: 'Build four resources ordered only by references, then prove in the
+  plan JSON the four lifecycle operations: update in place, replace, create before
+  destroy, and destroy. Pro objective 1c.'
+section: write-code
+level: l2
+difficulty: intermediate
+lab_type: lab
+estimated_time: 45m
+skills:
+- terraform
+- resource-lifecycle
+- plan-json
+- terraform_data
+distros:
+- debian13
+doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/declarer-ressources/
+certification_tags:
+- tf-associate
+- tf-professional
+runtime:
+  type: shell
+  workdir: challenge/work
+  fixtures:
+  - versions.tf
+  - variables.tf
+  - main.tf
+  - outputs.tf
+validation:
+  functional: true
+  security: false
+  persistence_after_reboot: false

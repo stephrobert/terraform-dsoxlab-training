@@ -1,0 +1,8 @@
+---
+id: write-code-sensitive-data-ephemeral-values
+title: La valeur qui ne touche jamais le state
+description: 'Déclarer une valeur éphémère, générée pendant l''opération mais
+  jamais écrite dans le state ni le plan : le bloc ephemeral (random 3.7+), le
+  contraste avec un random_password persisté, l''exposer sans risque au root avec
+  ephemeralasnull(), et les deux erreurs qu''elle lève si on la laisse fuiter.
+  Professional 2f.'

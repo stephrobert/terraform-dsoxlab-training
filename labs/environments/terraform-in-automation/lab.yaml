@@ -1,0 +1,31 @@
+---
+id: environments-terraform-in-automation
+title: Run Terraform in automation (CI/CD)
+description: 'Build a non-interactive Terraform chain judged on exit codes alone, then record what a saved plan really freezes, what a lock does, and where a secret leaks.'
+section: environments
+level: l3
+difficulty: advanced
+lab_type: lab
+estimated_time: 30m
+skills:
+- terraform
+- ci-cd
+- automation
+- remote-state
+distros:
+- debian13
+doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/terraform-en-automation/
+certification_tags:
+- tf-professional
+runtime:
+  type: shell
+  workdir: challenge/work
+  fixtures:
+  - CIBLE.md
+  - main.tf
+  - pipeline.sh
+  - .gitignore
+validation:
+  functional: true
+  security: false
+  persistence_after_reboot: false

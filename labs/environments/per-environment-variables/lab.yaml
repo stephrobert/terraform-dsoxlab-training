@@ -1,0 +1,37 @@
+---
+id: environments-per-environment-variables
+title: Which value wins, and how to prove it
+description: 'Serve three environments from one configuration, restore the guard rail a stray terraform.tfvars had silenced, and prove which source wins from the plan JSON.'
+section: environments
+level: l3
+difficulty: advanced
+lab_type: lab
+estimated_time: 45m
+skills:
+- terraform
+- environnements
+- variables
+- tfvars
+distros:
+- debian13
+doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/variables-par-environnement/
+certification_tags:
+- tf-associate
+runtime:
+  type: shell
+  workdir: challenge/work
+  fixtures:
+  - CIBLE.md
+  - versions.tf
+  - variables.tf
+  - main.tf
+  - outputs.tf
+  - terraform.tfvars
+  - commun.auto.tfvars
+  - envs/dev.tfvars
+  - envs/staging.tfvars
+  - envs/prod.tfvars
+validation:
+  functional: true
+  security: false
+  persistence_after_reboot: false

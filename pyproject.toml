@@ -1,0 +1,34 @@
+[project]
+name = "terraform-training"
+version = "0.1.0"
+description = "Lab pédagogique Terraform (Associate & Professional) — fournisseur de labs pour la CLI dsoxlab"
+requires-python = ">=3.11"
+dependencies = []
+
+[tool.pytest.ini_options]
+# Le contrat dsoxlab impose que chaque lab nomme son test
+# challenge/tests/test_functional.py. Tous ces fichiers partagent le même
+# basename dans des répertoires sans __init__.py : le mode d'import « prepend »
+# les prendrait pour un seul module et échouerait en « import file mismatch ».
+# importlib les isole par leur chemin.
+addopts = "--import-mode=importlib"
+
+# Ne collecter QUE les tests des challenges. Tout `test_*.py` ailleurs sous
+# labs/ (fixtures, artefacts pédagogiques) n'est pas un test du catalogue.
+testpaths = ["labs"]
+norecursedirs = [
+    ".terraform", "solution", "*.egg", ".git",
+]
+
+[tool.uv]
+# Ce dépôt n'est pas un package Python : c'est un fournisseur de labs.
+package = false
+
+[dependency-groups]
+# dsoxlab embarque pytest + pytest-testinfra : aucun outil de test à installer
+# côté dépôt de labs. Gardé en dev-dep pour les contributeurs qui veulent un
+# venv local ; l'apprenant utilise le tool global (`uv tool install dsoxlab`).
+dev = [
+    "pyyaml>=6",
+    "dsoxlab>=0.1.6",
+]

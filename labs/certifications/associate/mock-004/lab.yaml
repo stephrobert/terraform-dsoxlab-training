@@ -1,0 +1,25 @@
+---
+id: certifications-associate-mock-004
+title: 'Associate 004: mock exam'
+description: Associate 004 mock exam, validated by pytest.
+section: certif-associate
+level: l4
+difficulty: advanced
+lab_type: capstone
+estimated_time: 4h
+skills:
+- terraform
+- associate
+- exam
+distros:
+- debian13
+doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/certifications/associate/
+certification_tags:
+- tf-associate
+runtime:
+  type: shell
+  workdir: challenge/work
+validation:
+  functional: true
+  security: false
+  persistence_after_reboot: false

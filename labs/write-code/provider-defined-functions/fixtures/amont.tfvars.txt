@@ -1,0 +1,4 @@
+region = "eu-west-3"
+node_count = 3
+enable_debug = true
+zones = ["a", "b", "c"]

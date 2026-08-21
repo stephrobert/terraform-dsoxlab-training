@@ -1,0 +1,6 @@
+---
+id: modules-create-modules
+title: 'Un module réutilisable ne configure aucun provider'
+description: Vider un module enfant de sa configuration de provider, lui faire
+  déclarer la configuration aliasée qu'il attend, la lui passer depuis la racine, et
+  l'instancier trois fois avec un seul for_each.

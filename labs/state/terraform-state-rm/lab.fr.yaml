@@ -1,0 +1,5 @@
+---
+id: state-terraform-state-rm
+title: terraform state rm et le bloc removed, cesser de gérer sans détruire
+description: Sortir deux ressources du state sans supprimer les fichiers, et
+  comprendre pourquoi un bloc removed détruit tant qu'on n'écrit pas destroy = false.

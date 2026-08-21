@@ -1,0 +1,35 @@
+---
+id: write-code-depends-on
+title: depends_on belongs only where a reference cannot go
+description: 'Remove a redundant depends_on that a reference already covers,
+  replace a hardcoded path with a reference, keep the one depends_on nothing else
+  can express, and prove the graph in the plan JSON. Pro objective 2d.'
+section: write-code
+level: l2
+difficulty: intermediate
+lab_type: lab
+estimated_time: 45m
+skills:
+- terraform
+- depends_on
+- implicit-dependency
+- plan-json
+distros:
+- debian13
+doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/depends-on/
+certification_tags:
+- tf-associate
+- tf-professional
+runtime:
+  type: shell
+  workdir: challenge/work
+  fixtures:
+  - versions.tf
+  - variables.tf
+  - main.tf
+  - data.tf
+  - outputs.tf
+validation:
+  functional: true
+  security: false
+  persistence_after_reboot: false

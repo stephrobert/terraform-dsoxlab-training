@@ -1,0 +1,28 @@
+---
+id: certifications-professional-capstone5-providers
+title: 'Pro · Objective 5: configure and use providers'
+description: Plugin architecture, aliasing, versioning/sourcing/upgrades, authentication
+  and provider error troubleshooting (on Floci). Exam objective 5.
+section: certif-pro
+level: l4
+difficulty: advanced
+lab_type: capstone
+estimated_time: 4h
+skills:
+- terraform
+- providers
+- aliasing
+- authentication
+- troubleshooting
+distros:
+- debian13
+doc_url: https://developer.hashicorp.com/terraform/tutorials/pro-cert/pro-review
+certification_tags:
+- tf-professional
+runtime:
+  type: shell
+  workdir: challenge/work
+validation:
+  functional: true
+  security: false
+  persistence_after_reboot: false

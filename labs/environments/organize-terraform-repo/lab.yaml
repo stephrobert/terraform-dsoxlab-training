@@ -1,0 +1,29 @@
+---
+id: environments-organize-terraform-repo
+title: Split a monolithic configuration, and prove the plan did not move
+description: 'Split an eighty-line main.tf into the official file layout, then prove by comparing two plans that nothing changed: a green validate proves nothing here.'
+section: environments
+level: l3
+difficulty: advanced
+lab_type: lab
+estimated_time: 40m
+skills:
+- terraform
+- style-guide
+- fmt
+- gitignore
+distros:
+- debian13
+doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/organiser-repo-terraform/
+certification_tags:
+- tf-professional
+runtime:
+  type: shell
+  workdir: challenge/work
+  fixtures:
+  - CIBLE.md
+  - projet/main.tf
+validation:
+  functional: true
+  security: false
+  persistence_after_reboot: false

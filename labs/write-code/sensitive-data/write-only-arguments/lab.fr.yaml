@@ -1,0 +1,5 @@
+---
+id: write-code-sensitive-data-write-only-arguments
+title: "Arguments write-only : un secret qui n'atterrit jamais dans le state"
+description: Transmettre un secret au provider sans jamais le persister dans le state
+  Terraform, grâce aux arguments write-only, contre un émulateur AWS local.

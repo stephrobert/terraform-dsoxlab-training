@@ -1,0 +1,7 @@
+---
+id: write-code-for-loops
+title: Transformer un catalogue avec les expressions for
+description: 'Dériver quatre collections depuis une seule map de serveurs avec des
+  expressions for : un tuple filtré, un objet groupé par rôle via l''ellipsis, un
+  croisement à deux niveaux aplati, et un for_each filtré. Éviter le piège du splat
+  sur une map. Sous-objectif Pro 2c.'

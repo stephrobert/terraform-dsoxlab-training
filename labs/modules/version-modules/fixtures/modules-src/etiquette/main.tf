@@ -1,0 +1,3 @@
+locals {
+  etiquette = var.prefixe
+}

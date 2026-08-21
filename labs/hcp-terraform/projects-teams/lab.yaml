@@ -1,0 +1,25 @@
+---
+id: hcp-terraform-projects-teams
+title: Projects Equipes (skeleton)
+description: Skeleton for the « Projects Equipes » lab. Scenario and tests still to
+  be written.
+section: hcp-terraform
+level: l3
+difficulty: advanced
+lab_type: lab
+estimated_time: 30m
+skills:
+- terraform
+- projects-equipes
+distros:
+- debian13
+doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/hcp-terraform/projects-equipes/
+certification_tags:
+- tf-professional
+runtime:
+  type: shell
+  workdir: challenge/work
+validation:
+  functional: true
+  security: false
+  persistence_after_reboot: false

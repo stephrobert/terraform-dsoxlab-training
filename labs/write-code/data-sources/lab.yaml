@@ -1,0 +1,35 @@
+---
+id: write-code-data-sources
+title: When exactly does Terraform read a data source?
+description: 'Build three data sources whose read timing is deliberate: one read
+  during the plan, one deferred to the apply because the resource it depends on is
+  changing, and one carrying an explicit depends_on that does NOT defer it. Prove
+  each case in the plan JSON. Pro objective 2b.'
+section: write-code
+level: l2
+difficulty: intermediate
+lab_type: lab
+estimated_time: 45m
+skills:
+- terraform
+- data-sources
+- plan-json
+- depends_on
+distros:
+- debian13
+doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/data-sources/
+certification_tags:
+- tf-associate
+- tf-professional
+runtime:
+  type: shell
+  workdir: challenge/work
+  fixtures:
+  - versions.tf
+  - variables.tf
+  - main.tf
+  - catalogue.txt
+validation:
+  functional: true
+  security: false
+  persistence_after_reboot: false

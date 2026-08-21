@@ -1,0 +1,34 @@
+---
+id: write-code-style-guide
+title: The config that works but no CI accepts
+description: 'Take a working but non-conforming config and make it CI-ready: pass
+  terraform fmt, fix the orphan reference that breaks validate, rename resources to
+  snake_case, type and describe variables and outputs, mark the token sensitive,
+  type the number output (1.15), and write a .gitignore that excludes state but
+  keeps the lock file. Associate 2a plus 2e.'
+section: write-code
+level: l2
+difficulty: intermediate
+lab_type: lab
+estimated_time: 40m
+skills:
+- terraform
+- style-guide
+- fmt
+- validate
+distros:
+- debian13
+doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/style-guide-terraform/
+certification_tags:
+- tf-associate
+- tf-professional
+runtime:
+  type: shell
+  workdir: challenge/work
+  fixtures:
+  - infra.tf
+  - terraform.tfvars
+validation:
+  functional: true
+  security: false
+  persistence_after_reboot: false

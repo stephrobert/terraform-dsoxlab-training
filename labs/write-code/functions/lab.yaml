@@ -1,0 +1,37 @@
+---
+id: write-code-functions
+title: Compose values with HCL functions
+description: Deduplicate a collection for for_each, handle out-of-range element(),
+  lookup() fallback, ceil() rounding, template escaping and a provider-defined function.
+  Pro objective 2c.
+section: write-code
+level: l2
+difficulty: intermediate
+lab_type: lab
+estimated_time: 45m
+skills:
+- terraform
+- hcl
+- functions
+- templatefile
+- provider-functions
+distros:
+- debian13
+doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/fonctions-terraform/
+certification_tags:
+- tf-associate
+- tf-professional
+runtime:
+  type: shell
+  workdir: challenge/work
+  fixtures:
+  - versions.tf
+  - variables.tf
+  - locals.tf
+  - outputs.tf
+  - main.tf
+  - node.yaml.tftpl
+validation:
+  functional: true
+  security: false
+  persistence_after_reboot: false

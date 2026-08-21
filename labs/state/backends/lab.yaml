@@ -1,0 +1,31 @@
+---
+id: state-backends
+title: Backends Terraform (skeleton)
+description: Skeleton for the « Backends Terraform » lab. Scenario and tests still
+  to be written.
+section: state
+level: l2
+difficulty: intermediate
+lab_type: lab
+estimated_time: 30m
+skills:
+- terraform
+- backends
+distros:
+- debian13
+doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/backends-terraform/
+certification_tags:
+- tf-associate
+- tf-professional
+runtime:
+  type: shell
+  workdir: challenge/work
+  fixtures:
+  - versions.tf
+  - variables.tf
+  - main.tf
+  - dev.local.tfbackend
+validation:
+  functional: true
+  security: false
+  persistence_after_reboot: false

@@ -1,0 +1,44 @@
+---
+id: aws-backend-s3-remote-state
+title: A remote state, locked, and read by another stack
+description: 'Repair a trapped backend block, make the S3 lock actually effective, and have a second configuration consume the outputs without copying a single value.'
+section: aws
+level: l3
+difficulty: advanced
+lab_type: lab
+estimated_time: 50m
+skills:
+- terraform
+- aws
+- backend
+- state
+- remote-state
+distros:
+- debian13
+doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/aws/backend-s3-remote-state/
+certification_tags:
+- tf-professional
+runtime:
+  type: shell
+  workdir: challenge/work
+  fixtures:
+  - CIBLE.md
+  - bootstrap/main.tf
+  - producer/main.tf
+  - producer/floci.s3.tfbackend
+  - consumer/main.tf
+  services:
+  - name: floci
+    image: floci/floci:1.6.0
+    ports:
+    - 14566:4566
+    ready_tcp: 14566
+    # Sonde jouee DANS le conteneur, reprise de son propre HEALTHCHECK. Le
+    # ready_tcp seul ne prouve rien : mesure, le proxy Docker accepte la
+    # connexion sur le port publie alors que le service n'est pas encore pret.
+    ready_exec: curl -f http://localhost:4566/_floci/health
+    ready_timeout: 120
+validation:
+  functional: true
+  security: false
+  persistence_after_reboot: false

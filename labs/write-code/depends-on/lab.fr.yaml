@@ -1,0 +1,7 @@
+---
+id: write-code-depends-on
+title: depends_on ne se pose que là où une référence ne peut aller
+description: 'Supprimer un depends_on redondant qu''une référence couvre déjà,
+  remplacer un chemin en dur par une référence, garder le seul depends_on qu''aucune
+  référence ne peut exprimer, et prouver le graphe dans le plan JSON. Sous-objectif
+  Pro 2d.'

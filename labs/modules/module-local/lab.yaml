@@ -1,0 +1,37 @@
+---
+id: modules-module-local
+title: A local module is read in place, not installed
+description: 'Wire two root projects onto one shared local module, and prove from
+  modules.json which folder each call really reads: relative path versus absolute
+  path.'
+section: modules
+level: l2
+difficulty: intermediate
+lab_type: lab
+estimated_time: 45m
+skills:
+- terraform
+- modules
+- module-source
+- local-paths
+distros:
+- debian13
+doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/module-local/
+certification_tags:
+- tf-associate
+- tf-professional
+runtime:
+  type: shell
+  workdir: challenge/work
+  fixtures:
+  - modules-partages/artefact/main.tf
+  - modules-partages/nom/main.tf
+  - projet-dev/main.tf
+  - projet-dev/outputs.tf
+  - projet-staging/main.tf
+  - projet-staging/outputs.tf
+  - projet-fige/main.tf
+validation:
+  functional: true
+  security: false
+  persistence_after_reboot: false

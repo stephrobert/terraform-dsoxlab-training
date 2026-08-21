@@ -1,0 +1,32 @@
+---
+id: state-diagnose-state
+title: 'Diagnose a drift and adopt an orphan resource, without losing its value'
+description: Prove a drift with a saved refresh-only plan, reconcile it, then adopt
+  a pre-existing token with an import block, without Terraform regenerating it.
+section: state
+level: l2
+difficulty: intermediate
+lab_type: lab
+estimated_time: 40m
+skills:
+- terraform
+- state
+- drift
+- import
+distros:
+- debian13
+doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/diagnostiquer-state/
+certification_tags:
+- tf-associate
+- tf-professional
+runtime:
+  type: shell
+  workdir: challenge/work
+  fixtures:
+  - main.tf
+  - adoption.tf
+  - token-herite.txt
+validation:
+  functional: true
+  security: false
+  persistence_after_reboot: false

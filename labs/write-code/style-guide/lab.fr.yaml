@@ -1,0 +1,9 @@
+---
+id: write-code-style-guide
+title: La configuration qui marche mais qu'aucune CI n'accepte
+description: 'Reprendre une configuration fonctionnelle mais non conforme et la
+  rendre acceptable en CI : passer terraform fmt, corriger la référence orpheline
+  qui fait échouer validate, renommer les ressources en snake_case, typer et
+  décrire variables et outputs, marquer le jeton sensible, typer l''output nombre
+  (1.15), et écrire un .gitignore qui exclut le state mais garde le lock file.
+  Associate 2a et 2e.'

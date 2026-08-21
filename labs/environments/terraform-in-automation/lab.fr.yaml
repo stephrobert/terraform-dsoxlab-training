@@ -1,0 +1,4 @@
+---
+id: environments-terraform-in-automation
+title: Exécuter Terraform en automation (CI/CD)
+description: 'Batir une chaine Terraform non interactive jugee sur ses seuls codes de retour, puis consigner ce qu''un plan sauvegarde fige vraiment, ce que fait un verrou, et ou fuit un secret.'

@@ -1,0 +1,4 @@
+---
+id: environments-per-environment-variables
+title: Quelle valeur gagne, et comment le prouver
+description: 'Servir trois environnements depuis une seule configuration, retablir le garde-fou qu''un terraform.tfvars avait neutralise, et prouver quelle source gagne par le JSON du plan.'

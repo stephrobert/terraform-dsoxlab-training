@@ -1,0 +1,3 @@
+reference=SKU-4417
+famille=calcul
+region=eu-west-3

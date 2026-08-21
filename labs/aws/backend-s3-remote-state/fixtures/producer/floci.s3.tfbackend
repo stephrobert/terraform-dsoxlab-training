@@ -1,0 +1,32 @@
+# Configuration PARTIELLE du backend S3.
+#
+# Le bloc `backend "s3" {}` de main.tf doit rester vide : ce fichier fournit les
+# arguments a l'initialisation, par
+#
+#   terraform init -backend-config=floci.s3.tfbackend
+#
+# La forme fichier est preferable a `-backend-config="cle=valeur"`, que la
+# documentation deconseille pour un secret : l'historique du shell le conserve.
+#
+# ATTENTION : ces valeurs finissent EN CLAIR dans .terraform/terraform.tfstate.
+# Ce fichier protege le depot, pas le disque.
+
+region = "eu-west-3"
+
+use_path_style              = true
+skip_credentials_validation = true
+skip_metadata_api_check     = true
+skip_requesting_account_id  = true
+skip_region_validation      = true
+access_key                  = "test"
+secret_key                  = "test"
+
+# A COMPLETER : le bucket, la cle sous laquelle ranger le state, l'argument qui
+# active reellement le verrou, et l'endpoint de l'emulateur.
+
+bucket = ???
+key    = ???
+
+??? = ???
+
+endpoints = ???

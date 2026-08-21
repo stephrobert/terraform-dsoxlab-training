@@ -1,0 +1,31 @@
+---
+id: modules-module-structure
+title: 'Refactor a monolith into the standard module structure'
+description: Split a single .tf file into the official layout, add a nested module
+  called by relative path, a standalone example, and prove that override.tf is the
+  one file name with a functional effect.
+section: modules
+level: l2
+difficulty: intermediate
+lab_type: lab
+estimated_time: 45m
+skills:
+- terraform
+- modules
+- structure
+- override
+distros:
+- debian13
+doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/structure-module/
+certification_tags:
+- tf-associate
+- tf-professional
+runtime:
+  type: shell
+  workdir: challenge/work
+  fixtures:
+  - tout.tf
+validation:
+  functional: true
+  security: false
+  persistence_after_reboot: false

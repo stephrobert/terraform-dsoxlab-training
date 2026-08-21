@@ -1,0 +1,6 @@
+---
+id: modules-module-variables-outputs
+title: L'interface d'un module est un contrat, pas seulement des types
+description: Rendre un attribut d'objet facultatif, refuser un null explicite, rejeter
+  une valeur hors bornes, garder une sortie sous precondition, et ré-exporter un secret
+  sans casser le plan.

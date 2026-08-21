@@ -1,0 +1,32 @@
+---
+id: write-code-version-constraints
+title: Version constraints and the lock file
+description: 'Write correct version constraints: a literal required_version (the
+  terraform block accepts no variable), an exact provider pin that resolves to
+  that version, and the pessimistic ~> that allows 3.x but not 4.0. Proven by
+  version -json and the h1 hashes of the lock file. Associate 3a.'
+section: write-code
+level: l2
+difficulty: intermediate
+lab_type: lab
+estimated_time: 30m
+skills:
+- terraform
+- version-constraints
+- lock-file
+distros:
+- debian13
+doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/version-constraints-terraform/
+certification_tags:
+- tf-associate
+- tf-professional
+runtime:
+  type: shell
+  workdir: challenge/work
+  fixtures:
+  - versions.tf
+  - main.tf
+validation:
+  functional: true
+  security: false
+  persistence_after_reboot: false

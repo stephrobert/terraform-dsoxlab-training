@@ -1,0 +1,212 @@
+---
+# Source de vérité de l'ordre des labs et de leur regroupement en sections.
+# Calqué sur le parcours du blog :
+#   https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/parcours/
+#
+# Chaque entrée `sections[].labs[]` est un chemin relatif depuis `labs/`. Le lab
+# existe pour dsoxlab si et seulement si `labs/<ce-chemin>/lab.yaml` existe : ce
+# meta.yml ne fait qu'ORDONNER et NOMMER les blocs. Les dossiers de labs sont
+# créés ensuite (un par guide), via `/lab-create`.
+#
+# Pour insérer un lab : ajouter son chemin dans la section voulue.
+# Pour réordonner : déplacer la ligne. Pas de `mv` à faire.
+
+repo:
+  id: terraform-training
+  category: terraform           # 'ansible' | 'kubernetes' | 'linux' | 'terraform' | …
+  title: "Terraform Training : Associate & Professional 2026"
+  blog_url: "https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/parcours/"
+  description: |
+    Public teaching labs for the Terraform course (the blog's learning path).
+    Each lab stands alone: a guided tutorial plus a challenge checked by pytest.
+    One lab per guide of the path, from the first `terraform init` to the
+    HashiCorp Associate and Professional certifications.
+
+# PAS de bloc `infra:` ici, par conception.
+#
+# Contrairement à Ansible (qui pilote des machines distantes et exige donc un
+# control node + des managed nodes provisionnés par dsoxlab), Terraform tourne
+# SUR LA MACHINE DE L'APPRENANT : on écrit du HCL et on lance `terraform` en
+# local. Tous les labs sont donc de type `shell` (workdir) : aucun
+# `dsoxlab provision`, aucune VM, aucun réseau libvirt à déclarer.
+#
+# `infra:` est optionnel dans le contrat dsoxlab (requis seulement pour
+# `runtime: vm`). Sans lab vm, on ne le déclare pas.
+#
+# Prérequis côté apprenant, selon les labs :
+#   - terraform (ou opentofu) sur le PATH : tous les labs.
+#   - libvirtd + le provider Terraform `dmacvicar/libvirt` : uniquement la
+#     section `premieres-infras`, qui provisionne de vraies ressources en local.
+#   - floci (émulateur AWS local) : uniquement la section `aws`.
+
+sections:
+  # ─────────────────────────────────────────────────────────────────────────
+  - id: getting-started
+    title: "Discover Terraform"
+    description: "First contact: declarative vs imperative, OpenTofu, installation, CLI, workflow, providers/resources/data sources, project structure."
+    labs:
+      - getting-started/terraform-overview
+      - getting-started/declarative-vs-imperative
+      - getting-started/terraform-vs-opentofu
+      - getting-started/install-terraform
+      - getting-started/cli-terraform
+      - getting-started/terraform-workflow
+      - getting-started/providers-resources-data-sources
+      - getting-started/terraform-project-structure
+
+  # ─────────────────────────────────────────────────────────────────────────
+  - id: first-infra
+    title: "First infrastructures"
+    description: "Provision for real: first infra, variables/outputs, virtual network, libvirt VM, calling Ansible, debugging an apply, clean destroy."
+    labs:
+      - first-infra/first-infrastructure
+      - first-infra/variables-outputs
+      - first-infra/virtual-network
+      - first-infra/vm-libvirt
+      - first-infra/ansible
+      - first-infra/debug-apply
+      - first-infra/clean-destroy
+
+  # ─────────────────────────────────────────────────────────────────────────
+  - id: write-code
+    title: "Writing Terraform code"
+    description: "The HCL language in depth: providers, resources, variables, outputs, locals, data sources, expressions, functions, conditionals, count, for_each, for loops, dynamic blocks, depends_on, lifecycle, tfvars, version constraints, style, sensitive data."
+    labs:
+      - write-code/providers
+      - write-code/declare-resources
+      - write-code/variables
+      - write-code/outputs
+      - write-code/locals
+      - write-code/data-sources
+      - write-code/expressions
+      - write-code/functions
+      # AJOUT (objectifs Pro 2c et 5a) : fonctions définies par les providers,
+      # une seule mention dans toute la formation. Voir audit, guide n°4.
+      - write-code/provider-defined-functions
+      - write-code/conditionals
+      # AJOUT (trou MAJEUR, objectif Pro 2a) : les conditions personnalisées.
+      # Aucun guide du blog ne les traite, pas même conditions-terraform qui en
+      # porte le titre. Voir audit-terraform.md, partie 3, guide n°1.
+      - write-code/validation-check-preconditions
+      - write-code/count
+      - write-code/for-each
+      - write-code/for-loops
+      - write-code/dynamic-blocks
+      - write-code/depends-on
+      - write-code/lifecycle
+      - write-code/tfvars-files
+      - write-code/version-constraints
+      - write-code/style-guide
+      - write-code/sensitive-data/sensitive-values
+      - write-code/sensitive-data/ephemeral-values
+      - write-code/sensitive-data/write-only-arguments
+      # AJOUT (gap Pro obj 2f) : lecture de secrets depuis Vault, absent du blog.
+      - write-code/sensitive-data/vault-secrets
+
+  # ─────────────────────────────────────────────────────────────────────────
+  - id: state
+    title: "Terraform State"
+    description: "Understand and manipulate the state: backends, locking, terraform state list/show/mv/rm, backup/restore, diagnosis."
+    labs:
+      - state/understand-state
+      - state/backends
+      - state/state-locking
+      - state/terraform-state-list
+      - state/terraform-state-show
+      - state/terraform-state-mv
+      - state/terraform-state-rm
+      # AJOUT (objectifs Pro 1e et 4c) : le bloc `removed`, pendant déclaratif
+      # de `state rm`. L'audit a relevé que le guide inverse son défaut de
+      # destruction. Voir audit-terraform.md, partie 3, guide n°5.
+      - state/removed-block
+      - state/backup-restore-state
+      - state/diagnose-state
+
+  # ─────────────────────────────────────────────────────────────────────────
+  - id: modules
+    title: "Terraform Modules"
+    description: "Factor out with modules: creation, structure, variables/outputs, local module, registry, versioning, tests, best practices and anti-patterns."
+    labs:
+      - modules/create-modules
+      - modules/module-structure
+      - modules/module-variables-outputs
+      - modules/module-local
+      - modules/module-registry
+      - modules/version-modules
+      - modules/test-module
+      - modules/module-best-practices
+      - modules/module-anti-patterns
+
+  # ─────────────────────────────────────────────────────────────────────────
+  - id: environments
+    title: "Environments"
+    description: "Organize several environments: repo structure, dev/staging/prod separation, per-environment variables, workspaces (and when to use them), monorepo vs repo per stack."
+    labs:
+      - environments/organize-terraform-repo
+      - environments/separate-environments
+      - environments/per-environment-variables
+      - environments/workspace
+      - environments/when-to-use-workspaces
+      - environments/monorepo-vs-repo-per-stack
+      # AJOUT (gap Pro obj 3c) : exécuter le workflow Terraform en CI/CD.
+      - environments/terraform-in-automation
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # ORDRE CHALLENGÉ : `aws` REMONTE avant `hcp-terraform`. On maîtrise d'abord
+  # le cœur (langage, état, modules) et on l'applique ensuite à un vrai provider
+  # cloud, émulé en local par Floci (zéro compte, zéro facture).
+  - id: aws
+    title: "Terraform on AWS (via Floci)"
+    description: "Apply Terraform to a real cloud provider emulated locally by Floci: first EC2, security group/subnet/instance, IAM, S3 remote-state backend, launch template + autoscaling, import/moved/drift. Feeds the Professional capstones (objectives 1 and 5)."
+    labs:
+      - aws/provider-aws-first-ec2
+      - aws/sg-subnet-instance
+      - aws/iam-role-policy-instance-profile
+      - aws/backend-s3-remote-state
+      - aws/launch-template-autoscaling
+      - aws/import-moved-drift
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # ORDRE CHALLENGÉ : hcp-terraform DÉPLACÉ après `aws`. HCP orchestre des runs
+  # sur un vrai cloud : il faut la fluidité cloud d'abord. C'est aussi
+  # l'objectif 6 du Pro, le SEUL en QCM (pas de hands-on à l'examen) : sa place
+  # logique est juste avant les capstones, comme théorie avancée.
+  - id: hcp-terraform
+    title: "HCP Terraform"
+    description: "The HashiCorp platform (Professional objective 6, assessed by MCQ): run workflow, workspaces and access management, credentials and dynamic credentials, policy as code and governance."
+    labs:
+      - hcp-terraform/hcp-terraform-overview
+      - hcp-terraform/hcp-workspaces
+      - hcp-terraform/remote-runs
+      - hcp-terraform/variable-sets
+      - hcp-terraform/shared-credentials
+      - hcp-terraform/projects-teams
+      - hcp-terraform/policy-as-code
+
+  # ─────────────────────────────────────────────────────────────────────────
+  - id: certif-associate
+    title: "Associate Certification (004)"
+    description: "Prepare the Associate 004 exam (MCQ): essential commands and a mock exam."
+    labs:
+      - certifications/associate/essential-commands
+      - certifications/associate/mock-004
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # Capstones du Professional : 1 TP par objectif d'examen (hands-on), dans
+  # l'ordre officiel 1→6, puis un mock intégratif 4h. Chaque TP réutilise les
+  # acquis des sections amont et se prouve par pytest (apply → show -json →
+  # idempotence → destroy). Les parties cloud tournent sur Floci. L'objectif 6
+  # (HCP) étant en QCM à l'examen, son TP valide une configuration/policy sans
+  # exécution distante.
+  # Source des objectifs : developer.hashicorp.com/terraform/tutorials/pro-cert/pro-review
+  - id: certif-pro
+    title: "Professional Certification (capstones by objective)"
+    description: "One capstone lab per objective of the Terraform Authoring and Operations Professional exam (the highest, hands-on level), plus a 4h integrative mock."
+    labs:
+      - certifications/professional/capstone1-resource-lifecycle
+      - certifications/professional/capstone2-dynamic-config
+      - certifications/professional/capstone3-collaborative-workflows
+      - certifications/professional/capstone4-modules
+      - certifications/professional/capstone5-providers
+      - certifications/professional/capstone6-hcp
+      - certifications/professional/mock-pro

@@ -1,0 +1,7 @@
+---
+id: write-code-expressions
+title: Ce que les expressions calculent vraiment
+description: 'Écrire des expressions Terraform correctes : référencer une ressource
+  gérée sans préfixe, savoir que == ne convertit pas les types (3 n''est pas "3")
+  alors que l''arithmétique convertit, respecter la précédence des opérateurs, et
+  utiliser null pour omettre un argument plutôt qu''une chaîne vide. Associate 2e.'

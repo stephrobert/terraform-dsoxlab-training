@@ -1,0 +1,33 @@
+---
+id: state-terraform-state-list
+title: terraform state list, the address is the identity
+description: Find the address of an instance when all you know is its real
+  identifier, and count managed resources without being caught by a module.
+section: state
+level: l2
+difficulty: intermediate
+lab_type: lab
+estimated_time: 30m
+skills:
+- terraform
+- state-list
+distros:
+- debian13
+doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/terraform-state-list/
+certification_tags:
+- tf-associate
+- tf-professional
+runtime:
+  type: shell
+  workdir: challenge/work
+  fixtures:
+  - versions.tf
+  - variables.tf
+  - outputs.tf
+  - main.tf
+  - modules/stockage/main.tf
+  - reponses.auto.tfvars
+validation:
+  functional: true
+  security: false
+  persistence_after_reboot: false

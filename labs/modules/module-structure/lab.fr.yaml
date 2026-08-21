@@ -1,0 +1,6 @@
+---
+id: modules-module-structure
+title: 'Refactorer un monolithe vers la structure standard'
+description: Éclater un fichier .tf unique selon la structure officielle, ajouter un
+  module imbriqué appelé par chemin relatif, un exemple autonome, et prouver que
+  override.tf est le seul nom de fichier à avoir un effet.

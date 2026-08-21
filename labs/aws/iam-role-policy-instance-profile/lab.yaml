@@ -1,0 +1,25 @@
+---
+id: aws-iam-role-policy-instance-profile
+title: Iam Role Policy Instance Profile (skeleton)
+description: Skeleton for the « Iam Role Policy Instance Profile » lab. Scenario and
+  tests still to be written.
+section: aws
+level: l3
+difficulty: advanced
+lab_type: lab
+estimated_time: 30m
+skills:
+- terraform
+- iam-role-policy-instance-profile
+distros:
+- debian13
+doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/aws/iam-role-policy-instance-profile/
+certification_tags:
+- tf-professional
+runtime:
+  type: shell
+  workdir: challenge/work
+validation:
+  functional: true
+  security: false
+  persistence_after_reboot: false

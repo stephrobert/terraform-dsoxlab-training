@@ -1,0 +1,44 @@
+# Traduction française du meta.yml voisin.
+#
+# dsoxlab n'y lit que repo.title, repo.description, sections[].title et
+# sections[].description. Les sections sont appariées par `id`, jamais par
+# position : réordonner meta.yml ne casse donc pas la traduction.
+
+repo:
+  description: |
+    Lab pédagogique public de la formation Terraform (parcours du blog).
+    Chaque lab est autonome : tutoriel guidé + challenge testé par pytest.
+    Un lab par guide du parcours, du premier `terraform init` aux
+    certifications HashiCorp Associate et Professional.
+
+sections:
+  - id: getting-started
+    title: "Découvrir Terraform"
+    description: "Premiers contacts : déclaratif vs impératif, OpenTofu, installation, CLI, workflow, providers/resources/data sources, structure d'un projet."
+  - id: first-infra
+    title: "Premières infrastructures"
+    description: "Provisionner pour de vrai : première infra, variables/outputs, réseau virtuel, VM libvirt, appel Ansible, debug d'un apply, destroy propre."
+  - id: write-code
+    title: "Écrire du code Terraform"
+    description: "Le langage HCL en profondeur : providers, ressources, variables, outputs, locals, data sources, expressions, fonctions, conditions, count, for_each, boucles for, blocs dynamiques, depends_on, lifecycle, tfvars, contraintes de version, style, données sensibles."
+  - id: state
+    title: "Le State Terraform"
+    description: "Comprendre et manipuler le state : backends, verrouillage, terraform state list/show/mv/rm, sauvegarde/restauration, diagnostic."
+  - id: modules
+    title: "Modules Terraform"
+    description: "Factoriser avec des modules : création, structure, variables/outputs, module local, registry, versionnement, tests, bonnes pratiques et anti-patterns."
+  - id: environments
+    title: "Environnements"
+    description: "Organiser plusieurs environnements : structure du repo, séparation dev/staging/prod, variables par environnement, workspaces (et quand les utiliser), monorepo vs repo par stack."
+  - id: aws
+    title: "Terraform sur AWS (via Floci)"
+    description: "Appliquer Terraform à un vrai provider cloud émulé en local par Floci : première EC2, security group/subnet/instance, IAM, backend S3 remote state, launch template + autoscaling, import/moved/drift. Alimente les capstones du Professional (objectifs 1 et 5)."
+  - id: hcp-terraform
+    title: "HCP Terraform"
+    description: "La plateforme HashiCorp (objectif 6 du Pro, évalué en QCM) : run workflow, workspaces et access management, credentials et dynamic credentials, policy as code et gouvernance."
+  - id: certif-associate
+    title: "Certification Associate (004)"
+    description: "Préparer l'examen Associate 004 (QCM) : commandes essentielles et examen blanc."
+  - id: certif-pro
+    title: "Certification Professional (capstones par objectif)"
+    description: "Un TP-capstone par objectif de l'examen Terraform Authoring and Operations Professional (le plus haut niveau, hands-on), plus un mock intégratif de 4h."

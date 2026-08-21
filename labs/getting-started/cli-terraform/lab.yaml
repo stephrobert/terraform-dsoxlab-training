@@ -1,0 +1,25 @@
+---
+id: getting-started-cli-terraform
+title: Cli Terraform (skeleton)
+description: Skeleton for the « Cli Terraform » lab. Scenario and tests still to be
+  written.
+section: getting-started
+level: l1
+difficulty: beginner
+lab_type: lab
+estimated_time: 30m
+skills:
+- terraform
+- cli
+distros:
+- debian13
+doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/decouvrir/cli-terraform/
+certification_tags:
+- tf-associate
+runtime:
+  type: shell
+  workdir: challenge/work
+validation:
+  functional: true
+  security: false
+  persistence_after_reboot: false

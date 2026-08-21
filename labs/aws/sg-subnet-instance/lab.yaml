@@ -1,0 +1,50 @@
+---
+id: aws-sg-subnet-instance
+title: 'Security group: dedicated rules, for_each and a deterministic subnet'
+description: Build a security group whose rules are all dedicated resources,
+  factor the ingress rules with for_each, and place an instance in a subnet
+  designated by its tag.
+section: aws
+level: l3
+difficulty: intermediate
+lab_type: lab
+estimated_time: 45m
+skills:
+- terraform
+- aws-security-group
+- for-each
+- data-sources
+distros:
+- debian13
+doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/aws/sg-subnet-instance/
+certification_tags:
+- tf-associate
+runtime:
+  type: shell
+  workdir: challenge/work
+  fixtures:
+  - CIBLE.md
+  - versions.tf
+  - variables.tf
+  - reseau.tf
+  - main.tf
+  - outputs.tf
+  services:
+  - name: floci
+    image: floci/floci:1.6.0
+    ports:
+    - 14566:4566
+    # L'emulateur cree un vrai conteneur derriere chaque instance : sans le
+    # socket Docker ni les droits root, l'instance reste bloquee en `pending`.
+    run_args:
+    - -u
+    - root
+    - -v
+    - /var/run/docker.sock:/var/run/docker.sock
+    ready_tcp: 14566
+    ready_exec: curl -f http://localhost:4566/_floci/health
+    ready_timeout: 120
+validation:
+  functional: true
+  security: false
+  persistence_after_reboot: false

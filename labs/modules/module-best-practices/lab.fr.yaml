@@ -1,0 +1,4 @@
+---
+id: modules-module-best-practices
+title: Rendre un module composable, et le prouver depuis le JSON du plan
+description: 'Debarrasser un module legacy de sa configuration de provider, inverser sa dependance et le documenter, puis lire la preuve dans provider_config et module_calls.'

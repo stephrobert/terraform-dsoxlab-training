@@ -1,0 +1,4 @@
+---
+id: modules-module-anti-patterns
+title: Refactorer un projet copie-colle sans rien detruire
+description: 'Extraire deux ressources copiees-collees dans un module type appele une seule fois, et prouver depuis les identifiants du state que rien n''a ete detruit en chemin.'

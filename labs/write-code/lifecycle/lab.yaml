@@ -1,0 +1,37 @@
+---
+id: write-code-lifecycle
+title: The lifecycle block decides the order, not you
+description: 'Set create_before_destroy and watch its propagation go down to
+  dependencies, hit the documented limit of prevent_destroy, scope ignore_changes
+  to a single attribute, trigger a replacement from a bare value through
+  terraform_data, and reject an invalid input at plan time. Pro objective 2d.'
+section: write-code
+level: l2
+difficulty: intermediate
+lab_type: lab
+estimated_time: 45m
+skills:
+- terraform
+- lifecycle
+- create_before_destroy
+- prevent_destroy
+- ignore_changes
+- replace_triggered_by
+distros:
+- debian13
+doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/lifecycle-terraform/
+certification_tags:
+- tf-associate
+- tf-professional
+runtime:
+  type: shell
+  workdir: challenge/work
+  fixtures:
+  - versions.tf
+  - variables.tf
+  - main.tf
+  - modele.txt
+validation:
+  functional: true
+  security: false
+  persistence_after_reboot: false

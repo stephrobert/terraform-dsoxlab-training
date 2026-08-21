@@ -1,0 +1,33 @@
+---
+id: write-code-provider-defined-functions
+title: Provider-defined functions
+description: 'Use functions exposed by a provider with the provider:: syntax. Pro
+  objectives 2c and 5a.'
+section: write-code
+level: l2
+difficulty: intermediate
+lab_type: lab
+estimated_time: 30m
+skills:
+- terraform
+- functions
+- providers
+- hcl
+distros:
+- debian13
+doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/provider-defined-functions/
+certification_tags:
+- tf-professional
+runtime:
+  type: shell
+  workdir: challenge/work
+  fixtures:
+  - versions.tf
+  - locals.tf
+  - outputs.tf
+  - main.tf
+  - amont.tfvars.txt
+validation:
+  functional: true
+  security: false
+  persistence_after_reboot: false

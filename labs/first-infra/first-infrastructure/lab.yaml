@@ -1,0 +1,25 @@
+---
+id: first-infra-first-infrastructure
+title: Premiere Infrastructure (skeleton)
+description: Skeleton for the « Premiere Infrastructure » lab. Scenario and tests
+  still to be written.
+section: first-infra
+level: l1
+difficulty: beginner
+lab_type: lab
+estimated_time: 30m
+skills:
+- terraform
+- premiere-infrastructure
+distros:
+- debian13
+doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/premieres-infras/premiere-infrastructure/
+certification_tags:
+- tf-associate
+runtime:
+  type: shell
+  workdir: challenge/work
+validation:
+  functional: true
+  security: false
+  persistence_after_reboot: false

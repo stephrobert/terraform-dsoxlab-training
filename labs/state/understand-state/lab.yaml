@@ -1,0 +1,31 @@
+---
+id: state-understand-state
+title: Comprendre State (skeleton)
+description: Skeleton for the « Comprendre State » lab. Scenario and tests still to
+  be written.
+section: state
+level: l2
+difficulty: intermediate
+lab_type: lab
+estimated_time: 30m
+skills:
+- terraform
+- comprendre-state
+distros:
+- debian13
+doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/comprendre-state/
+certification_tags:
+- tf-associate
+- tf-professional
+runtime:
+  type: shell
+  workdir: challenge/work
+  fixtures:
+  - versions.tf
+  - variables.tf
+  - main.tf
+  - mot-de-passe-existant.txt
+validation:
+  functional: true
+  security: false
+  persistence_after_reboot: false

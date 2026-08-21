@@ -1,0 +1,35 @@
+---
+id: write-code-sensitive-data-ephemeral-values
+title: The value that never touches the state
+description: 'Declare an ephemeral value that is generated during the run but never
+  written to the state or plan: the ephemeral block (random 3.7+), the contrast
+  with a persisted random_password, exposing it safely at the root with
+  ephemeralasnull(), and the two errors it triggers when leaked. Professional 2f.'
+section: write-code
+level: l2
+difficulty: intermediate
+lab_type: lab
+estimated_time: 35m
+skills:
+- terraform
+- ephemeral
+- sensitive
+- plan-json
+distros:
+- debian13
+doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/gestion-donnees-sensibles/ephemeral-values/
+certification_tags:
+- tf-associate
+- tf-professional
+runtime:
+  type: shell
+  workdir: challenge/work
+  fixtures:
+  - versions.tf
+  - variables.tf
+  - main.tf
+  - outputs.tf
+validation:
+  functional: true
+  security: false
+  persistence_after_reboot: false

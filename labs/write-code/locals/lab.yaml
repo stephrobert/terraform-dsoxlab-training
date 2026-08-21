@@ -1,0 +1,37 @@
+---
+id: write-code-locals
+title: The local that is not resolved at plan time
+description: 'Centralize expressions in locals blocks: normalize with HCL
+  functions, keep a ternary typed, generate a list with a for expression, derive
+  from a resource attribute (known after apply), and inherit a variable''s
+  sensitivity. Pro objective 2c.'
+section: write-code
+level: l2
+difficulty: intermediate
+lab_type: lab
+estimated_time: 45m
+skills:
+- terraform
+- locals
+- ternary-type
+- sensitive
+- plan-json
+distros:
+- debian13
+doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/locals-terraform/
+certification_tags:
+- tf-associate
+- tf-professional
+runtime:
+  type: shell
+  workdir: challenge/work
+  fixtures:
+  - versions.tf
+  - variables.tf
+  - locals.tf
+  - main.tf
+  - outputs.tf
+validation:
+  functional: true
+  security: false
+  persistence_after_reboot: false

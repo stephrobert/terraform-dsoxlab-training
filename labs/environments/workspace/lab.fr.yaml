@@ -1,0 +1,4 @@
+---
+id: environments-workspace
+title: Un seul repertoire, trois etats qui ne se voient pas
+description: 'Piloter trois instances d''etat depuis une seule configuration grace a terraform.workspace, puis retirer un workspace herite sans laisser d''objet orphelin.'

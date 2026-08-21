@@ -1,0 +1,4 @@
+---
+id: environments-monorepo-vs-repo-per-stack
+title: Decouper un monorepo en deux stacks qui se parlent
+description: 'Re-exporter a la racine la sortie d''un module imbrique, la consommer depuis une stack aval par terraform_remote_state, et garder le secret de la plateforme hors de l''etat partage.'

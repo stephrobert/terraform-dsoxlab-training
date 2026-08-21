@@ -1,0 +1,34 @@
+---
+id: write-code-tfvars-files
+title: The typo that breaks nothing
+description: 'Two tfvars traps: an undeclared variable in a .tfvars is only a
+  warning, so the real variable silently stays at its default (fix the typo), and
+  terraform.tfvars.json outranks terraform.tfvars (a distinct precedence level).
+  Associate 3c.'
+section: write-code
+level: l2
+difficulty: intermediate
+lab_type: lab
+estimated_time: 25m
+skills:
+- terraform
+- tfvars
+- precedence
+distros:
+- debian13
+doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/fichiers-tfvars/
+certification_tags:
+- tf-associate
+- tf-professional
+runtime:
+  type: shell
+  workdir: challenge/work
+  fixtures:
+  - versions.tf
+  - variables.tf
+  - main.tf
+  - terraform.tfvars
+validation:
+  functional: true
+  security: false
+  persistence_after_reboot: false

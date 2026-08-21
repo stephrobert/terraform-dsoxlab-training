@@ -1,0 +1,32 @@
+---
+id: environments-when-to-use-workspaces
+title: Workspaces or separate configurations, and what the split costs
+description: 'Decide which parts still belong in workspaces, split the rest into two root configurations, and wire their dependency through terraform_remote_state without duplicating a value.'
+section: environments
+level: l3
+difficulty: advanced
+lab_type: lab
+estimated_time: 50m
+skills:
+- terraform
+- environnements
+- workspace
+- remote-state
+distros:
+- debian13
+doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/quand-utiliser-workspaces/
+certification_tags:
+- tf-professional
+runtime:
+  type: shell
+  workdir: challenge/work
+  fixtures:
+  - CIBLE.md
+  - mono/main.tf
+  - socle/main.tf
+  - app/main.tf
+  - bac-a-sable/main.tf
+validation:
+  functional: true
+  security: false
+  persistence_after_reboot: false

@@ -1,0 +1,31 @@
+---
+id: environments-separate-environments
+title: Two roots, two states, one shared module
+description: 'Wire two root configurations onto one shared module with a partial backend, then prove by destroying dev that prod never moved.'
+section: environments
+level: l3
+difficulty: advanced
+lab_type: lab
+estimated_time: 45m
+skills:
+- terraform
+- environnements
+- backend
+- state
+distros:
+- debian13
+doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/separer-environnements/
+certification_tags:
+- tf-professional
+runtime:
+  type: shell
+  workdir: challenge/work
+  fixtures:
+  - CIBLE.md
+  - modules/plaque/main.tf
+  - envs/dev/main.tf
+  - envs/prod/main.tf
+validation:
+  functional: true
+  security: false
+  persistence_after_reboot: false

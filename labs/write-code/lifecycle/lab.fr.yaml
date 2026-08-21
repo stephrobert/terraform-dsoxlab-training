@@ -1,0 +1,8 @@
+---
+id: write-code-lifecycle
+title: Le bloc lifecycle décide de l'ordre, pas vous
+description: 'Poser create_before_destroy et constater que sa propagation descend
+  vers les dépendances, buter sur la limite documentée de prevent_destroy, limiter
+  ignore_changes à un seul attribut, déclencher un remplacement depuis une valeur
+  nue via terraform_data, et refuser une entrée invalide au plan. Sous-objectif
+  Pro 2d.'

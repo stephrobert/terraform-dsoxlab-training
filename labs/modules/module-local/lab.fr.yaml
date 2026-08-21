@@ -1,0 +1,6 @@
+---
+id: modules-module-local
+title: Un module local se lit sur place, il ne s'installe pas
+description: 'Brancher deux projets racine sur un seul module local partagé, et prouver
+  depuis modules.json quel dossier chaque appel lit vraiment : chemin relatif contre
+  chemin absolu.'

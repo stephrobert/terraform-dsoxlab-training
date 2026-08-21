@@ -1,0 +1,8 @@
+---
+id: write-code-version-constraints
+title: Contraintes de version et lock file
+description: 'Écrire des contraintes de version correctes : un required_version
+  littéral (le bloc terraform n''accepte aucune variable), un pin exact de
+  provider qui se résout à cette version, et le pessimiste ~> qui autorise la 3.x
+  mais pas la 4.0. Prouvé par version -json et les empreintes h1 du lock file.
+  Associate 3a.'

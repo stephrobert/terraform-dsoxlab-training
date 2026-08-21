@@ -1,0 +1,30 @@
+---
+id: state-terraform-state-show
+title: terraform state show, ce que la fiche cache
+description: Extraire du state une valeur sensible et des attributs nuls, que la
+  sortie humaine de state show caviarde ou omet.
+section: state
+level: l2
+difficulty: intermediate
+lab_type: lab
+estimated_time: 30m
+skills:
+- terraform
+- state-show
+distros:
+- debian13
+doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/terraform-state-show/
+certification_tags:
+- tf-associate
+- tf-professional
+runtime:
+  type: shell
+  workdir: challenge/work
+  fixtures:
+  - versions.tf
+  - main.tf
+  - outputs.tf
+validation:
+  functional: true
+  security: false
+  persistence_after_reboot: false

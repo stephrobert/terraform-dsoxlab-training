@@ -1,0 +1,6 @@
+---
+id: state-terraform-state-list
+title: terraform state list, l'adresse est l'identité
+description: Retrouver l'adresse d'une instance dont on ne connaît que
+  l'identifiant réel, et compter les ressources gérées sans se faire piéger par un
+  module.

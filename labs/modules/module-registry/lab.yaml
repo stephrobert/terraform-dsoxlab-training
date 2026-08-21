@@ -1,0 +1,35 @@
+---
+id: modules-module-registry
+title: A registry module is downloaded, versioned, and never locked
+description: 'Pin a registry module, resolve a flexible constraint, and prove from
+  modules.json and the plan JSON which version got installed: the lock file never
+  covers a module.'
+section: modules
+level: l2
+difficulty: intermediate
+lab_type: lab
+estimated_time: 45m
+skills:
+- terraform
+- modules
+- module-registry
+- version-constraints
+distros:
+- debian13
+doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/module-registry/
+certification_tags:
+- tf-associate
+- tf-professional
+runtime:
+  type: shell
+  workdir: challenge/work
+  fixtures:
+  - projet-epingle/main.tf
+  - projet-epingle/outputs.tf
+  - projet-souple/main.tf
+  - projet-souple/outputs.tf
+  - projet-sous-module/main.tf
+validation:
+  functional: true
+  security: false
+  persistence_after_reboot: false

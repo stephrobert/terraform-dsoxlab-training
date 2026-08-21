@@ -1,0 +1,33 @@
+---
+id: modules-test-module
+title: Prove a module with terraform test, mutations included
+description: 'Write the .tftest.hcl suite of a module, covering its default, its options and its refusal of an invalid input: every behaviour is checked by mutating the module.'
+section: modules
+level: l2
+difficulty: intermediate
+lab_type: lab
+estimated_time: 45m
+skills:
+- terraform
+- modules
+- terraform-test
+- validation
+distros:
+- debian13
+doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/tester-module/
+certification_tags:
+- tf-associate
+- tf-professional
+runtime:
+  type: shell
+  workdir: challenge/work
+  fixtures:
+  - CIBLE.md
+  - etiquette/main.tf
+  - etiquette/outputs.tf
+  - etiquette/variables.tf
+  - etiquette/tests/etiquette.tftest.hcl
+validation:
+  functional: true
+  security: false
+  persistence_after_reboot: false

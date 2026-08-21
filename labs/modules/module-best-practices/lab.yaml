@@ -1,0 +1,32 @@
+---
+id: modules-module-best-practices
+title: Make a module composable, and prove it from the plan JSON
+description: 'Strip a legacy module of its own provider configuration, invert its dependency and document it, then read the proof in provider_config and module_calls.'
+section: modules
+level: l2
+difficulty: intermediate
+lab_type: lab
+estimated_time: 45m
+skills:
+- terraform
+- modules
+- composition
+- providers
+distros:
+- debian13
+doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/bonnes-pratiques-modules/
+certification_tags:
+- tf-associate
+- tf-professional
+runtime:
+  type: shell
+  workdir: challenge/work
+  fixtures:
+  - CIBLE.md
+  - bibliotheque/plaque/main.tf
+  - projet/main.tf
+  - projet/outputs.tf
+validation:
+  functional: true
+  security: false
+  persistence_after_reboot: false

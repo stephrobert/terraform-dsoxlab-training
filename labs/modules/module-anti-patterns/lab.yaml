@@ -1,0 +1,34 @@
+---
+id: modules-module-anti-patterns
+title: Refactor a copy-pasted project without destroying anything
+description: 'Extract two copy-pasted resources into a typed module called once, and prove from the state identifiers that nothing was destroyed on the way.'
+section: modules
+level: l2
+difficulty: intermediate
+lab_type: lab
+estimated_time: 45m
+skills:
+- terraform
+- modules
+- refactoring
+- moved
+distros:
+- debian13
+doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/anti-patterns-modules/
+certification_tags:
+- tf-associate
+- tf-professional
+runtime:
+  type: shell
+  workdir: challenge/work
+  fixtures:
+  - CIBLE.md
+  - projet/main.tf
+  - projet/outputs.tf
+  - projet/terraform.tfstate
+  - projet/plaques/nord.txt
+  - projet/plaques/sud.txt
+validation:
+  functional: true
+  security: false
+  persistence_after_reboot: false

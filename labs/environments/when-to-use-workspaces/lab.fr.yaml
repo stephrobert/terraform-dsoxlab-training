@@ -1,0 +1,4 @@
+---
+id: environments-when-to-use-workspaces
+title: Workspaces ou configurations separees, et ce que coute la decoupe
+description: 'Decider ce qui releve encore des workspaces, decouper le reste en deux racines, et rebrancher leur dependance par terraform_remote_state sans dupliquer une valeur.'

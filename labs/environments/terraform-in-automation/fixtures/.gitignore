@@ -1,0 +1,14 @@
+# Ce .gitignore est INCOMPLET.
+#
+# Un plan sauvegarde contient les valeurs resolues, secrets compris. Il ne doit
+# jamais rejoindre le depot. Or le nom produit par `terraform plan -out=tfplan`
+# n'a AUCUNE extension : le motif ci-dessous ne l'attrape pas.
+#
+# Verifiez votre correction en faisant TRAVAILLER le fichier, pas en le lisant :
+#   git check-ignore -v tfplan
+
+.terraform/
+*.tfstate
+*.tfstate.*
+
+*.tfplan

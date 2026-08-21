@@ -1,0 +1,5 @@
+---
+id: write-code-sensitive-data-vault-secrets
+title: Lire des secrets depuis Vault
+description: Récupérer des secrets depuis HashiCorp Vault avec le provider vault et
+  les consommer sans les figer en clair dans le state. Objectif Pro 2f.

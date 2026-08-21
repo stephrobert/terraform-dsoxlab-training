@@ -1,0 +1,4 @@
+---
+title: 'Provider AWS : authentification, endpoints et tags par defaut'
+description: Configurer un provider AWS epingle pour qu'il dialogue avec une API
+  locale, puis prouver que l'instance tourne reellement.

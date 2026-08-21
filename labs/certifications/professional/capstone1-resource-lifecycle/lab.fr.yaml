@@ -1,0 +1,5 @@
+---
+id: certifications-professional-capstone1-resource-lifecycle
+title: 'Pro · Objectif 1 : cycle de vie, import et réconciliation de drift'
+description: Importer dans le state une EC2 créée hors Terraform (aws cli sur Floci),
+  puis détecter et réconcilier un drift. Objectif d'examen 1.

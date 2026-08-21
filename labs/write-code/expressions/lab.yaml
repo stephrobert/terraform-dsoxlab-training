@@ -1,0 +1,35 @@
+---
+id: write-code-expressions
+title: What expressions really compute
+description: 'Write correct Terraform expressions: reference a managed resource
+  with no prefix, know that == does not convert types (so 3 is not "3") while
+  arithmetic does, respect operator precedence, and use null to omit an argument
+  rather than an empty string. Associate 2e.'
+section: write-code
+level: l2
+difficulty: intermediate
+lab_type: lab
+estimated_time: 30m
+skills:
+- terraform
+- expressions
+- type-conversion
+- null
+distros:
+- debian13
+doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/expressions-terraform/
+certification_tags:
+- tf-associate
+- tf-professional
+runtime:
+  type: shell
+  workdir: challenge/work
+  fixtures:
+  - versions.tf
+  - variables.tf
+  - main.tf
+  - outputs.tf
+validation:
+  functional: true
+  security: false
+  persistence_after_reboot: false

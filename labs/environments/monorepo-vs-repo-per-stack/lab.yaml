@@ -1,0 +1,33 @@
+---
+id: environments-monorepo-vs-repo-per-stack
+title: Split a monorepo into two stacks that talk to each other
+description: 'Re-export a nested module output at the root, consume it from a downstream stack through terraform_remote_state, and keep the platform secret out of the shared state.'
+section: environments
+level: l3
+difficulty: advanced
+lab_type: lab
+estimated_time: 45m
+skills:
+- terraform
+- environnements
+- remote-state
+- modules
+distros:
+- debian13
+doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/monorepo-vs-repo-par-stack/
+certification_tags:
+- tf-professional
+runtime:
+  type: shell
+  workdir: challenge/work
+  fixtures:
+  - CIBLE.md
+  - modules/reseau/main.tf
+  - stacks/plateforme/main.tf
+  - stacks/plateforme/outputs.tf
+  - stacks/applicatif/main.tf
+  - stacks/applicatif/outputs.tf
+validation:
+  functional: true
+  security: false
+  persistence_after_reboot: false

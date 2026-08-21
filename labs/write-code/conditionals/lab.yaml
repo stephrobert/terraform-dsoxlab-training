@@ -1,0 +1,35 @@
+---
+id: write-code-conditionals
+title: The configuration that refuses absurd values
+description: 'Compute values with conditional expressions, then place each guard at
+  the right level: validation, precondition, postcondition and check block. Pro objective
+  2a.'
+section: write-code
+level: l2
+difficulty: intermediate
+lab_type: lab
+estimated_time: 45m
+skills:
+- terraform
+- validation
+- precondition
+- postcondition
+- check
+distros:
+- debian13
+doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/conditions-terraform/
+certification_tags:
+- tf-associate
+- tf-professional
+runtime:
+  type: shell
+  workdir: challenge/work
+  fixtures:
+  - versions.tf
+  - variables.tf
+  - main.tf
+  - outputs.tf
+validation:
+  functional: true
+  security: false
+  persistence_after_reboot: false

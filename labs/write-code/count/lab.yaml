@@ -1,0 +1,38 @@
+---
+id: write-code-count
+title: count indexes by position, and the position lies
+description: 'Choose count or for_each per resource and prove it: index a set by
+  name with for_each, migrate a count resource to for_each with no destroy using
+  moved blocks, keep count for interchangeable copies, and expose a conditional
+  resource with one(). Associate objective 4b plus the Professional moved migration.'
+section: write-code
+level: l2
+difficulty: intermediate
+lab_type: lab
+estimated_time: 45m
+skills:
+- terraform
+- count
+- for-each
+- moved
+- plan-json
+distros:
+- debian13
+doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/count-terraform/
+certification_tags:
+- tf-associate
+- tf-professional
+runtime:
+  type: shell
+  workdir: challenge/work
+  fixtures:
+  - versions.tf
+  - variables.tf
+  - main.tf
+  - workers.tf
+  - rapport.tf
+  - outputs.tf
+validation:
+  functional: true
+  security: false
+  persistence_after_reboot: false

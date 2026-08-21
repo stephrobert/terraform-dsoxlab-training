@@ -1,0 +1,5 @@
+---
+id: certifications-professional-capstone2-dynamic-config
+title: 'Pro · Objectif 2 : configuration dynamique et troubleshooting'
+description: Data sources, fonctions HCL, meta-arguments (count/for_each/dynamic),
+  types complexes, données sensibles et Vault. Objectif d'examen 2.

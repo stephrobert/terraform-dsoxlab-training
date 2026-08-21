@@ -1,0 +1,7 @@
+---
+id: write-code-dynamic-blocks
+title: Générer des blocs, et savoir ne pas le faire
+description: 'Générer des parties cloudinit avec un bloc dynamic filtré dans le
+  for_each et nommé depuis la clé, garder la partie fixe littérale, et buter sur
+  le mur : un bloc de méta-arguments lifecycle ne se génère pas par dynamic.
+  Sous-objectif Pro 2d.'

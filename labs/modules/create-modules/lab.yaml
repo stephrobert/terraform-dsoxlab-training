@@ -1,0 +1,38 @@
+---
+id: modules-create-modules
+title: 'A reusable module configures no provider of its own'
+description: Empty a child module of its provider configuration, have it declare the
+  aliased configuration it expects, pass that configuration from the root, and
+  instantiate the module three times with a single for_each.
+section: modules
+level: l2
+difficulty: intermediate
+lab_type: lab
+estimated_time: 45m
+skills:
+- terraform
+- modules
+- providers
+- configuration-aliases
+distros:
+- debian13
+doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/creation-modules/
+certification_tags:
+- tf-associate
+- tf-professional
+runtime:
+  type: shell
+  workdir: challenge/work
+  fixtures:
+  - versions.tf
+  - variables.tf
+  - main.tf
+  - outputs.tf
+  - modules/livrable/versions.tf
+  - modules/livrable/main.tf
+  - modules/livrable/variables.tf
+  - modules/livrable/outputs.tf
+validation:
+  functional: true
+  security: false
+  persistence_after_reboot: false

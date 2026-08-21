@@ -1,0 +1,9 @@
+---
+id: write-code-variables
+title: Variables, typage, validation et précédence
+description: 'Typer correctement les variables et maîtriser leurs pièges : une map
+  d''objets avec des defauts optional(), une validation qui rejette avant tout
+  provider, un null explicite qui retombe sur le defaut avec nullable=false, la
+  vraie précédence des sources (auto.tfvars au-dessus de TF_VAR_, -var au-dessus de
+  tout), et sensitive comme masque d''affichage, pas comme protection du state.
+  Associate 2e et 2f.'

@@ -1,0 +1,37 @@
+---
+id: write-code-outputs
+title: The secret the output does not hide
+description: 'Master the real output block: a type constraint (object), sensitivity
+  propagation (an output referencing a secret must be sensitive, and sensitive is
+  only a display mask, cleartext stays in state, -json and -raw), nonsensitive() to
+  expose a hash deliberately, and a precondition that fails the plan. Associate 2e
+  plus 2f.'
+section: write-code
+level: l2
+difficulty: intermediate
+lab_type: lab
+estimated_time: 45m
+skills:
+- terraform
+- outputs
+- sensitive
+- precondition
+- plan-json
+distros:
+- debian13
+doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/outputs-terraform/
+certification_tags:
+- tf-associate
+- tf-professional
+runtime:
+  type: shell
+  workdir: challenge/work
+  fixtures:
+  - versions.tf
+  - variables.tf
+  - main.tf
+  - outputs.tf
+validation:
+  functional: true
+  security: false
+  persistence_after_reboot: false

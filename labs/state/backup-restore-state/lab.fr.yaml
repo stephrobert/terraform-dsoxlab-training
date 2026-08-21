@@ -1,0 +1,7 @@
+---
+id: state-backup-restore-state
+title: 'Restaurer un state amputé : choisir la bonne sauvegarde, prouver que rien n''a
+  été recréé'
+description: Un state rm a mal tourné et le backup est écrasé. Trois sauvegardes
+  candidates, une seule restaurable, départagées par lineage et serial, puis poussée
+  sans toucher aux fichiers réels.

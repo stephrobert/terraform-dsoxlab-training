@@ -1,0 +1,43 @@
+---
+id: write-code-sensitive-data-vault-secrets
+title: Read secrets from Vault
+description: Fetch secrets from HashiCorp Vault with the vault provider and consume
+  them without freezing them in clear text in the state. Pro objective 2f.
+section: write-code
+level: l2
+difficulty: intermediate
+lab_type: lab
+estimated_time: 30m
+skills:
+- terraform
+- vault
+- secrets
+- sensitive
+distros:
+- debian13
+doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/gestion-donnees-sensibles/vault-secrets/
+certification_tags:
+- tf-professional
+runtime:
+  type: shell
+  workdir: challenge/work
+  fixtures:
+  - versions.tf
+  - variables.tf
+  - main.tf
+  - providers.tf
+  services:
+  - name: vault
+    image: hashicorp/vault:1.21
+    ports:
+    - "8200:8200"
+    run_args:
+    - --cap-add=IPC_LOCK
+    env:
+      VAULT_DEV_ROOT_TOKEN_ID: root
+    ready_tcp: 8200
+    ready_timeout: 60
+validation:
+  functional: true
+  security: true
+  persistence_after_reboot: false

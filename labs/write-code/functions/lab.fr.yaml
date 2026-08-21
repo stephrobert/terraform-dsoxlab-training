@@ -1,0 +1,6 @@
+---
+id: write-code-functions
+title: Composer des valeurs avec les fonctions HCL
+description: Dedupliquer une collection pour for_each, maitriser element() hors bornes,
+  le repli de lookup(), l'arrondi de ceil(), l'echappement des templates et une fonction
+  de provider. Objectif Pro 2c.

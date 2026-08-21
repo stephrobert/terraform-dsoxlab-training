@@ -1,0 +1,6 @@
+---
+id: modules-version-modules
+title: Publier et consommer des versions de module avec des tags Git
+description: 'Publier trois versions d''un module partagé, puis les consommer
+  depuis trois projets : une référence immuable, un tag mineur et un tag majeur,
+  sans jamais employer l''argument version.'

@@ -1,0 +1,37 @@
+---
+id: write-code-for-loops
+title: Transform a catalog with for expressions
+description: 'Derive four collections from a single map of servers with for
+  expressions: a filtered tuple, an object grouped by role with the ellipsis, a
+  flattened two-level cross, and a filtered for_each. Avoid the splat-on-a-map
+  trap. Pro objective 2c.'
+section: write-code
+level: l2
+difficulty: intermediate
+lab_type: lab
+estimated_time: 45m
+skills:
+- terraform
+- for-expression
+- splat
+- flatten
+- for_each
+distros:
+- debian13
+doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/boucles-for-terraform/
+certification_tags:
+- tf-associate
+- tf-professional
+runtime:
+  type: shell
+  workdir: challenge/work
+  fixtures:
+  - versions.tf
+  - variables.tf
+  - locals.tf
+  - main.tf
+  - outputs.tf
+validation:
+  functional: true
+  security: false
+  persistence_after_reboot: false

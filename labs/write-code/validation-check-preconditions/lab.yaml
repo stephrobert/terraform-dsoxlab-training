@@ -1,0 +1,35 @@
+---
+id: write-code-validation-check-preconditions
+title: 'Custom conditions: precondition, postcondition and check blocks'
+description: Validate a configuration with the language features designed for it.
+  Pro objective 2a.
+section: write-code
+level: l2
+difficulty: intermediate
+lab_type: lab
+estimated_time: 30m
+skills:
+- terraform
+- validation
+- precondition
+- postcondition
+- check
+distros:
+- debian13
+doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/custom-conditions/
+certification_tags:
+- tf-associate
+- tf-professional
+runtime:
+  type: shell
+  workdir: challenge/work
+  fixtures:
+  - versions.tf
+  - variables.tf
+  - outputs.tf
+  - checks.tf
+  - main.tf
+validation:
+  functional: true
+  security: false
+  persistence_after_reboot: false

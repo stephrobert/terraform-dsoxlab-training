@@ -1,0 +1,7 @@
+---
+id: write-code-declare-resources
+title: Lire le cycle de vie d'une ressource dans le plan
+description: 'Construire quatre ressources ordonnées par les seules références,
+  puis prouver dans le plan JSON les quatre opérations du cycle de vie : mise à
+  jour en place, remplacement, création avant destruction, et destruction.
+  Sous-objectif Pro 1c.'

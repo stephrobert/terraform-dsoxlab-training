@@ -1,0 +1,8 @@
+---
+id: write-code-sensitive-data-sensitive-values
+title: Quand la sensibilité casse for_each
+description: 'Un effet de bord de sensitive rarement enseigné : une valeur
+  sensible ne peut pas être une clé for_each (Invalid for_each argument), il faut
+  donc itérer sur un ensemble non sensible. L''attribut de ressource contaminé est
+  marqué dans sensitive_values, et un hash s''expose avec nonsensitive().
+  Professional 2f.'

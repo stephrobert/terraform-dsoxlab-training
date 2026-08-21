@@ -1,0 +1,35 @@
+---
+id: environments-workspace
+title: One directory, three states that never see each other
+description: 'Drive three state instances from a single configuration through terraform.workspace, then retire an inherited workspace without leaving an orphan behind.'
+section: environments
+level: l3
+difficulty: advanced
+lab_type: lab
+estimated_time: 45m
+skills:
+- terraform
+- environnements
+- workspace
+- state
+distros:
+- debian13
+doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/workspace/
+certification_tags:
+- tf-associate
+runtime:
+  type: shell
+  workdir: challenge/work
+  fixtures:
+  - CIBLE.md
+  - versions.tf
+  - main.tf
+  - variables.tf
+  - outputs.tf
+  - .terraform.lock.hcl
+  - sorties/app-bac-a-sable-0.conf
+  - terraform.tfstate.d/bac-a-sable/terraform.tfstate
+validation:
+  functional: true
+  security: false
+  persistence_after_reboot: false

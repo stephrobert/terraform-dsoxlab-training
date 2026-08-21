@@ -1,0 +1,4 @@
+---
+id: modules-test-module
+title: Prouver un module avec terraform test, mutations comprises
+description: 'Écrire la suite .tftest.hcl d''un module, couvrant son défaut, ses options et son refus d''une entrée invalide : chaque comportement est contrôlé en mutant le module.'

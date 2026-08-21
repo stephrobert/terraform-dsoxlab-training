@@ -1,0 +1,35 @@
+---
+id: write-code-sensitive-data-sensitive-values
+title: When sensitivity breaks for_each
+description: 'A side effect of sensitive rarely taught: a sensitive value cannot be
+  a for_each key (Invalid for_each argument), so you must iterate over a
+  non-sensitive set. The contaminated resource attribute is flagged in
+  sensitive_values, and a hash is exposed with nonsensitive(). Professional 2f.'
+section: write-code
+level: l2
+difficulty: intermediate
+lab_type: lab
+estimated_time: 30m
+skills:
+- terraform
+- sensitive
+- for-each
+- plan-json
+distros:
+- debian13
+doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/gestion-donnees-sensibles/sensitive-terraform/
+certification_tags:
+- tf-associate
+- tf-professional
+runtime:
+  type: shell
+  workdir: challenge/work
+  fixtures:
+  - versions.tf
+  - variables.tf
+  - main.tf
+  - outputs.tf
+validation:
+  functional: true
+  security: false
+  persistence_after_reboot: false

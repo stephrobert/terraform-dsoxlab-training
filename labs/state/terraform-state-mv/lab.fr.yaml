@@ -1,0 +1,5 @@
+---
+id: state-terraform-state-mv
+title: terraform state mv et le bloc moved, refactorer sans détruire
+description: Rattacher trois objets existants à leurs nouvelles adresses, en
+  impératif puis en déclaratif, et prouver que rien n'a été recréé.

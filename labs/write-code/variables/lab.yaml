@@ -1,0 +1,38 @@
+---
+id: write-code-variables
+title: Variables typing, validation and precedence
+description: 'Type variables correctly and master their traps: a map of objects
+  with optional() defaults, a validation rule that rejects before any provider, an
+  explicit null that falls back to the default with nullable=false, the real source
+  precedence (auto.tfvars over TF_VAR_, -var above all), and sensitive as a display
+  mask, not a state protection. Associate 2e plus 2f.'
+section: write-code
+level: l2
+difficulty: intermediate
+lab_type: lab
+estimated_time: 45m
+skills:
+- terraform
+- variables
+- types
+- validation
+- sensitive
+distros:
+- debian13
+doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/variables-terraform/
+certification_tags:
+- tf-associate
+- tf-professional
+runtime:
+  type: shell
+  workdir: challenge/work
+  fixtures:
+  - versions.tf
+  - variables.tf
+  - main.tf
+  - terraform.tfvars
+  - zz-override.auto.tfvars
+validation:
+  functional: true
+  security: false
+  persistence_after_reboot: false

@@ -1,0 +1,4 @@
+---
+id: environments-organize-terraform-repo
+title: Decouper une configuration monolithique, et prouver que le plan n'a pas bouge
+description: 'Decouper un main.tf de quatre-vingts lignes selon le socle officiel, puis prouver en comparant deux plans que rien n''a change : un validate vert ne prouve rien ici.'

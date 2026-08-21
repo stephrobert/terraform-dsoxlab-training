@@ -1,0 +1,29 @@
+---
+id: state-state-locking
+title: State locking, what it really blocks
+description: Measure the exact scope of the state lock on a local backend, and
+  state what enables it on S3.
+section: state
+level: l2
+difficulty: intermediate
+lab_type: lab
+estimated_time: 30m
+skills:
+- terraform
+- verrouillage-state
+distros:
+- debian13
+doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/verrouillage-state/
+certification_tags:
+- tf-associate
+- tf-professional
+runtime:
+  type: shell
+  workdir: challenge/work
+  fixtures:
+  - observations.tf
+  - main.tf
+validation:
+  functional: true
+  security: false
+  persistence_after_reboot: false

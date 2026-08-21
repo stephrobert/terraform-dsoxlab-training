@@ -1,0 +1,118 @@
+{
+  "version": 4,
+  "terraform_version": "1.15.4",
+  "serial": 51,
+  "lineage": "7f3c1a90-2b48-4e5d-9c17-6ad0e2b4915f",
+  "outputs": {},
+  "resources": [
+    {
+      "mode": "managed",
+      "type": "local_file",
+      "name": "deux",
+      "provider": "provider[\"registry.terraform.io/hashicorp/local\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "content": "artefact deux\n",
+            "content_base64": null,
+            "content_base64sha256": "P18hmfkO29mhdGFAAtGi4ZN7Wt9jNWCvOjBf8/Z/5Cw=",
+            "content_base64sha512": "+Sl03rmZoGzkf5nMdFIi5UYu0vu3/cwMjGbHqS/PKuEXBcEphvTUBUI+MJkEko5AVCg735JRLRgBOTn6nwybSw==",
+            "content_md5": "53a586a7e44b4c717dad7cfe8d90035a",
+            "content_sha1": "7cbfd40b88d8307f02e6765c2c4bb1b9b517d561",
+            "content_sha256": "3f5f2199f90edbd9a174614002d1a2e1937b5adf633560af3a305ff3f67fe42c",
+            "content_sha512": "f92974deb999a06ce47f99cc745222e5462ed2fbb7fdcc0c8c66c7a92fcf2ae11705c12986f4d405423e309904928e4054283bdf92512d18013939fa9f0c9b4b",
+            "directory_permission": "0777",
+            "file_permission": "0777",
+            "filename": "./artefacts/deux.txt",
+            "id": "7cbfd40b88d8307f02e6765c2c4bb1b9b517d561",
+            "sensitive_content": null,
+            "source": null
+          },
+          "sensitive_attributes": [
+            [
+              {
+                "type": "get_attr",
+                "value": "sensitive_content"
+              }
+            ]
+          ],
+          "identity_schema_version": 0
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "local_file",
+      "name": "trois",
+      "provider": "provider[\"registry.terraform.io/hashicorp/local\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "content": "artefact trois\n",
+            "content_base64": null,
+            "content_base64sha256": "o31yWpa96Wea/+7neyq6VGHHuWhLqhhNSPWrTLAIyCA=",
+            "content_base64sha512": "JY4xNfCSseYWRkrkCM2aMtxx0UGHByRIwXNt35BtbExR+cSuiTam9EipjU82/IxRzlPQchDp57aTJILg5HtQGQ==",
+            "content_md5": "80792e453a2f9c0528af8db2ec9e80de",
+            "content_sha1": "600daedb38d51a448b012b0a5cb64203eca44c51",
+            "content_sha256": "a37d725a96bde9679affeee77b2aba5461c7b9684baa184d48f5ab4cb008c820",
+            "content_sha512": "258e3135f092b1e616464ae408cd9a32dc71d14187072448c1736ddf906d6c4c51f9c4ae8936a6f448a98d4f36fc8c51ce53d07210e9e7b6932482e0e47b5019",
+            "directory_permission": "0777",
+            "file_permission": "0777",
+            "filename": "./artefacts/trois.txt",
+            "id": "600daedb38d51a448b012b0a5cb64203eca44c51",
+            "sensitive_content": null,
+            "source": null
+          },
+          "sensitive_attributes": [
+            [
+              {
+                "type": "get_attr",
+                "value": "sensitive_content"
+              }
+            ]
+          ],
+          "identity_schema_version": 0
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "local_file",
+      "name": "un",
+      "provider": "provider[\"registry.terraform.io/hashicorp/local\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "content": "artefact un\n",
+            "content_base64": null,
+            "content_base64sha256": "bC4RaE6HNT6Ph34LMwBppmHIRhA0Rjrj8LWaWv/vWkk=",
+            "content_base64sha512": "tYKPcTtXe0Im8YEKV+TutNBrtYtNszVBTbp+ELNgSAJpAoSRI6AV+3dPyOm0nom5Ywp2R3LchpOaHeL2VewAjg==",
+            "content_md5": "11a701029b3558195f45d330dfc5cf82",
+            "content_sha1": "bd9ebd33fc3fbd868b61f94675fded5c780d1cfa",
+            "content_sha256": "6c2e11684e87353e8f877e0b330069a661c8461034463ae3f0b59a5affef5a49",
+            "content_sha512": "b5828f713b577b4226f1810a57e4eeb4d06bb58b4db335414dba7e10b36048026902849123a015fb774fc8e9b49e89b9630a764772dc86939a1de2f655ec008e",
+            "directory_permission": "0777",
+            "file_permission": "0777",
+            "filename": "./artefacts/un.txt",
+            "id": "bd9ebd33fc3fbd868b61f94675fded5c780d1cfa",
+            "sensitive_content": null,
+            "source": null
+          },
+          "sensitive_attributes": [
+            [
+              {
+                "type": "get_attr",
+                "value": "sensitive_content"
+              }
+            ]
+          ],
+          "identity_schema_version": 0
+        }
+      ]
+    }
+  ],
+  "check_results": null
+}

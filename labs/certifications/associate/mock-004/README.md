@@ -1,0 +1,7 @@
+# Associate 004: mock exam
+
+> **Skeleton.** This lab is not written yet.
+
+Reference: [Associate 004: mock exam](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/certifications/associate/)
+
+To produce via `/lab-create`: the guided tutorial, `scenario.md`, the challenge statement and the tests that prove the final state.

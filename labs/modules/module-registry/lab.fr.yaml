@@ -1,0 +1,6 @@
+---
+id: modules-module-registry
+title: Un module de registre est téléchargé, versionné, et jamais verrouillé
+description: 'Épingler un module de registre, résoudre une contrainte souple, et
+  prouver depuis modules.json et le JSON du plan quelle version a été installée :
+  le fichier de verrouillage ne couvre jamais un module.'

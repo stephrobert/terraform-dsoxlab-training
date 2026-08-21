@@ -1,0 +1,36 @@
+---
+id: write-code-for-each
+title: Add an instance without destroying the others
+description: Migrate count to for_each with moved blocks on an already applied configuration,
+  then add a service proving zero destruction. Pro objective 2d.
+section: write-code
+level: l2
+difficulty: intermediate
+lab_type: lab
+estimated_time: 45m
+skills:
+- terraform
+- meta-arguments
+- for-each
+- moved
+- refactoring
+distros:
+- debian13
+doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/for-each-terraform/
+certification_tags:
+- tf-associate
+- tf-professional
+runtime:
+  type: shell
+  workdir: challenge/work
+  fixtures:
+  - versions.tf
+  - variables.tf
+  - main.tf
+  - outputs.tf
+  - terraform.tfstate
+  - DEMANDE.md
+validation:
+  functional: true
+  security: false
+  persistence_after_reboot: false

@@ -1,0 +1,6 @@
+---
+id: state-diagnose-state
+title: 'Diagnostiquer une dérive et adopter une orpheline, sans perdre sa valeur'
+description: Prouver une dérive par un plan refresh-only enregistré, la réconcilier,
+  puis adopter un jeton préexistant avec un bloc import, sans que Terraform le
+  regénère.

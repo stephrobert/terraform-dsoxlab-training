@@ -1,0 +1,42 @@
+---
+id: modules-version-modules
+title: Publish and consume module versions with Git tags
+description: 'Publish three versions of a shared module, then consume them from
+  three projects: an immutable reference, a minor tag and a major tag, with no
+  version argument in sight.'
+section: modules
+level: l2
+difficulty: intermediate
+lab_type: lab
+estimated_time: 45m
+skills:
+- terraform
+- modules
+- git
+- semver
+- version-constraints
+distros:
+- debian13
+doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/versionner-modules/
+certification_tags:
+- tf-associate
+- tf-professional
+runtime:
+  type: shell
+  workdir: challenge/work
+  fixtures:
+  - CIBLE.md
+  - modules-src/CHANGELOG.md
+  - modules-src/etiquette/main.tf
+  - modules-src/etiquette/outputs.tf
+  - modules-src/etiquette/variables.tf
+  - fige/main.tf
+  - fige/outputs.tf
+  - stable/main.tf
+  - stable/outputs.tf
+  - migre/main.tf
+  - migre/outputs.tf
+validation:
+  functional: true
+  security: false
+  persistence_after_reboot: false

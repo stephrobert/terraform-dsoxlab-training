@@ -1,0 +1,8 @@
+---
+id: write-code-providers
+title: Source explicite et alias de provider
+description: 'Déclarer les providers correctement : une adresse source explicite
+  qui se résout en registry.terraform.io/hashicorp/random, une seconde
+  configuration du même provider distinguée par un alias, et une ressource
+  rattachée avec provider =. Prouvé par version -json et le provider_config du
+  plan JSON. Associate 5b.'

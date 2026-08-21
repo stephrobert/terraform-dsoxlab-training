@@ -1,0 +1,47 @@
+---
+id: aws-provider-aws-first-ec2
+title: 'AWS provider: authentication, endpoints and default tags'
+description: Configure a pinned AWS provider so it authenticates against a local
+  API emulator, then prove the instance really runs.
+section: aws
+level: l3
+difficulty: intermediate
+lab_type: lab
+estimated_time: 40m
+skills:
+- terraform
+- aws-provider
+- provider-authentication
+- version-pinning
+distros:
+- debian13
+doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/aws/provider-aws-premiere-ec2/
+certification_tags:
+- tf-associate
+runtime:
+  type: shell
+  workdir: challenge/work
+  fixtures:
+  - CIBLE.md
+  - terraform.tf
+  - providers.tf
+  - variables.tf
+  - main.tf
+  - outputs.tf
+  services:
+  - name: floci
+    image: floci/floci:1.6.0
+    ports:
+    - 14566:4566
+    run_args:
+    - -u
+    - root
+    - -v
+    - /var/run/docker.sock:/var/run/docker.sock
+    ready_tcp: 14566
+    ready_exec: curl -f http://localhost:4566/_floci/health
+    ready_timeout: 120
+validation:
+  functional: true
+  security: false
+  persistence_after_reboot: false

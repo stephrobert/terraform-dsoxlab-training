@@ -1,0 +1,7 @@
+---
+id: write-code-tfvars-files
+title: La faute de frappe qui ne casse rien
+description: 'Deux pièges des tfvars : une variable non déclarée dans un .tfvars
+  n''est qu''un avertissement, la vraie variable reste donc silencieusement à son
+  défaut (corriger la faute de frappe), et terraform.tfvars.json l''emporte sur
+  terraform.tfvars (un niveau de précédence distinct). Associate 3c.'

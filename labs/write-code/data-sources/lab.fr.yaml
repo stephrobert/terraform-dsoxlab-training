@@ -1,0 +1,7 @@
+---
+id: write-code-data-sources
+title: À quel moment Terraform lit-il une data source ?
+description: 'Construire trois data sources dont le moment de lecture est délibéré :
+  l''une lue pendant le plan, l''autre reportée à l''apply parce que la ressource
+  dont elle dépend change, la troisième portant un depends_on explicite qui ne la
+  reporte PAS. Prouver chaque cas dans le plan JSON. Sous-objectif Pro 2b.'

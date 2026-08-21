@@ -1,0 +1,46 @@
+---
+id: write-code-sensitive-data-write-only-arguments
+title: "Write-only arguments: a secret that never lands in the state"
+description: Send a secret to the provider without ever persisting it in the Terraform
+  state, using write-only arguments against a local AWS emulator.
+section: write-code
+level: l2
+difficulty: intermediate
+lab_type: lab
+estimated_time: 30m
+skills:
+- terraform
+- write-only-arguments
+- secrets
+distros:
+- debian13
+doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/gestion-donnees-sensibles/write-only-arguments/
+certification_tags:
+- tf-associate
+- tf-professional
+runtime:
+  type: shell
+  workdir: challenge/work
+  fixtures:
+  - versions.tf
+  - variables.tf
+  - outputs.tf
+  - main.tf
+  - providers.tf
+  - terraform.tfvars
+  services:
+  - name: cloud
+    image: floci/floci:1.6.0
+    ports:
+    - "4566:4566"
+    run_args:
+    - -u
+    - root
+    - -v
+    - /var/run/docker.sock:/var/run/docker.sock
+    ready_tcp: 4566
+    ready_timeout: 120
+validation:
+  functional: true
+  security: true
+  persistence_after_reboot: false

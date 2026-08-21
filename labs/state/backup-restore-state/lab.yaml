@@ -1,0 +1,39 @@
+---
+id: state-backup-restore-state
+title: 'Restore an amputated state: pick the right backup, prove nothing was recreated'
+description: A state rm went wrong and the backup was overwritten. Three candidate
+  backups, one restorable, compared by lineage and serial, then pushed without
+  touching the real files.
+section: state
+level: l2
+difficulty: intermediate
+lab_type: lab
+estimated_time: 40m
+skills:
+- terraform
+- state
+- backup-restore
+- lineage
+distros:
+- debian13
+doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/sauvegarder-restaurer-state/
+certification_tags:
+- tf-associate
+- tf-professional
+runtime:
+  type: shell
+  workdir: challenge/work
+  fixtures:
+  - main.tf
+  - terraform.tfstate
+  - artefacts/un.txt
+  - artefacts/deux.txt
+  - artefacts/trois.txt
+  - sauvegardes/sauvegarde-1.json
+  - sauvegardes/sauvegarde-2.json
+  - sauvegardes/sauvegarde-3.json
+  - reference/etat-initial.json
+validation:
+  functional: true
+  security: false
+  persistence_after_reboot: false

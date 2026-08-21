@@ -1,0 +1,5 @@
+---
+id: state-terraform-state-show
+title: terraform state show, ce que la fiche cache
+description: Extraire du state une valeur sensible et des attributs nuls, que la
+  sortie humaine de state show caviarde ou omet.
