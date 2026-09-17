@@ -19,7 +19,6 @@ compte AWS :
 
 import json
 import os
-import shutil
 import subprocess
 import time
 from collections.abc import Iterator
@@ -50,7 +49,8 @@ ENV = {
 
 def _tf(*args: str, cwd: Path) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
-        ["terraform", *args], cwd=cwd, capture_output=True, text=True, env=ENV
+        ["terraform", *args], cwd=cwd, capture_output=True, text=True, env=ENV,
+        check=False,
     )
 
 
@@ -58,6 +58,7 @@ def _aws(*args: str) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
         ["aws", "--endpoint-url", ENDPOINT, *args],
         capture_output=True, text=True, env=ENV,
+        check=False,
     )
 
 
@@ -122,7 +123,7 @@ def travail() -> Iterator[Path]:
     # bucket intact et conteneur `healthy`. Un test qui tombe pour cela mesure
     # sa propre impatience, pas le travail de l'apprenant.
     sonde = None
-    for tentative in range(6):
+    for _tentative in range(6):
         sonde = _aws("s3", "ls")
         if sonde.returncode == 0:
             break

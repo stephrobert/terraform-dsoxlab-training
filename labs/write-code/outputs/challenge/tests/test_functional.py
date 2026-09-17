@@ -15,7 +15,6 @@ Faits verifies sur Terraform v1.15.4 :
 - un `precondition` porte par un output fait echouer le plan.
 """
 
-import json
 from pathlib import Path
 
 import pytest

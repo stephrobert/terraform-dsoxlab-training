@@ -38,6 +38,7 @@ def _tf(*args: str, cwd: Path) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
         ["terraform", *args], cwd=cwd, capture_output=True, text=True,
         env=os.environ.copy(),
+        check=False,
     )
 
 

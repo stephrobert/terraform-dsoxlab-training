@@ -12,7 +12,6 @@ Faits verifies sur Terraform v1.15.4 avec random >= 3.7 :
   value ».
 """
 
-import json
 from pathlib import Path
 
 import pytest

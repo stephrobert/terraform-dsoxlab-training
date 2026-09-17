@@ -38,7 +38,9 @@ PREUVES = (
     "chaine.json", "codes.json", "prompt.json",
     "plan_fige.json", "verrou.json", "fuite.json",
 )
-SECRET = "SECRET-EN-CLAIR-12345"
+# Sentinelle : le test vérifie que cette chaîne n'apparaît NULLE PART dans les
+# traces du pipeline. C'est un leurre posé par le lab, pas un secret.
+SECRET = "SECRET-EN-CLAIR-12345"  # noqa: S105
 DUREE_MINIMALE_APPLY = 10.0
 
 
@@ -50,6 +52,7 @@ def _tf(*args: str, cwd: Path) -> tuple[subprocess.CompletedProcess[str], float]
     fait = subprocess.run(
         ["terraform", *args], cwd=cwd, capture_output=True, text=True,
         env=os.environ.copy(),
+        check=False,
     )
     return fait, time.monotonic() - debut
 
@@ -355,6 +358,7 @@ def test_le_chemin_de_la_fuite_est_exact(travail: Path, tmp_path: Path) -> None:
     jq = subprocess.run(
         ["jq", "-r", chemin], input=montre.stdout,
         capture_output=True, text=True,
+        check=False,
     )
     assert jq.returncode == 0, (
         f"Le chemin {chemin!r} n'est pas une expression jq valide : "
@@ -373,13 +377,14 @@ def test_le_gitignore_attrape_le_plan_sans_extension(
     """Un `.gitignore` se verifie en le faisant TRAVAILLER, pas en le lisant."""
     depot = tmp_path / "depot"
     depot.mkdir()
-    subprocess.run(["git", "init", "-q"], cwd=depot, capture_output=True)
+    subprocess.run(["git", "init", "-q"], cwd=depot, capture_output=True, check=False)
     shutil.copy2(travail / ".gitignore", depot / ".gitignore")
 
     for nom in ("tfplan", "essai.tfplan"):
         (depot / nom).write_text("x", encoding="utf-8")
         verdict = subprocess.run(
-            ["git", "check-ignore", "-q", nom], cwd=depot, capture_output=True
+            ["git", "check-ignore", "-q", nom], cwd=depot, capture_output=True,
+            check=False,
         )
         assert verdict.returncode == 0, (
             f"`git check-ignore` ne considere pas {nom} comme ignore. Le nom "

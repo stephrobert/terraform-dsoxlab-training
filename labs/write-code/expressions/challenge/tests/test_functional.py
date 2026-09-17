@@ -12,7 +12,6 @@ Faits verifies sur Terraform v1.15.4 :
   retombe sur le defaut du provider (0777), la ou "" serait invalide.
 """
 
-import json
 from pathlib import Path
 
 import pytest

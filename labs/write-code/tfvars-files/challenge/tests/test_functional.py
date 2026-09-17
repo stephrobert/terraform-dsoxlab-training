@@ -11,7 +11,6 @@ Faits verifies sur Terraform v1.15.4 :
   distinct).
 """
 
-import json
 from pathlib import Path
 
 import pytest

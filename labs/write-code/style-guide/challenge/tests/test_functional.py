@@ -144,17 +144,21 @@ def test_outputs_decrits(applied: Path) -> None:
 def test_gitignore_correct(applied: Path) -> None:
     gi = applied / ".gitignore"
     assert gi.is_file(), "Il manque un fichier `.gitignore`."
-    lignes = [l.strip() for l in gi.read_text(encoding="utf-8").splitlines()]
-    actifs = [l for l in lignes if l and not l.startswith("#")]
+    lignes = [ligne.strip() for ligne in gi.read_text(encoding="utf-8").splitlines()]
+    actifs = [ligne for ligne in lignes if ligne and not ligne.startswith("#")]
 
-    assert any(l.rstrip("/") == ".terraform" for l in actifs), (
+    assert any(ligne.rstrip("/") == ".terraform" for ligne in actifs), (
         "`.gitignore` doit ignorer le repertoire `.terraform/`."
     )
-    assert any("tfstate" in l for l in actifs), (
+    assert any("tfstate" in ligne for ligne in actifs), (
         "`.gitignore` doit ignorer les fichiers d'etat `terraform.tfstate*`."
     )
-    dangereux = [l for l in actifs if not l.startswith("!") and
-                 l in (".terraform.lock.hcl", ".terraform*")]
+    dangereux = [
+        ligne
+        for ligne in actifs
+        if not ligne.startswith("!")
+        and ligne in (".terraform.lock.hcl", ".terraform*")
+    ]
     assert not dangereux, (
         f"Le motif {dangereux} ignorerait `.terraform.lock.hcl`, qui doit etre "
         "COMMITTE. Ignorez le repertoire par `.terraform/` (avec le slash), pas "

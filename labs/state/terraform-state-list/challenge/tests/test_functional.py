@@ -246,8 +246,8 @@ def test_ordre_par_profondeur_de_module(verite: dict) -> None:
     proc = terraform("state", "list", cwd=verite["cwd"])
     proc.check_returncode()
     lignes = [ligne for ligne in proc.stdout.splitlines() if ligne.strip()]
-    premier_module = next(i for i, l in enumerate(lignes) if l.startswith("module."))
-    racine_apres = [l for l in lignes[premier_module:] if not l.startswith("module.")]
+    premier_module = next(i for i, ligne in enumerate(lignes) if ligne.startswith("module."))
+    racine_apres = [ligne for ligne in lignes[premier_module:] if not ligne.startswith("module.")]
     assert not racine_apres, (
         "Des entrees de la racine apparaissent apres celles du module : "
         f"{racine_apres[:3]}. L'ordre est la profondeur de module, puis "

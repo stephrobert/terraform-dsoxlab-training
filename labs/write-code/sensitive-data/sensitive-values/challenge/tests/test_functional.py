@@ -13,7 +13,6 @@ Faits verifies sur Terraform v1.15.4 :
   l'exposer dans un output non sensible.
 """
 
-import json
 from pathlib import Path
 
 import pytest

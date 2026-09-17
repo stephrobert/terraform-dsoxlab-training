@@ -10,7 +10,6 @@ l'ensemble des tests.
 """
 
 import json
-import os
 from pathlib import Path
 
 import pytest
