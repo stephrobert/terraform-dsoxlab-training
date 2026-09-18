@@ -1,5 +1,10 @@
 ---
 id: getting-started-terraform-workflow
-title: Workflow Terraform (squelette)
-description: Squelette du lab « Workflow Terraform ». Scénario et tests restent à
-  écrire.
+title: Lire un plan avant de l'appliquer
+description: |
+  Une configuration déjà appliquée doit évoluer. Avant de toucher quoi que ce
+  soit, dites lesquelles de ses ressources seront modifiées en place et
+  lesquelles seront détruites puis recréées. La sortie humaine du plan annonce
+  les deux cas dans le même bloc de texte : la seule lecture fiable est le champ
+  des actions du plan converti en JSON. Appliquez ensuite exactement le plan que
+  vous avez relu, depuis un plan enregistré.

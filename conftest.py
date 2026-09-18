@@ -133,8 +133,43 @@ def _dechiffrer(fichier: Path) -> bytes:
     return proc.stdout
 
 
+SCRIPT_SOLUTION = "solution.sh"
+
+
+def _jouer_script_de_solution(work: Path) -> None:
+    """Exécute `solution.sh` s'il a été posé, puis le retire du workdir.
+
+    Certains labs ne se corrigent PAS en écrivant des fichiers. « Enregistre un
+    plan avec `-out`, relis-le en JSON, applique ce plan-là » produit des
+    artefacts qui dépendent du state : aucune solution faite de fichiers ne peut
+    les fournir, et le sens « 100 » de ces labs n'était donc pas jouable.
+
+    Le script est chiffré comme le reste de la solution, joué DANS le workdir,
+    et retiré ensuite : il est le moyen d'atteindre l'état attendu, il n'en fait
+    pas partie. Un test qui le trouverait encore là mesurerait le mauvais objet.
+
+    Son échec est bruyant. Une solution de référence qui casse en silence
+    rendrait tous les tests du lab rouges sans dire pourquoi, et c'est
+    exactement le genre de diagnostic qui coûte une journée.
+    """
+    script = work / SCRIPT_SOLUTION
+    if not script.is_file():
+        return
+    proc = subprocess.run(
+        ["bash", SCRIPT_SOLUTION],
+        cwd=work, capture_output=True, text=True, check=False,
+    )
+    script.unlink()
+    if proc.returncode != 0:
+        raise RuntimeError(
+            f"La solution de référence a échoué (code {proc.returncode}).\n"
+            f"--- stdout ---\n{proc.stdout[-2000:]}\n"
+            f"--- stderr ---\n{proc.stderr[-2000:]}"
+        )
+
+
 def _materialiser_solution(lab_root: Path) -> None:
-    """Copie les fixtures puis déchiffre la solution dans `challenge/work`.
+    """Copie les fixtures, déchiffre la solution, puis joue son script.
 
     Reproduit à l'identique l'aplatissement du runtime shell de dsoxlab et le
     comportement de scripts/verify-solutions.py, mais dans le workdir réel.
@@ -159,6 +194,8 @@ def _materialiser_solution(lab_root: Path) -> None:
             cible = work / chiffre.relative_to(sol_dir)
             cible.parent.mkdir(parents=True, exist_ok=True)
             cible.write_bytes(_dechiffrer(chiffre))
+
+    _jouer_script_de_solution(work)
 
 
 @pytest.fixture(scope="module", autouse=True)
