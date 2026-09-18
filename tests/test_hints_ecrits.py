@@ -56,7 +56,6 @@ DETTE = {
     "first-infra/variables-outputs",
     "first-infra/virtual-network",
     "first-infra/vm-libvirt",
-    "getting-started/declarative-vs-imperative",
     "getting-started/providers-resources-data-sources",
     "getting-started/terraform-project-structure",
     "getting-started/terraform-vs-opentofu",

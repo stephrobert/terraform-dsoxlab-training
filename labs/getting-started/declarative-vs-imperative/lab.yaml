@@ -1,8 +1,11 @@
 ---
 id: getting-started-declarative-vs-imperative
-title: Declaratif Vs Imperatif (skeleton)
-description: Skeleton for the « Declaratif Vs Imperatif » lab. Scenario and tests
-  still to be written.
+title: Prove idempotence where the imperative script diverges
+description: |
+  A provisioning script is provided, and it diverges as soon as you replay it:
+  a new identifier every time, a report that piles up instead of being replaced.
+  Reach the same result in Terraform, then establish by the plan that a second
+  pass is a non-event, and repair an external drift without touching your code.
 section: getting-started
 level: l1
 difficulty: beginner
@@ -19,6 +22,13 @@ certification_tags:
 runtime:
   type: shell
   workdir: challenge/work
+  # Sans cette liste, AUCUNE fixture n'est posée : `dsoxlab run` laisse le
+  # workdir vide, l'apprenant démarre devant rien, et rien ne le signale.
+  fixtures:
+  - versions.tf
+  - main.tf
+  - outputs.tf
+  - imperatif.sh
 validation:
   functional: true
   security: false
