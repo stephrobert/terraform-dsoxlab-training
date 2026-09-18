@@ -1,4 +1,5 @@
 ---
 id: getting-started-cli-terraform
-title: Cli Terraform (squelette)
-description: Squelette du lab « Cli Terraform ». Scénario et tests restent à écrire.
+title: Mettre d'accord fmt, validate et les outputs
+description: |
+  Trois défauts sont posés : un fichier hors format canonique, une référence orpheline qui fait échouer `validate`, et des outputs absents. Corrigez les trois sans changer ce que la configuration produit, puis prouvez qu'une expression se recalcule hors du state.

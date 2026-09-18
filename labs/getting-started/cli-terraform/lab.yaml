@@ -1,8 +1,8 @@
 ---
 id: getting-started-cli-terraform
-title: Cli Terraform (skeleton)
-description: Skeleton for the « Cli Terraform » lab. Scenario and tests still to be
-  written.
+title: Make fmt, validate and the outputs agree
+description: |
+  Three faults are planted: a file outside canonical format, an orphan reference that fails `validate`, and missing outputs. Fix all three without changing what the configuration produces, then prove an expression recomputes outside the state.
 section: getting-started
 level: l1
 difficulty: beginner
@@ -19,6 +19,13 @@ certification_tags:
 runtime:
   type: shell
   workdir: challenge/work
+  # Sans cette liste, AUCUNE fixture n'est posée : `dsoxlab run`
+  # laisse le workdir VIDE, et des tests peuvent alors passer sur
+  # un répertoire vide. Mesuré le 2026-09-18 : 2 tests sur 5
+  # verts sans un seul fichier.
+  fixtures:
+  - versions.tf
+  - main.tf
 validation:
   functional: true
   security: false
