@@ -15,4 +15,4 @@ pytestmark = pytest.mark.skip(
 
 
 def test_placeholder() -> None:
-    assert False, "tests non implémentés"
+    raise AssertionError("tests non implémentés")

@@ -35,7 +35,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
@@ -188,7 +188,7 @@ def main() -> int:
     RECORD.parent.mkdir(parents=True, exist_ok=True)
     RECORD.write_text(json.dumps({
         "terraform": tf,
-        "verifie_le": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
+        "verifie_le": datetime.now(UTC).strftime("%Y-%m-%d"),
         "solutions": resultats,
     }, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 

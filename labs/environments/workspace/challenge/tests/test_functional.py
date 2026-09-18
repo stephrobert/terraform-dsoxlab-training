@@ -51,7 +51,8 @@ def _tf(
     if workspace:
         env["TF_WORKSPACE"] = workspace
     return subprocess.run(
-        ["terraform", *args], cwd=cwd, capture_output=True, text=True, env=env
+        ["terraform", *args], cwd=cwd, capture_output=True, text=True, env=env,
+        check=False,
     )
 
 

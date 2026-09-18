@@ -28,7 +28,6 @@ import json
 import os
 import subprocess
 import time
-from pathlib import Path
 
 import pytest
 
@@ -54,12 +53,12 @@ ENV = {
 
 def _tf(*args: str) -> subprocess.CompletedProcess[str]:
     return subprocess.run(["terraform", *args], cwd=WORKDIR,
-                          capture_output=True, text=True, env=ENV)
+                          capture_output=True, text=True, env=ENV, check=False)
 
 
 def _aws(*args: str) -> subprocess.CompletedProcess[str]:
     return subprocess.run(["aws", "--endpoint-url", ENDPOINT, *args],
-                          capture_output=True, text=True, env=ENV)
+                          capture_output=True, text=True, env=ENV, check=False)
 
 
 def _etat() -> list[dict]:

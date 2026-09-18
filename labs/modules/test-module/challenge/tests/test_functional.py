@@ -94,8 +94,8 @@ def _resume(module: Path) -> dict:
     """Evenement `test_summary` du flux JSONL de `terraform test -json`."""
     proc = terraform("test", "-json", cwd=module)
     resume = None
-    for ligne in proc.stdout.splitlines():
-        ligne = ligne.strip()
+    for brute in proc.stdout.splitlines():
+        ligne = brute.strip()
         if not ligne:
             continue
         try:

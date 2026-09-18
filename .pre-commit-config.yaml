@@ -1,0 +1,118 @@
+# Hooks pre-commit d'un dépôt de CONTENU (catalogue de labs). Arrêt net sur les
+# secrets et les clés privées, et sur les fichiers générés. Pas de mypy : il n'y
+# a pas de source de paquet, et le contrat déclaratif est validé par
+# `dsoxlab validate-structure`.
+#
+# Installation, une fois :   pre-commit install --install-hooks
+# Sur tout le dépôt :        pre-commit run --all-files
+#
+# Aligné sur les trois autres catalogues (kubernetes, linux, ansible), avec deux
+# différences que ce dépôt impose :
+#
+#   - il porte 421 fichiers `.tf`, tous formatés au 2026-09-17 : le hook `fmt`
+#     protège cette propriété plutôt que de l'imposer après coup ;
+#   - ses labs sont en `runtime: shell` et n'ont ni `setup.yaml` ni
+#     `cleanup.yaml`, donc aucun hook Ansible n'a d'objet ici.
+
+minimum_pre_commit_version: "3.5.0"
+default_install_hook_types: [pre-commit, pre-push]
+
+# Deux répertoires que les hooks ne doivent NI lire NI réécrire.
+#
+# `solution/` contient les solutions de référence, chiffrées par ansible-vault.
+# C'est du chiffré, pas du source : `end-of-file-fixer` et `trailing-whitespace`
+# corrompraient la charge vault de façon irréversible, et ruff échoue d'emblée
+# sur un .py chiffré.
+#
+# `labs/**/fixtures/` porte les DONNÉES d'entrée des labs, dont le contenu est
+# significatif au caractère près. Mesuré le 2026-09-17, en lançant les hooks
+# sur tout le dépôt avant de les livrer : `end-of-file-fixer` a ajouté un
+# retour à la ligne final à `labs/state/understand-state/fixtures/
+# mot-de-passe-existant.txt`, alors que le scénario de ce lab écrit noir sur
+# blanc « Vingt caractères, SANS retour à la ligne final » et que son test
+# compare `random_password.db.result` EXACTEMENT à cette chaîne. Le mot de
+# passe serait passé à vingt et un caractères, et le lab aurait échoué sans
+# qu'on comprenne pourquoi.
+#
+# Trois autres fixtures ont été touchées dans le même passage : un jeton hérité
+# et cinq états Terraform. Une fixture se livre telle qu'elle a été écrite.
+exclude: '^(solution/|labs/.*/fixtures/)'
+
+repos:
+  # Hygiène générale, et arrêt net sur les secrets et les clés privées.
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: '(^LICENSE$|\.md$)'
+      - id: end-of-file-fixer
+        exclude: '^LICENSE$'
+      - id: check-yaml # valide chaque lab.yaml et meta.yml
+      - id: check-json
+      - id: check-toml
+      - id: check-merge-conflict
+      - id: check-case-conflict
+      - id: check-added-large-files
+        args: ['--maxkb=2048']
+      - id: detect-private-key # bloque une clé SSH privée commitée
+      - id: mixed-line-ending
+        args: ['--fix=lf']
+
+  - repo: local
+    hooks:
+      - id: ruff
+        name: ruff (lint du python des labs)
+        entry: uvx ruff check --fix
+        language: system
+        types_or: [python, pyi]
+        require_serial: true
+
+      # --no-update : ne jamais aller chercher un binaire neuf au moment du
+      # hook, c'est un durcissement de la chaîne d'approvisionnement.
+      - id: trufflehog
+        name: trufflehog (scan de secrets)
+        entry: trufflehog git file://. --since-commit HEAD --results=verified --fail --no-update
+        language: system
+        pass_filenames: false
+
+      # Une solution ne doit jamais partir en clair : cela gâche le lab, et git
+      # la garde pour toujours. L'en-tête ansible-vault est la preuve du
+      # chiffrement, on la lit plutôt que de faire confiance à l'auteur.
+      #
+      # Ce vérificateur existait déjà dans le dépôt sans être câblé nulle part :
+      # il ne protégeait donc plus rien, en silence.
+      - id: solutions-chiffrees
+        name: les solutions restent chiffrées par ansible-vault
+        entry: uv run --no-project --with pytest --with pyyaml pytest tests/test_solutions_chiffrees.py -q
+        language: system
+        pass_filenames: false
+        always_run: true
+
+# POURQUOI IL N'Y A PAS DE HOOK `terraform fmt`, ET POURQUOI IL NE FAUT PAS
+# L'AJOUTER TEL QUEL.
+#
+# L'idée est naturelle dans un catalogue qui enseigne Terraform : l'apprenant
+# copie ce qu'il lit, donc le HCL livré devrait être formaté. Le hook a été
+# écrit, puis retiré, sur mesure.
+#
+# Première mesure, FAUSSE : `terraform fmt -check -recursive . | wc -l` rend 0,
+# ce qui ressemble à « aucun fichier mal formaté ». En réalité la commande
+# s'arrête en erreur de parsing sur le premier fichier venu et rend rc=2 sans
+# rien lister. Compter les lignes d'une sortie sans regarder le code de retour
+# ne mesure rien.
+#
+# Mesure correcte, fichier par fichier, le 2026-09-17 :
+#
+#     88 fichiers .tf portent des `???`, les trous que l'apprenant remplit
+#    208 fichiers .tf sont du HCL complet
+#     10 d'entre eux ne passent pas `fmt -check`
+#
+# Et parmi ces dix, `labs/write-code/style-guide/fixtures/infra.tf`, dont
+# l'en-tête dit : « Configuration volontairement DEGRADEE sur cinq axes :
+# formatage (indentation a 4 espaces, = non alignes) ». Le mauvais formatage
+# EST l'exercice, et le scénario demande explicitement que
+# `terraform fmt -check -recursive` finisse par rendre 0.
+#
+# Un hook générique casserait donc ce lab. Le contrôle reste souhaitable, mais
+# il demande un vérificateur écrit exprès, qui connaisse les exceptions
+# pédagogiques : c'est le sujet de l'issue sur les vérificateurs de catalogue.

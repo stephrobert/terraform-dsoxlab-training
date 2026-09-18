@@ -34,7 +34,7 @@ WORKDIR = workdir_lab(__file__)
 LAB_ID = "write-code-sensitive-data-vault-secrets"
 
 VAULT_ADDR = "http://127.0.0.1:8200"
-VAULT_TOKEN = "root"
+VAULT_TOKEN = "root"  # noqa: S105 - jeton du Vault de dev du lab, pas un secret
 # Valeur sentinelle du secret source, posee par le seed. Le test verifie
 # qu'elle n'apparait NULLE PART cote Terraform.
 SENTINELLE = "VAULT-SENTINELLE-NE-DOIT-PAS-FUITER"
@@ -42,7 +42,9 @@ SENTINELLE = "VAULT-SENTINELLE-NE-DOIT-PAS-FUITER"
 
 def _vault(method: str, path: str, payload: dict | None = None) -> dict:
     data = json.dumps(payload).encode() if payload is not None else None
-    req = urllib.request.Request(
+    # S310 vise les deux appels, la requête comme son ouverture : l'adresse est
+    # la constante VAULT_ADDR, en http://127.0.0.1, et non une entrée.
+    req = urllib.request.Request(  # noqa: S310
         f"{VAULT_ADDR}/v1/{path}",
         data=data,
         method=method,

@@ -5,6 +5,53 @@ description = "Lab pédagogique Terraform (Associate & Professional) — fournis
 requires-python = ">=3.11"
 dependencies = []
 
+[tool.ruff]
+# Les règles sont fixées ICI, et c'est le point important. Les hooks et la CI
+# appellent `uvx ruff`, qui prend la DERNIÈRE version publiée : sans jeu de
+# règles écrit dans le dépôt, ce que ruff juge change le jour où ruff change
+# d'avis, et le job « parité pre-commit » de la CI cesse de prouver ce qu'il
+# annonce. Le cas n'est pas théorique : ruff 0.16 a élargi son jeu par défaut
+# par rapport aux E4/E7/E9/F historiques.
+#
+# Jeu repris du catalogue Kubernetes, à l'identique : ces quatre dépôts se
+# relisent les uns les autres, et un contributeur qui passe de l'un à l'autre
+# ne doit pas avoir à réapprendre ce qui est accepté.
+target-version = "py311"
+
+[tool.ruff.lint]
+select = [
+    "E4", "E7", "E9", "F",  # les défauts de ruff : erreurs réelles
+    "I",    # imports triés
+    "UP",   # tournures dépassées pour la version cible
+    "B",    # bugbear : les pièges qui se paient à l'exécution
+    "BLE",  # except nu : une exception avalée se paie plus tard
+    "SIM",  # simplifications lisibles
+    "RUF",  # règles propres à ruff
+    "EXE",  # shebang et bit d'exécution cohérents
+    "DTZ",  # dates sans fuseau : elles changent de valeur selon la machine
+    "PLE", "PLW",  # erreurs et avertissements pylint
+    "S",    # bandit, la lecture sécurité
+]
+ignore = [
+    # E501 (ligne trop longue) n'est pas retenue : les messages d'assertion de
+    # ce dépôt enseignent, et les couper à 88 colonnes les rendrait moins
+    # lisibles, pas plus.
+    "E501",
+    # S101 : `assert` est le verbe de pytest. L'interdire dans un dépôt dont le
+    # contenu est fait de tests n'aurait aucun sens.
+    "S101",
+    # S603 et S607 : appeler un sous-processus, et le nommer sans chemin
+    # absolu, est le métier de ce dépôt. `terraform` et `tofu` viennent du
+    # PATH, délibérément : c'est ainsi que l'apprenant les appelle.
+    "S603", "S607",
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Les tests de labs lisent des sorties de commandes et comparent des valeurs
+# nommées par le sujet : les extraire en constantes éloignerait le chiffre de
+# ce qu'il mesure.
+"labs/**/test_functional.py" = ["PLR2004"]
+
 [tool.pytest.ini_options]
 # Le contrat dsoxlab impose que chaque lab nomme son test
 # challenge/tests/test_functional.py. Tous ces fichiers partagent le même
