@@ -1,5 +1,10 @@
 ---
 id: getting-started-terraform-vs-opentofu
-title: Terraform Vs Opentofu (squelette)
-description: Squelette du lab « Terraform Vs Opentofu ». Scénario et tests restent
-  à écrire.
+title: Prouver la compatibilité Terraform / OpenTofu, et où elle s'arrête
+description: |
+  « Les deux outils sont compatibles » se répète partout et personne ne le
+  vérifie. Rendez une configuration portable en déclarant la source et la
+  contrainte de version de chaque provider, puis établissez par l'état structuré
+  que les deux binaires lisent le même state, résolvent les mêmes versions sur
+  deux registres différents, et que le fichier de verrouillage est exactement
+  l'endroit où la portabilité s'arrête.

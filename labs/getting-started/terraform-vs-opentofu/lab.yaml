@@ -1,8 +1,12 @@
 ---
 id: getting-started-terraform-vs-opentofu
-title: Terraform Vs Opentofu (skeleton)
-description: Skeleton for the « Terraform Vs Opentofu » lab. Scenario and tests still
-  to be written.
+title: Prove Terraform / OpenTofu compatibility, and where it stops
+description: |
+  "The two tools are compatible" is repeated everywhere and checked by nobody.
+  Make a configuration portable by declaring the source and version constraint
+  of every provider, then establish by the structured state that both binaries
+  read the same state, resolve the same versions on two different registries,
+  and that the lock file is exactly where portability stops.
 section: getting-started
 level: l1
 difficulty: beginner
@@ -19,6 +23,10 @@ certification_tags:
 runtime:
   type: shell
   workdir: challenge/work
+  # Sans cette liste, AUCUNE fixture n'est posée : `dsoxlab run` laisse le
+  # workdir vide, l'apprenant démarre devant rien, et rien ne le signale.
+  fixtures:
+  - main.tf
 validation:
   functional: true
   security: false
