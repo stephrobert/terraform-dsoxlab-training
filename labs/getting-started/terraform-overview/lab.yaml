@@ -1,8 +1,13 @@
 ---
 id: getting-started-terraform-overview
-title: Presentation Terraform (skeleton)
-description: Skeleton for the « Presentation Terraform » lab. Scenario and tests still
-  to be written.
+title: Prove that Terraform has a memory
+description: |
+  A beginner believes Terraform re-reads the `.tf` files and queries the
+  infrastructure on every command, the state being an accessory cache. Take that
+  idea apart on a purely local configuration: prove a second apply changes
+  nothing, that drift caused outside Terraform is detected without losing the
+  identity of the untouched resources, that data merely read is not a managed
+  resource, and that an object nobody declared stays invisible.
 section: getting-started
 level: l1
 difficulty: beginner
@@ -19,6 +24,14 @@ certification_tags:
 runtime:
   type: shell
   workdir: challenge/work
+  # Sans cette liste, AUCUNE fixture n'est posée : `dsoxlab run` laisse le
+  # workdir vide, l'apprenant démarre devant rien, et rien ne le signale.
+  # Mesuré deux fois sur ce catalogue, dont une APRÈS l'avoir documenté.
+  fixtures:
+  - versions.tf
+  - main.tf
+  - outputs.tf
+  - inventaire.txt
 validation:
   functional: true
   security: false
