@@ -1,0 +1,4 @@
+rack-01  switch  48 ports
+rack-01  serveur lame-a
+rack-02  serveur lame-b
+rack-02  baie    disques 12x

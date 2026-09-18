@@ -1,5 +1,11 @@
 ---
 id: getting-started-terraform-overview
-title: Presentation Terraform (squelette)
-description: Squelette du lab « Presentation Terraform ». Scénario et tests restent
-  à écrire.
+title: Prouver que Terraform a une mémoire
+description: |
+  Un débutant croit que Terraform relit ses fichiers `.tf` et interroge
+  l'infrastructure à chaque commande, le state n'étant qu'un cache accessoire.
+  Démontez cette idée sur une configuration purement locale : prouvez qu'une
+  seconde application ne change rien, qu'une dérive provoquée hors de Terraform
+  est détectée sans perdre l'identité des ressources intactes, qu'une donnée
+  seulement lue n'est pas une ressource gérée, et qu'un objet que personne n'a
+  déclaré reste invisible.
