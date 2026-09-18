@@ -1,5 +1,9 @@
 ---
 id: getting-started-install-terraform
-title: Installer Terraform (squelette)
-description: Squelette du lab « Installer Terraform ». Scénario et tests restent à
-  écrire.
+title: Contraindre la version de la CLI et verrouiller les providers
+description: |
+  Installer le binaire ne prouve presque rien. Contraignez la version de la CLI
+  depuis la configuration elle-même, épinglez les trois providers, faites
+  refuser une contrainte impossible, et prouvez que le verrou fait autorité :
+  effacez `.terraform/`, relancez `init`, les versions retenues ne doivent pas
+  bouger.

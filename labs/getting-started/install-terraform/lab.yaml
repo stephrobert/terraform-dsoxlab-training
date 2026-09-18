@@ -1,8 +1,11 @@
 ---
 id: getting-started-install-terraform
-title: Installer Terraform (skeleton)
-description: Skeleton for the « Installer Terraform » lab. Scenario and tests still
-  to be written.
+title: Pin the CLI version and lock the providers
+description: |
+  Installing the binary proves almost nothing. Constrain the CLI version from
+  the configuration itself, pin the three providers, make an impossible
+  constraint refuse to run, and prove the lock file rules: wipe `.terraform/`,
+  re-init, and the resolved versions must not move.
 section: getting-started
 level: l1
 difficulty: beginner
@@ -19,6 +22,12 @@ certification_tags:
 runtime:
   type: shell
   workdir: challenge/work
+  # Sans cette liste, AUCUNE fixture n'est posée : `dsoxlab run` laisse le
+  # workdir vide, l'apprenant démarre devant rien, et rien ne le signale.
+  # Mesuré le 2026-09-18, le lab rendait bien 0 puis 100 malgré cela : le
+  # cycle de validation ne voit pas la différence, seul l'apprenant la voit.
+  fixtures:
+  - main.tf
 validation:
   functional: true
   security: false
