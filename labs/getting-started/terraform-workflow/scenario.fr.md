@@ -58,3 +58,7 @@ Les tests s'exécutent dans `challenge/work` et ne lisent jamais les fichiers
 - La convergence est prouvée par `terraform plan -detailed-exitcode` rejoué par
   les tests : le code de sortie attendu est `0`, c'est-à-dire un diff vide. Un
   code `2` signale un changement resté en attente, un code `1` une erreur.
+- Que le plan enregistré ait bien été CONSOMMÉ se prouve sur une copie :
+  rejouer `terraform apply tfplan` doit échouer sur un plan périmé. Si
+  l'apprenant avait appliqué la configuration autrement, ce rejeu
+  réussirait encore.

@@ -102,8 +102,36 @@ def dechiffrer(fichier: Path) -> bytes:
     return proc.stdout
 
 
+SCRIPT_SOLUTION = "solution.sh"
+
+
+def jouer_script_de_solution(work: Path) -> None:
+    """Exécute ``solution.sh`` s'il a été posé, puis le retire du workdir.
+
+    Même mécanisme que ``conftest.py``, et pour la même raison : certains labs
+    demandent d'enregistrer un plan avec ``-out`` puis d'appliquer CE plan-là.
+    Les artefacts produits dépendent du state, aucune solution faite de fichiers
+    ne peut les fournir. Le script est le moyen d'atteindre l'état attendu, il
+    n'en fait pas partie : on le retire après l'avoir joué.
+    """
+    script = work / SCRIPT_SOLUTION
+    if not script.is_file():
+        return
+    proc = subprocess.run(
+        ["bash", SCRIPT_SOLUTION],
+        cwd=work, capture_output=True, text=True, check=False,
+    )
+    script.unlink()
+    if proc.returncode != 0:
+        raise RuntimeError(
+            f"La solution de référence a échoué (code {proc.returncode}).\n"
+            f"--- stdout ---\n{proc.stdout[-2000:]}\n"
+            f"--- stderr ---\n{proc.stderr[-2000:]}"
+        )
+
+
 def materialiser(lab_rel: str, cible: Path) -> None:
-    """Copie les fixtures puis déchiffre la solution par-dessus."""
+    """Copie les fixtures, déchiffre la solution, puis joue son script."""
     fixtures = LABS / lab_rel / "fixtures"
     if fixtures.is_dir():
         for fichier in sorted(fixtures.rglob("*")):
@@ -121,6 +149,8 @@ def materialiser(lab_rel: str, cible: Path) -> None:
             dst = cible / chiffre.relative_to(SOLUTIONS / lab_rel)
             dst.parent.mkdir(parents=True, exist_ok=True)
             dst.write_bytes(dechiffrer(chiffre))
+
+    jouer_script_de_solution(cible)
 
 
 def rejouer(lab_rel: str, garder: bool = False) -> tuple[bool, str]:

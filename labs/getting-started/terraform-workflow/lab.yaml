@@ -1,8 +1,12 @@
 ---
 id: getting-started-terraform-workflow
-title: Workflow Terraform (skeleton)
-description: Skeleton for the « Workflow Terraform » lab. Scenario and tests still
-  to be written.
+title: Read a plan before applying it
+description: |
+  An already applied configuration must change. Before touching anything, say
+  which of its resources will be updated in place and which will be destroyed
+  then recreated. The human-facing plan announces both in the same block of
+  text: the only reliable reading is the actions field of the plan converted to
+  JSON. Then apply exactly the plan you read, from a saved plan file.
 section: getting-started
 level: l1
 difficulty: beginner
@@ -19,6 +23,12 @@ certification_tags:
 runtime:
   type: shell
   workdir: challenge/work
+  # Sans cette liste, AUCUNE fixture n'est posée : `dsoxlab run` laisse le
+  # workdir vide, l'apprenant démarre devant rien, et rien ne le signale.
+  fixtures:
+  - versions.tf
+  - main.tf
+  - terraform.tfvars
 validation:
   functional: true
   security: false
