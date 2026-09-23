@@ -1,5 +1,9 @@
 ---
 id: getting-started-providers-resources-data-sources
-title: Providers Resources Data Sources (squelette)
-description: Squelette du lab « Providers Resources Data Sources ». Scénario et tests
-  restent à écrire.
+title: Ce que Terraform gère, ce qu'il se contente de lire
+description: |
+  Tant qu'on n'a pas vu un `destroy` effacer les objets gérés sans toucher à ce
+  que la source de données lisait, on croit qu'un bloc `data` est une resource
+  en lecture seule. Établissez les deux conséquences réelles : une source de
+  données ne crée rien, et elle est relue à chaque plan, donc elle peut faire
+  bouger un plan alors que le code n'a pas bougé d'une ligne.

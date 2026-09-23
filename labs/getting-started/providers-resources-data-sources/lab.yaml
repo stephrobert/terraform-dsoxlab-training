@@ -1,8 +1,12 @@
 ---
 id: getting-started-providers-resources-data-sources
-title: Providers Resources Data Sources (skeleton)
-description: Skeleton for the « Providers Resources Data Sources » lab. Scenario and
-  tests still to be written.
+title: What Terraform manages, and what it merely reads
+description: |
+  Until you have seen a `destroy` erase the managed objects without touching
+  what the data source was reading, you believe a `data` block is a read-only
+  resource. Establish both real consequences: a data source creates nothing, and
+  it is re-read on every plan, so it can move a plan although not one line of
+  code has changed.
 section: getting-started
 level: l1
 difficulty: beginner
@@ -19,6 +23,13 @@ certification_tags:
 runtime:
   type: shell
   workdir: challenge/work
+  # Sans cette liste, AUCUNE fixture n'est posée : `dsoxlab run` laisse le
+  # workdir vide, l'apprenant démarre devant rien, et rien ne le signale.
+  fixtures:
+  - versions.tf
+  - main.tf
+  - outputs.tf
+  - catalogue.txt
 validation:
   functional: true
   security: false

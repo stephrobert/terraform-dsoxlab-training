@@ -1,0 +1,4 @@
+reference-01  onduleur      3 kVA
+reference-02  commutateur   24 ports
+reference-03  serveur       2U bi-socket
+reference-04  baie          42U

@@ -56,7 +56,6 @@ DETTE = {
     "first-infra/variables-outputs",
     "first-infra/virtual-network",
     "first-infra/vm-libvirt",
-    "getting-started/providers-resources-data-sources",
     "hcp-terraform/hcp-terraform-overview",
     "hcp-terraform/hcp-workspaces",
     "hcp-terraform/policy-as-code",
