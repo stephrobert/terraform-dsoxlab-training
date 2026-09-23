@@ -1,8 +1,12 @@
 ---
 id: getting-started-terraform-project-structure
-title: Structure Projet Terraform (skeleton)
-description: Skeleton for the « Structure Projet Terraform » lab. Scenario and tests
-  still to be written.
+title: Split a monolith without moving the plan
+description: |
+  Terraform evaluates every `.tf` file in a directory as a single document: file
+  names and their order have no functional effect. Splitting a monolith must
+  therefore produce exactly the same plan, and that is what you prove, not the
+  presence of well-named files. Then situate each source of variable values in
+  the real precedence order.
 section: getting-started
 level: l1
 difficulty: beginner
@@ -19,6 +23,10 @@ certification_tags:
 runtime:
   type: shell
   workdir: challenge/work
+  # Sans cette liste, AUCUNE fixture n'est posée : `dsoxlab run` laisse le
+  # workdir vide, l'apprenant démarre devant rien, et rien ne le signale.
+  fixtures:
+  - tout.tf
 validation:
   functional: true
   security: false

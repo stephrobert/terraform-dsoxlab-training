@@ -1,5 +1,9 @@
 ---
 id: getting-started-terraform-project-structure
-title: Structure Projet Terraform (squelette)
-description: Squelette du lab « Structure Projet Terraform ». Scénario et tests restent
-  à écrire.
+title: Découper un monolithe sans bouger le plan
+description: |
+  Terraform évalue tous les fichiers `.tf` d'un répertoire comme un document
+  unique : le nom des fichiers et leur ordre n'ont aucun effet fonctionnel.
+  Découper un monolithe doit donc produire exactement le même plan, et c'est
+  cela qu'on prouve, pas la présence de fichiers bien nommés. Situez ensuite
+  chaque source de valeur dans l'ordre de précédence réel.
