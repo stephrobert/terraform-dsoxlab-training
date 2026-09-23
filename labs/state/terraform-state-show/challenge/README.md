@@ -53,9 +53,12 @@ Proven by execution:
   which the sheet redacts as `(sensitive value)` and `sensitive_values` flags;
 - your list of hidden attributes is compared with the one the test **recomputes**
   from the JSON, and the test checks they are indeed absent from the sheet;
-- `terraform state show` has no `-json` option (exit code 1) and **refreshes
-  nothing**: after a change made outside Terraform its output is unchanged while
-  `plan -detailed-exitcode` returns 2;
+- `terraform state show` and `-json`: the test reads your **version** instead of
+  assuming it. Up to 1.15 the flag does not exist and the command exits with 1;
+  since 1.16 it exists and returns one resource, where `show -json` returns the
+  whole state. What does not change is the scope of each;
+- `terraform state show` **refreshes nothing**: after a change made outside
+  Terraform, its output is unchanged while `plan -detailed-exitcode` returns 2;
 - `plan -detailed-exitcode` returns 0 at the end: filling in outputs changes
   nothing in the infrastructure.
 

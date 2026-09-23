@@ -23,6 +23,7 @@ local, sans aucun compte AWS :
 import json
 import os
 import shutil
+import socket
 import subprocess
 import time
 from pathlib import Path
@@ -75,6 +76,47 @@ def _json(*args: str, cwd: Path | None = None) -> dict:
         pytest.fail(f"sortie JSON illisible pour `{' '.join(args)}` : {err}")
 
 
+
+# ── Disponibilite de l'emulateur ────────────────────────────────────────────
+#
+# Floci est publie sur le port 14566 de l'hote (cf. `runtime.services` du lab).
+# Il n'est demarre QUE pendant une session `dsoxlab` : hors session, le port est
+# ferme et chaque commande Terraform echoue sur un point de terminaison
+# injoignable. Sans la garde ci-dessous, l'apprenant lit une pile d'erreurs
+# Terraform la ou une seule phrase suffit.
+FLOCI_HOST = "127.0.0.1"
+FLOCI_PORT = 14566
+
+
+def _floci_joignable() -> bool:
+    try:
+        with socket.create_connection((FLOCI_HOST, FLOCI_PORT), timeout=2):
+            return True
+    except OSError:
+        return False
+
+
+def _exiger_floci() -> None:
+    """Skippe proprement si l'emulateur n'est pas la, sauf pour le formateur.
+
+    `LAB_WORKDIR` est pose par `scripts/verify-solutions.py`, qui materialise
+    lui-meme le repertoire : dans ce cas un service absent est un vrai defaut et
+    doit ECHOUER, pas disparaitre dans un skip.
+    """
+    if _floci_joignable():
+        return
+    message = (
+        f"Floci n'est pas joignable sur {FLOCI_HOST}:{FLOCI_PORT}. Ce lab en a "
+        "besoin : Floci emule l'API AWS en local, sans compte ni carte "
+        "bancaire.\n\n"
+        "Lancez le lab avec `dsoxlab run aws-provider-aws-first-ec2`, qui le demarre tout "
+        "seul, et faites votre `dsoxlab check` DEPUIS cette session : le "
+        "service s'arrete quand vous la quittez."
+    )
+    if os.environ.get("LAB_WORKDIR"):
+        pytest.fail(message)
+    pytest.skip(message)
+
 @pytest.fixture(scope="module", autouse=True)
 def applique() -> None:
     """Initialise et applique une fois pour tout le module.
@@ -84,6 +126,7 @@ def applique() -> None:
     « erreur de fixture » la ou il a laisse un `???`.
     """
     exiger_workdir(WORKDIR, LAB_ID)
+    _exiger_floci()
     _HOME_NU.mkdir(parents=True, exist_ok=True)
 
     init = _tf("init", "-input=false", "-no-color")

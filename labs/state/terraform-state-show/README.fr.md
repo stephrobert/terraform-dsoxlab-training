@@ -120,8 +120,11 @@ terraform show -json | jq '.values.root_module.resources[]
 ## La bascule vers le JSON, et son revers
 
 Dès qu'une valeur doit servir ailleurs que sous vos yeux, la doc désigne la voie
-correcte : `terraform show -json`, puis décodage de la structure documentée.
-Attention, `terraform state show` n'a **pas** d'option `-json` :
+correcte : une sortie JSON, puis décodage de la structure documentée.
+
+Attention, la réponse a **changé de version**, et beaucoup de tutoriels en ligne
+sont restés à l'ancienne. Jusqu'à Terraform 1.15 inclus, `terraform state show`
+n'acceptait pas `-json` :
 
 ```bash
 terraform state show -json random_pet.env
@@ -132,8 +135,22 @@ Failed to parse command-line flags
 flag provided but not defined: -json
 ```
 
-C'est bien `terraform show -json`, sans `state`, qui produit le document
-complet.
+Depuis la **1.16**, ce drapeau existe et la commande rend un document JSON.
+Vérifiez donc votre version avant de recopier une réponse trouvée ailleurs :
+
+```bash
+terraform version
+```
+
+La distinction qui, elle, ne bouge pas, est celle du **périmètre** :
+
+| Commande | Ce qu'elle rend |
+|---|---|
+| `terraform state show -json <adresse>` | **une** ressource, depuis la 1.16 |
+| `terraform show -json` | le state **entier**, ses outputs compris |
+
+Pour une valeur unique on a désormais le choix ; pour une vue d'ensemble, c'est
+toujours `terraform show -json`, sans `state`.
 
 Le revers est important : **le JSON expose les valeurs sensibles en clair**. La
 page officielle le dit sans détour, « any sensitive values in Terraform state
