@@ -26,6 +26,7 @@ import shutil
 import socket
 import subprocess
 import time
+from collections.abc import Iterator
 from pathlib import Path
 
 import pytest
@@ -118,7 +119,7 @@ def _exiger_floci() -> None:
     pytest.skip(message)
 
 @pytest.fixture(scope="module", autouse=True)
-def applique() -> None:
+def applique() -> Iterator[None]:
     """Initialise et applique une fois pour tout le module.
 
     Un echec ici n'est pas un detail d'intendance : c'est le resultat du lab.
@@ -143,6 +144,18 @@ def applique() -> None:
             "(identifiants, endpoints, skip_*) ou outputs encore a `???` ?\n"
             f"{(app.stderr or app.stdout).strip()[:1500]}"
         )
+
+    yield
+
+    # Teardown : detruire PENDANT que l'emulateur repond encore.
+    #
+    # Floci lance un conteneur Docker par instance EC2, et ces conteneurs
+    # survivent a son propre arret. Sans ce destroy, chaque execution de la
+    # suite en abandonne quelques-uns, indefiniment.
+    #
+    # Volontairement tolerant : une configuration d'apprenant incomplete fera
+    # echouer le destroy, et ce n'est pas au teardown de faire echouer la suite.
+    _tf("destroy", "-auto-approve", "-input=false", "-no-color")
 
 
 def _plan_json() -> dict:

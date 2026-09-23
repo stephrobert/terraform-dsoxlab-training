@@ -228,6 +228,24 @@ def travail() -> Iterator[Path]:
 
     yield WORKDIR
 
+    # Teardown : detruire PENDANT que l'emulateur repond encore.
+    #
+    # Floci lance un conteneur Docker par instance EC2, et ces conteneurs
+    # survivent a son propre arret. Sans ce destroy, chaque execution de la
+    # suite en abandonne quelques-uns, indefiniment.
+    #
+    # Volontairement tolerant : une configuration d'apprenant incomplete fera
+    # echouer le destroy, et ce n'est pas au teardown de faire echouer la suite.
+    #
+    # L'ORDRE compte, et il n'est pas negociable : le `consumer` lit l'etat
+    # distant du `producer` par une data source. Detruire le producer d'abord
+    # lui retirerait ce qu'il lit, et le destroy du consumer echouerait sur une
+    # lecture impossible.
+    for nom in ("consumer", "producer"):
+        stack = WORKDIR / nom
+        if stack.is_dir():
+            _tf("destroy", "-auto-approve", "-input=false", "-no-color", cwd=stack)
+
 
 # ── 1. Le bucket de state ───────────────────────────────────────────────────
 
