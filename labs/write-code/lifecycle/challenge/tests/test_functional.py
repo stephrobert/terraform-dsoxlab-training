@@ -131,14 +131,31 @@ def test_retirer_le_bloc_resource_contourne_la_protection(applied: Path, tmp_pat
     actual infrastructure during an apply operation if you remove the resource's
     configuration, even if prevent_destroy is enabled. »
 
-    Ce test ne juge pas le travail de l'apprenant : il matérialise le fait.
+    Ce test matérialise un fait, et il lui faut donc un point de comparaison.
+
+    Écrit sans garde, il était VERT AVANT LE TRAVAIL : sur une configuration
+    sans `prevent_destroy`, amputer le bloc laisse évidemment la destruction
+    passer, et rien ne distingue « la protection a été contournée » de « il n'y
+    avait aucune protection ». C'est précisément le contraste qui enseigne : on
+    exige donc d'abord que la protection soit EN PLACE et qu'elle morde.
     """
+    protege = terraform("plan", "-input=false", "-destroy", "-no-color", cwd=applied)
+    assert protege.returncode != 0, (
+        "`terraform plan -destroy` réussit sur la configuration intacte : la "
+        "donnée critique n'est protégée par aucune règle.\n\nCe test montre "
+        "qu'une protection posée se contourne en retirant le bloc. Sans "
+        "protection au départ, il ne montre rien."
+    )
+
     copie = tmp_path / "ampute"
     shutil.copytree(applied, copie)
     source = (copie / "main.tf").read_text(encoding="utf-8")
     debut = source.find('resource "local_file" "donnees"')
     if debut == -1:
-        pytest.skip("`local_file.donnees` n'est pas déclaré dans main.tf.")
+        pytest.fail(
+            "`local_file.donnees` n'est pas déclaré dans main.tf : il n'y a "
+            "rien à amputer, et ce test ne mesurerait rien."
+        )
     suite = source.find('resource "', debut + 10)
     (copie / "main.tf").write_text(
         source[:debut] + (source[suite:] if suite != -1 else ""), encoding="utf-8"
@@ -156,22 +173,33 @@ def test_retirer_le_bloc_resource_contourne_la_protection(applied: Path, tmp_pat
 # 3. ignore_changes : une portée, pas un interrupteur général
 # --------------------------------------------------------------------------
 
-def test_le_journal_ignore_un_changement_de_contenu(applied: Path) -> None:
-    a = actions(plan_json("-var", "message=v2"), "local_file.journal")
-    assert a == ["no-op"], (
-        f"actions = {a}. Un changement de `content` venu de la configuration doit "
-        "être absorbé. Attention : `ignore_changes` compare la configuration à "
-        "l'état, il n'absorbe pas une modification du fichier sur le disque."
+def test_le_journal_ignore_le_contenu_et_surveille_toujours_les_permissions(
+    applied: Path,
+) -> None:
+    """`ignore_changes` est une portée, pas un interrupteur. Les deux moitiés.
+
+    Le contrôle négatif était un test à lui seul, et il était VERT AVANT LE
+    TRAVAIL : sans aucun `ignore_changes`, un changement de permissions produit
+    évidemment une action. Il accordait des points pour l'absence du mécanisme
+    demandé.
+
+    Il reste indispensable, mais ici : c'est la PAIRE qui prouve une portée.
+    Absorber le contenu sans absorber les permissions, voilà ce que `all`
+    n'aurait pas fait, et ce qu'une absence de règle n'aurait pas fait non plus.
+    """
+    contenu = actions(plan_json("-var", "message=v2"), "local_file.journal")
+    assert contenu == ["no-op"], (
+        f"actions = {contenu}. Un changement de `content` venu de la "
+        "configuration doit être absorbé. Attention : `ignore_changes` compare "
+        "la configuration à l'état, il n'absorbe pas une modification du fichier "
+        "sur le disque."
     )
 
-
-def test_le_journal_planifie_toujours_un_changement_de_permissions(applied: Path) -> None:
-    """Contrôle négatif du précédent : `ignore_changes = all` le ferait échouer."""
-    a = actions(plan_json("-var", "permissions=0600"), "local_file.journal")
-    assert a is not None and a != ["no-op"], (
-        f"actions = {a}. Les permissions doivent rester sous contrôle. Si le plan "
-        "est vide, vous avez écrit `ignore_changes = all`, qui aveugle la "
-        "ressource entière au lieu du seul attribut visé."
+    permissions = actions(plan_json("-var", "permissions=0600"), "local_file.journal")
+    assert permissions is not None and permissions != ["no-op"], (
+        f"actions = {permissions}. Les permissions doivent rester sous contrôle. "
+        "Si le plan est vide, vous avez écrit `ignore_changes = all`, qui aveugle "
+        "la ressource entière au lieu du seul attribut visé."
     )
 
 
@@ -204,20 +232,32 @@ def test_le_remplacement_du_marqueur_vient_bien_d_un_declencheur(plan_revision: 
 # 5. precondition et postcondition, au bon niveau
 # --------------------------------------------------------------------------
 
-def test_un_environnement_hors_enumere_est_refuse_au_plan(applied: Path) -> None:
-    p = terraform("plan", "-input=false", "-no-color", "-var", "env=bidon", cwd=applied)
-    assert p.returncode != 0, (
+def test_la_condition_refuse_l_invalide_et_laisse_passer_le_valide(
+    applied: Path,
+) -> None:
+    """Les deux moitiés d'une condition, dans le même test.
+
+    Le contrôle positif était un test à lui seul, et il était VERT AVANT LE
+    TRAVAIL : sur une configuration sans aucune condition, `env=staging` passe
+    évidemment. Il accordait des points pour l'absence du mécanisme demandé.
+
+    Il reste indispensable, mais ici : sans lui, une configuration entièrement
+    cassée ferait passer le refus pour la bonne raison. Les deux ensemble
+    prouvent ce qu'une condition doit faire, c'est-à-dire trier.
+    """
+    refuse = terraform(
+        "plan", "-input=false", "-no-color", "-var", "env=bidon", cwd=applied
+    )
+    assert refuse.returncode != 0, (
         "`env=bidon` produit un plan valide. Aucune condition ne filtre la valeur."
     )
 
-
-def test_un_environnement_valide_passe(applied: Path) -> None:
-    """Contrôle positif indispensable : sans lui, une configuration entièrement
-    cassée ferait passer le test précédent pour la mauvaise raison."""
-    p = terraform("plan", "-input=false", "-no-color", "-var", "env=staging", cwd=applied)
-    assert p.returncode == 0, (
+    passe = terraform(
+        "plan", "-input=false", "-no-color", "-var", "env=staging", cwd=applied
+    )
+    assert passe.returncode == 0, (
         "`env=staging` est refusé alors qu'il fait partie des valeurs admises. La "
-        f"condition est trop stricte.\n{(p.stdout + p.stderr)[-1200:]}"
+        f"condition est trop stricte.\n{(passe.stdout + passe.stderr)[-1200:]}"
     )
 
 
@@ -240,9 +280,28 @@ def test_les_conditions_vivent_dans_la_ressource_pas_dans_la_variable(applied: P
 # 6. Idempotence
 # --------------------------------------------------------------------------
 
-def test_la_configuration_est_stable_apres_apply(applied: Path) -> None:
+def test_la_configuration_converge_et_les_regles_de_cycle_sont_bien_posees(
+    applied: Path,
+) -> None:
+    """La convergence vit ici, et plus dans un test à elle.
+
+    Seule, elle était VRAIE AVANT LE TRAVAIL, et même nécessairement : une
+    configuration sans la moindre règle de cycle de vie converge parfaitement.
+    Elle ne vaut qu'associée à la preuve que les règles demandées sont en place :
+    ensemble, elles distinguent une configuration correctement outillée d'une
+    configuration nue.
+    """
+    checks = show_json(applied).get("checks", [])
+    assert checks, (
+        "`terraform show -json` ne rapporte aucun `checks`. Aucune "
+        "`precondition` ni `postcondition` n'est déclarée : il n'y a rien dont "
+        "la convergence puisse témoigner."
+    )
+
     p = terraform("plan", "-input=false", "-detailed-exitcode", "-no-color", cwd=applied)
     assert p.returncode == 0, (
         f"`terraform plan -detailed-exitcode` rend {p.returncode} (2 = des "
-        "changements restent planifiés). Un apply doit converger."
+        "changements restent planifiés). Un apply doit converger.\n\nAttention : "
+        "une règle `ignore_changes` mal posée peut faire converger un plan en "
+        "masquant un écart réel."
     )
