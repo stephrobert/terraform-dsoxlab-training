@@ -1,8 +1,12 @@
 ---
 id: aws-iam-role-policy-instance-profile
-title: Iam Role Policy Instance Profile (skeleton)
-description: Skeleton for the « Iam Role Policy Instance Profile » lab. Scenario and
-  tests still to be written.
+title: Compose the IAM chain, and name its two policies correctly
+description: '`aws_iam_policy_document` is a LOCAL data source: it queries nothing,
+  it builds JSON. Compose the policy, role, instance profile and instance chain, and
+  prove in the structured state that the trust policy and the permissions take two
+  distinct paths to the role.
+
+  '
 section: aws
 level: l3
 difficulty: advanced
@@ -19,6 +23,24 @@ certification_tags:
 runtime:
   type: shell
   workdir: challenge/work
+  fixtures:
+  - versions.tf
+  - variables.tf
+  - main.tf
+  - outputs.tf
+  services:
+  - name: floci
+    image: floci/floci:1.6.0
+    ports:
+    - 14566:4566
+    run_args:
+    - -u
+    - root
+    - -v
+    - /var/run/docker.sock:/var/run/docker.sock
+    ready_tcp: 14566
+    ready_exec: curl -f http://localhost:4566/_floci/health
+    ready_timeout: 120
 validation:
   functional: true
   security: false
