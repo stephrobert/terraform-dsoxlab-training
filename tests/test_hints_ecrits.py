@@ -49,7 +49,6 @@ DETTE = {
     "first-infra/ansible",
     "first-infra/clean-destroy",
     "first-infra/debug-apply",
-    "first-infra/first-infrastructure",
     "first-infra/variables-outputs",
     "first-infra/virtual-network",
     "first-infra/vm-libvirt",
