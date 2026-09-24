@@ -1,4 +1,8 @@
 ---
 id: first-infra-debug-apply
-title: Debug Apply (squelette)
-description: Squelette du lab « Debug Apply ». Scénario et tests restent à écrire.
+title: "Reprendre après un apply qui a échoué, sans refaire le travail"
+description: |
+  Un apply qui échoue en cours de route laisse un state PARTIEL. Ce n'est pas un
+  accident à effacer : c'est le point de départ de la réparation. Corrigez la
+  cause dans la configuration, et prouvez que les ressources déjà créées ont
+  gardé leurs identifiants.
