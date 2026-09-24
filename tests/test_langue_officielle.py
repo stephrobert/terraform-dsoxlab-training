@@ -72,21 +72,12 @@ FICHIERS_DE_LECTURE = (
 
 # Labs écrits dont la rédaction reste à faire.
 #
-# Mesuré le 2026-09-24 : 27 labs, 79 fichiers, 62 en anglais et 17 en
-# français. `first-infra`, `aws`, `getting-started`, `modules` et `state` rédigés le jour
-# même : il ne reste que `write-code`, dont seule la version anglaise manque.
-DETTE = {
-    "write-code/conditionals",
-    "write-code/data-sources",
-    "write-code/declare-resources",
-    "write-code/depends-on",
-    "write-code/dynamic-blocks",
-    "write-code/for-each",
-    "write-code/for-loops",
-    "write-code/functions",
-    "write-code/lifecycle",
-    "write-code/locals",
-}
+# Mesuré le 2026-09-24 : 27 labs, 79 fichiers, 62 en anglais et 17 en français.
+# Tous rédigés le jour même, la liste est donc VIDE, et c'est son état normal.
+#
+# Un lab qui y réapparaît signale une rédaction en cours, pas une exemption : le
+# test refuse qu'il y reste une fois ses fichiers écrits.
+DETTE: set[str] = set()
 
 
 def tous_les_labs() -> list[str]:
