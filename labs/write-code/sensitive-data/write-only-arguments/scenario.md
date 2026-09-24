@@ -10,7 +10,7 @@ Convert an ordinary argument into its **write-only** variant (`_wo`), understand
 
 ## Where the learner starts
 
-`challenge/work/` holds an incomplete project pointing at **Floci**, a local AWS emulator listening on `http://localhost:4566`. Under `dsoxlab run`, Floci is started automatically by the lab's `runtime.services` mechanism: no Docker command to type, no AWS account, no bill.
+`challenge/work/` holds an incomplete project pointing at **Floci**, a local AWS emulator listening on `http://localhost:14566`. Under `dsoxlab run`, Floci is started automatically by the lab's `runtime.services` mechanism: no Docker command to type, no AWS account, no bill.
 
 Complete already: `versions.tf` (`hashicorp/aws` provider at `~> 6.0`), `providers.tf` (fake credentials, `endpoints` to Floci, `skip_*`), `variables.tf`, `terraform.tfvars` (which supplies the secret value) and `outputs.tf`. Only `main.tf` has holes:
 

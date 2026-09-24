@@ -6,7 +6,7 @@ variable "aws_region" {
 # Adresse de Floci. Le service SSM y est redirige par le bloc endpoints.
 variable "floci_endpoint" {
   type    = string
-  default = "http://localhost:4566"
+  default = "http://localhost:14566"
 }
 
 variable "param_name" {

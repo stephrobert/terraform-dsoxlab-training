@@ -1,0 +1,139 @@
+"""Méta-tests du dépôt : ce qu'un lab Floci doit porter pour ne rien laisser.
+
+## Le défaut que ces tests ferment
+
+Floci démarre un vrai conteneur Docker derrière chaque instance EC2, et lui
+publie un port SSH (2200, 2201, ...). Ces conteneurs **survivent** à l'arrêt de
+Floci comme à `dsoxlab clean`.
+
+Mesuré le 2026-09-24 : après une session interrompue, la création d'instance
+suivante échoue sur
+
+    Bind for 0.0.0.0:2201 failed: port is already allocated
+
+message qui ne parle ni d'instance, ni de lab, ni de port SSH. L'instance reste
+dans un état non démarré, les filtres `instance-state-name=running` ne la
+retournent plus, et le lab paraît cassé sans raison. Deux cycles ont été perdus
+là-dessus, sur deux labs différents.
+
+## Les deux moitiés, et pourquoi il en faut deux
+
+**Un `destroy` en fin de tests** couvre le cas nominal : le lab range ce qu'il a
+sorti. Il ne couvre pas l'interruption, Ctrl-C ou échec avant le dernier test.
+
+**Un nettoyage au démarrage** couvre l'interruption : quand Floci vient de
+démarrer, son état est neuf, donc tout conteneur `floci-ec2-*` encore présent
+est forcément un résidu.
+
+Aucune des deux ne suffit seule, et c'est pourquoi les deux sont exigées ici.
+
+## Ce que ces tests ne peuvent pas faire
+
+Ils lisent la déclaration, pas l'exécution : ils vérifient qu'un lab Floci
+DÉCLARE le nettoyage et un destroy, pas que le nettoyage fonctionne. Cela se
+mesure en jouant le lab, et cela a été fait : un conteneur orphelin retenant le
+port 2200, posé à la main, a bien disparu au `dsoxlab run` suivant.
+"""
+
+from pathlib import Path
+
+import pytest
+import yaml
+
+REPO = Path(__file__).resolve().parent.parent
+LABS = REPO / "labs"
+
+MARQUEUR_NETTOYAGE = "conteneurs EC2 orphelins"
+PORT_CANONIQUE = "14566:4566"
+
+
+def labs_floci() -> list[str]:
+    """Les labs qui déclarent Floci comme service."""
+    trouves = []
+    for lab in sorted(LABS.rglob("lab.yaml")):
+        données = yaml.safe_load(lab.read_text(encoding="utf-8"))
+        services = (données.get("runtime") or {}).get("services") or []
+        if any("floci" in (s.get("image") or "") for s in services):
+            trouves.append(str(lab.parent.relative_to(LABS)))
+    return trouves
+
+
+def service_floci(rel: str) -> dict:
+    données = yaml.safe_load((LABS / rel / "lab.yaml").read_text(encoding="utf-8"))
+    for service in données["runtime"]["services"]:
+        if "floci" in (service.get("image") or ""):
+            return service
+    raise AssertionError(f"{rel} : service floci introuvable")
+
+
+LABS_FLOCI = labs_floci()
+
+
+def test_au_moins_un_lab_utilise_floci() -> None:
+    """Sans cela, les tests ci-dessous passeraient sur une liste vide.
+
+    Un fichier de tests paramétré sur une liste vide est vert, et ne mesure
+    rien. C'est la forme la plus discrète de faux vert.
+    """
+    assert LABS_FLOCI, (
+        "Aucun lab ne déclare Floci. Soit la détection est cassée, soit les "
+        "labs AWS ont perdu leur service."
+    )
+
+
+@pytest.mark.parametrize("rel", LABS_FLOCI)
+def test_un_lab_floci_nettoie_les_conteneurs_orphelins_au_demarrage(rel: str) -> None:
+    service = service_floci(rel)
+    commandes = service.get("post_start") or []
+
+    assert commandes, (
+        f"{rel} n'a aucun `post_start`.\n\nUn lab Floci doit au minimum "
+        "supprimer les conteneurs `floci-ec2-*` laissés par une session "
+        "précédente : ils retiennent les ports SSH que Floci attribue, et la "
+        "prochaine instance échoue sur `port is already allocated`."
+    )
+
+    premiere = " ".join(str(part) for part in commandes[0])
+    assert MARQUEUR_NETTOYAGE in premiere, (
+        f"{rel} : la première commande de `post_start` ne nettoie pas les "
+        "conteneurs orphelins.\n\nElle doit venir EN PREMIER : tout ce qui est "
+        "créé avant elle serait supprimé par elle. Au démarrage du service, "
+        "Floci a un état neuf, donc tout conteneur `floci-ec2-*` présent est un "
+        "résidu."
+    )
+
+
+@pytest.mark.parametrize("rel", LABS_FLOCI)
+def test_un_lab_floci_detruit_ce_qu_il_a_cree(rel: str) -> None:
+    """Le nettoyage au démarrage ne dispense pas de ranger en sortant.
+
+    Sans destroy, le lab laisse une instance vivante entre deux sessions, et
+    c'est le lab suivant qui la trouve et s'en étonne.
+    """
+    suite = LABS / rel / "challenge/tests/test_functional.py"
+    assert suite.is_file(), f"{rel} n'a pas de test fonctionnel."
+
+    texte = suite.read_text(encoding="utf-8")
+    assert "destroy" in texte, (
+        f"{rel} ne détruit rien dans ses tests.\n\nUn lab qui crée des "
+        "ressources chez un fournisseur, fût-il émulé, doit les rendre."
+    )
+
+
+@pytest.mark.parametrize("rel", LABS_FLOCI)
+def test_les_labs_floci_publient_tous_le_meme_port(rel: str) -> None:
+    """Deux conventions valaient deux façons de se tromper.
+
+    Mesuré le 2026-09-24 : six labs publiaient Floci sur 14566 et un sur 4566.
+    Trois scénarios annonçaient le mauvais port à l'apprenant, dont deux que
+    j'avais écrits en recopiant le voisin.
+
+    14566 plutôt que 4566, parce que 4566 est le port par défaut de LocalStack :
+    un poste qui en fait tourner un verrait le conflit sans comprendre pourquoi.
+    """
+    ports = service_floci(rel).get("ports") or []
+    assert ports == [PORT_CANONIQUE], (
+        f"{rel} publie Floci sur {ports}, attendu ['{PORT_CANONIQUE}'].\n\n"
+        "Une seule convention dans le dépôt : sinon un scénario recopié d'un "
+        "lab voisin annonce un port faux, et l'apprenant cherche longtemps."
+    )

@@ -1,8 +1,7 @@
 ---
 id: certifications-professional-capstone1-resource-lifecycle
 title: 'Pro · Objective 1: resource lifecycle, import and drift reconciliation'
-description: Import into state an EC2 instance created outside Terraform (aws cli
-  on Floci), then detect and reconcile a drift. Exam objective 1.
+description: Import into state an EC2 instance created outside Terraform (aws cli on Floci), then detect and reconcile a drift. Exam objective 1.
 section: certif-pro
 level: l4
 difficulty: advanced
@@ -41,32 +40,33 @@ runtime:
     post_start:
     - - bash
       - -c
-      - 'set -eu
-
+      - |-
+        set -eu
+        # Floci vient de demarrer avec un etat neuf : tout conteneur floci-ec2-* encore
+        # present est un residu d'une session precedente, et il retient un port SSH que
+        # la prochaine instance ne pourra pas obtenir.
+        D=http://localhost/v1.44
+        S=/var/run/docker.sock
+        F=%7B%22name%22%3A%5B%22floci-ec2%22%5D%7D
+        ids=$(curl -s --unix-socket $S "$D/containers/json?all=1&filters=$F" | grep -o "\"Id\":\"[^\"]*" | cut -d"\"" -f4 || true)
+        for id in $ids; do curl -s -o /dev/null -X DELETE --unix-socket $S "$D/containers/$id?force=1&v=1"; done
+        test -n "$ids" && echo "conteneurs EC2 orphelins supprimes" || echo "aucun conteneur EC2 orphelin"
+    - - bash
+      - -c
+      - |-
+        set -eu
         API=http://localhost:4566/
-
         EC2AUTH="Authorization: AWS4-HMAC-SHA256 Credential=test/00000000/eu-west-3/ec2/aws4_request, SignedHeaders=host, Signature=0000"
-
         S3AUTH="Authorization: AWS4-HMAC-SHA256 Credential=test/00000000/eu-west-3/s3/aws4_request, SignedHeaders=host, Signature=0000"
-
         CT="Content-Type: application/x-www-form-urlencoded"
-
         ec2() { curl -s -X POST "$API" -H "$CT" -H "$EC2AUTH" -d "$1"; }
-
         curl -s -o /dev/null -X PUT "http://localhost:4566/capstone-archives-legacy" -H "$S3AUTH"
-
-        deja=$(ec2 "Action=DescribeInstances&Version=2016-11-15&Filter.1.Name=tag:Name&Filter.1.Value.1=capstone-facturation&Filter.2.Name=instance-state-name&Filter.2.Value.1=running&Filter.2.Value.2=pending"
-        | grep -o "<instanceId>[^<]*" | head -1 | cut -d">" -f2)
-
+        deja=$(ec2 "Action=DescribeInstances&Version=2016-11-15&Filter.1.Name=tag:Name&Filter.1.Value.1=capstone-facturation&Filter.2.Name=instance-state-name&Filter.2.Value.1=running&Filter.2.Value.2=pending" | grep -o "<instanceId>[^<]*" | head -1 | cut -d">" -f2)
         if [ -n "$deja" ]; then echo "instance heritee deja presente : $deja"; exit 0; fi
-
         id=$(ec2 "Action=RunInstances&Version=2016-11-15&ImageId=ami-0abcdef1234567890&MinCount=1&MaxCount=1&InstanceType=t3.micro" | grep -o "<instanceId>[^<]*" | head -1 | cut -d">" -f2)
-
         test -n "$id" || { echo "creation impossible" >&2; exit 1; }
-
         ec2 "Action=CreateTags&Version=2016-11-15&ResourceId.1=$id&Tag.1.Key=Name&Tag.1.Value=capstone-facturation&Tag.2.Key=Owner&Tag.2.Value=finops&Tag.3.Key=Env&Tag.3.Value=prod" > /dev/null
-
-        echo "instance heritee creee : $id"'
+        echo "instance heritee creee : $id"
 validation:
   functional: true
   security: false
