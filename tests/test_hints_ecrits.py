@@ -46,7 +46,6 @@ DETTE = {
     "certifications/professional/capstone6-hcp",
     "certifications/professional/mock-pro",
     "environments/when-to-use-workspaces",
-    "first-infra/ansible",
     "getting-started/providers-resources-data-sources",
     "getting-started/terraform-project-structure",
     "hcp-terraform/hcp-terraform-overview",
