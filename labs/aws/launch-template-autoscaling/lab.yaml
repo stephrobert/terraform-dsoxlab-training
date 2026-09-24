@@ -1,8 +1,10 @@
 ---
 id: aws-launch-template-autoscaling
-title: Launch Template Autoscaling (skeleton)
-description: Skeleton for the « Launch Template Autoscaling » lab. Scenario and tests
-  still to be written.
+title: Read a replacement in the plan, before it happens
+description: 'An ASG referencing `version = "$Latest"` never triggers an instance refresh, and a `create_before_destroy` placed on the launch template protects nothing. Read both truths in the plan converted
+  to JSON, without ever calling AWS.
+
+  '
 section: aws
 level: l3
 difficulty: advanced
@@ -19,6 +21,11 @@ certification_tags:
 runtime:
   type: shell
   workdir: challenge/work
+  fixtures:
+  - versions.tf
+  - main.tf
+  - CONSIGNES.md
+  - terraform.tfstate
 validation:
   functional: true
   security: false

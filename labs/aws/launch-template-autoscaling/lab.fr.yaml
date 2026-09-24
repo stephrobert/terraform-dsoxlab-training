@@ -1,5 +1,8 @@
 ---
 id: aws-launch-template-autoscaling
-title: Launch Template Autoscaling (squelette)
-description: Squelette du lab « Launch Template Autoscaling ». Scénario et tests restent
-  à écrire.
+title: "Lire un remplacement dans le plan, avant qu'il n'arrive"
+description: |
+  Un ASG qui référence `version = "$Latest"` ne déclenche jamais d'instance
+  refresh, et un `create_before_destroy` posé sur le launch template ne protège
+  rien du tout. Lisez ces deux vérités dans le plan converti en JSON, sans
+  jamais appeler AWS.
