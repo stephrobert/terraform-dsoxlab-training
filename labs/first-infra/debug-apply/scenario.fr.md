@@ -31,30 +31,43 @@ fichier généré à partir de cet identifiant, puis une ressource d'exécution 
 dépend des deux précédentes. Cette dernière échoue volontairement, parce qu'elle écrit
 dans un répertoire que rien ne crée.
 
-L'apprenant lance `terraform init` puis `terraform apply`. Terraform crée les premières
-ressources, échoue sur la dernière, et rend la main avec un code de retour non nul. Il a
-alors sous les yeux un state partiel : son point de départ, pas un accident à effacer.
+**Le state partiel est fourni**, l'apprenant n'a donc pas à provoquer l'échec lui-même :
+il arrive comme on arrive sur un incident, devant un état qu'il n'a pas produit.
+
+Ce state réserve une surprise que le lab existe pour faire constater : la ressource
+fautive **n'est pas absente**. Elle figure dans le state, marquée `tainted`. Terraform
+sait qu'elle est dans un état douteux et la **remplacera** au prochain apply. C'est la
+première chose à regarder, et elle change la façon de reprendre :
+
+```bash
+terraform show -json | jq '.values.root_module.resources[] | {address, tainted}'
+```
 
 ## L'état à atteindre
 
 - La cause de l'échec est corrigée dans la configuration, sans supprimer la ressource
   fautive ni la neutraliser en la commentant.
+- La ressource fautive n'est plus marquée `tainted` : elle a abouti.
 - Toutes les ressources déclarées sont présentes dans le state.
-- Les ressources créées lors du premier `apply` portent **les mêmes identifiants**
-  qu'avant la réparation : elles n'ont été ni détruites, ni remplacées.
+- Les ressources créées avant l'échec portent **les mêmes identifiants** qu'avant la
+  réparation : elles n'ont été ni détruites, ni remplacées.
 - Le répertoire de travail est convergé : un nouveau `plan` ne propose plus rien.
+- La configuration se rejoue **sur un répertoire vierge**.
 
 ## Comment on le prouve
 
 Par de l'état structuré et des codes de retour, jamais par le code de l'apprenant ni par
 le texte d'un message d'erreur.
 
-- **Après l'échec** : `terraform show -json` expose un state qui contient les ressources
-  déjà créées et **pas** la ressource fautive. Le test compte les adresses présentes.
+- **Le marquage a disparu** : la ressource initialement fautive figure dans le state
+  sans `tainted`. C'est la preuve qu'elle a abouti, et non qu'on l'a fait disparaître.
+- **La ressource existe toujours** : la supprimer de la configuration ferait aussi
+  disparaître l'échec, et c'est la mauvaise réponse la plus tentante.
 - **Empreinte de reprise** : les identifiants des ressources déjà créées sont relevés
-  après l'échec, puis comparés après la réparation. Toute valeur différente signe une
-  destruction suivie d'une recréation, donc un échec.
-- **Convergence** : `terraform plan -detailed-exitcode` sort en **0**. Le code 2
-  (changements en attente) et le code 1 (erreur) sont l'un comme l'autre des échecs.
+  dans le state fourni, puis comparés après la réparation. Toute valeur différente signe
+  une destruction suivie d'une recréation, donc un échec.
 - **Effet réel** : le fichier produit par la ressource initialement fautive existe sur le
   disque, ce qui prouve que la réparation a bien fait aboutir l'exécution.
+- **Convergence, et rejeu à neuf** : `terraform plan -detailed-exitcode` sort en **0**,
+  et la configuration est rejouée dans un répertoire **vierge**. Un `mkdir` lancé à la
+  main ferait passer l'apply sur le poste de l'apprenant et nulle part ailleurs.

@@ -14,15 +14,15 @@ instance à un subnet désigné de façon déterministe.
 
 ## D'où part l'apprenant
 
-**Floci doit tourner** : `docker run -d --name floci -p 4566:4566 -u root
--v /var/run/docker.sock:/var/run/docker.sock floci/floci:1.6.0`. Aucun compte
-AWS, aucune facture, aucun endpoint réel. Le socket Docker et `-u root` ne sont
-pas optionnels : sans eux l'instance reste bloquée en `pending`. Floci ignore
-aussi l'AMI demandée : sa valeur est un bouchon, aucun test ne l'inspecte.
+**Floci est démarré par le lab lui-même**, déclaré en `runtime.services` et
+publié sur `http://localhost:14566`. Aucun compte AWS, aucune facture, aucun
+endpoint réel. Le socket Docker et `-u root` ne sont pas optionnels : sans eux
+l'instance reste bloquée en `pending`. Floci ignore aussi l'AMI demandée : sa
+valeur est un bouchon, aucun test ne l'inspecte.
 
 `challenge/work` est vierge : ni `.terraform/`, ni verrou, ni state.
 `versions.tf` est complet (provider `hashicorp/aws` en `~> 6.0`, bloc
-`endpoints` vers `http://localhost:4566`, les trois `skip_*`, identifiants
+`endpoints` vers `http://localhost:14566`, les trois `skip_*`, identifiants
 factices non vides) : la configuration du provider est fournie, elle n'est pas
 l'objet du lab. `reseau.tf` l'est aussi : un VPC et **deux** subnets taggués
 `Tier = "public"` et `Tier = "private"`, pour qu'un tirage au sort ne passe pas

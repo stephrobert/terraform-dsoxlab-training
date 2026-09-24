@@ -49,9 +49,10 @@ Aucun test ne relit le `.tf` de l'apprenant, aucun ne parse une sortie humaine.
 - Le garde-fou : **code de retour non nul** relevé dans
   `artefacts/rc-prevent-destroy.txt`, croisé avec un `terraform show -json` qui
   montre les quatre ressources toujours gérées.
-- L'**ordre inverse des dépendances** : dans `artefacts/plan-destroy.json`, les
-  quatre adresses portent l'action `delete`, le `null_resource` avant le
-  `local_file`, lui-même avant le `random_pet`.
+- Le **plan complet** : dans `artefacts/plan-destroy.json`, les quatre adresses
+  portent l'action `delete`. Ce sont les adresses qui sont comptées, et non la
+  seule existence du fichier : un plan pris avant la levée de la protection
+  échoue, écrit quand même son fichier, et n'y met que trois ressources.
 - Le **ciblage** et le **retrait du code** : par les adresses restantes dans
   `terraform show -json`, celle du `null_resource` puis celle du témoin.
 - L'**état final**, sur deux points distincts : le fichier de state est présent

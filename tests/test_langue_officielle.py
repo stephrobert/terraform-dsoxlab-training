@@ -70,21 +70,11 @@ FICHIERS_DE_LECTURE = (
     "lab.fr.yaml",
 )
 
-# Labs écrits dont la rédaction reste à faire, mesurés le 2026-09-24.
-# 79 fichiers : 62 en anglais, 17 en français.
+# Labs écrits dont la rédaction reste à faire.
+#
+# Mesuré le 2026-09-24 : 27 labs, 79 fichiers, 62 en anglais et 17 en
+# français. `first-infra` et `aws` rédigés le jour même, il en reste 15.
 DETTE = {
-    "aws/iam-role-policy-instance-profile",
-    "aws/import-moved-drift",
-    "aws/launch-template-autoscaling",
-    "aws/provider-aws-first-ec2",
-    "aws/sg-subnet-instance",
-    "first-infra/ansible",
-    "first-infra/clean-destroy",
-    "first-infra/debug-apply",
-    "first-infra/first-infrastructure",
-    "first-infra/variables-outputs",
-    "first-infra/virtual-network",
-    "first-infra/vm-libvirt",
     "getting-started/cli-terraform",
     "getting-started/install-terraform",
     "modules/create-modules",
