@@ -63,7 +63,6 @@ COQUILLES = {
     "first-infra/debug-apply",
     "first-infra/variables-outputs",
     "first-infra/virtual-network",
-    "first-infra/vm-libvirt",
     "getting-started/providers-resources-data-sources",
     "getting-started/terraform-project-structure",
     "hcp-terraform/hcp-terraform-overview",

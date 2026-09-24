@@ -1,7 +1,10 @@
 ---
 id: first-infra-vm-libvirt
-title: Vm Libvirt (skeleton)
-description: Skeleton for the « Vm Libvirt » lab. Scenario and tests still to be written.
+title: 'Update in place or replacement: read it in the plan'
+description: 'On a virtual machine, some attributes change in place and others destroy then recreate the machine. The plan says which, before the apply, provided you know where to look. Then verify the
+  plan told the truth, by applying it.
+
+  '
 section: first-infra
 level: l1
 difficulty: beginner
@@ -18,6 +21,11 @@ certification_tags:
 runtime:
   type: shell
   workdir: challenge/work
+  fixtures:
+  - versions.tf
+  - variables.tf
+  - main.tf
+  - outputs.tf
 validation:
   functional: true
   security: false

@@ -1,4 +1,8 @@
 ---
 id: first-infra-vm-libvirt
-title: Vm Libvirt (squelette)
-description: Squelette du lab « Vm Libvirt ». Scénario et tests restent à écrire.
+title: "Mise à jour en place ou remplacement : le lire dans le plan"
+description: |
+  Sur une machine virtuelle, certains attributs se modifient en place et
+  d'autres détruisent puis recréent la machine. Le plan dit lequel, avant
+  l'apply, à condition de savoir où regarder. Vérifiez ensuite que le plan
+  disait vrai, en l'appliquant.
