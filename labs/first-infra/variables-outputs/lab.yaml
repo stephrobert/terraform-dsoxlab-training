@@ -1,8 +1,10 @@
 ---
 id: first-infra-variables-outputs
-title: Variables Outputs (skeleton)
-description: Skeleton for the « Variables Outputs » lab. Scenario and tests still
-  to be written.
+title: Variables, locals and the real precedence order
+description: 'Four rungs, checked in order: `default`, `TF_VAR_`, `terraform.tfvars`, `*.auto.tfvars`, `-var`. The decisive one is the second: a values file BEATS the environment variable, the rank almost
+  everyone places too high.
+
+  '
 section: first-infra
 level: l1
 difficulty: beginner
@@ -19,6 +21,13 @@ certification_tags:
 runtime:
   type: shell
   workdir: challenge/work
+  fixtures:
+  - versions.tf
+  - variables.tf
+  - locals.tf
+  - main.tf
+  - outputs.tf
+  - terraform.tfvars
 validation:
   functional: true
   security: false

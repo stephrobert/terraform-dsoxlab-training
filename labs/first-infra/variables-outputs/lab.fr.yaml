@@ -1,4 +1,8 @@
 ---
 id: first-infra-variables-outputs
-title: Variables Outputs (squelette)
-description: Squelette du lab « Variables Outputs ». Scénario et tests restent à écrire.
+title: "Variables, locals et l'ordre de précédence réel"
+description: |
+  Quatre marches, vérifiées dans l'ordre : `default`, `TF_VAR_`,
+  `terraform.tfvars`, `*.auto.tfvars`, `-var`. La décisive est la deuxième :
+  un fichier de valeurs BAT la variable d'environnement, rang que presque tout
+  le monde place trop haut.

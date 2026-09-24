@@ -61,7 +61,6 @@ COQUILLES = {
     "first-infra/ansible",
     "first-infra/clean-destroy",
     "first-infra/debug-apply",
-    "first-infra/variables-outputs",
     "getting-started/providers-resources-data-sources",
     "getting-started/terraform-project-structure",
     "hcp-terraform/hcp-terraform-overview",
