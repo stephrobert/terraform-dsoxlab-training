@@ -47,8 +47,9 @@ chaque réponse à une table d'empreintes, aucune réponse n'existant en clair. 
   `score`, `score_par_objectif` et `sans_reponse` : les tests exigent `sans_reponse` vide,
   un nombre d'entrées fausses sous le quota toléré, et `score` au dessus de 80.
 - Rien n'est codable en dur, ces sorties étant calculées par le barème depuis
-  `var.reponses`. Les tests comparent en plus `output -json empreintes` à la liste qu'ils
-  détiennent, ce qui détecte un barème modifié : ils ne stockent que des `sha256`.
+  `var.reponses`. Les tests ne détiennent aucune réponse : ils vérifient que la table
+  `empreintes` compte bien quarante entrées et que chacune est un `sha256`, ce qui
+  détecte un barème tronqué ou réécrit sans jamais servir de corrigé.
 - Dans `atelier`, `terraform show -json` sert de source unique : objets comptés par `mode`,
   adresse du bloc `data`, valeur sensible en clair dans le state ; le plan converti en JSON
   confirme `create_before_destroy` et le `depends_on`. `plan -detailed-exitcode` sort en 0
@@ -57,4 +58,6 @@ chaque réponse à une table d'empreintes, aucune réponse n'existant en clair. 
   `atelier` et exigent la concordance avec les réponses fournies. Deviner `q37` à `q40`
   sans construire l'atelier échoue sur l'état, construire sans répondre échoue sur le
   score. Aucun `.tf` de l'apprenant n'est relu. Faute d'argument write-only dans `local`,
-  `null` et `random`, 4h reste évalué par le questionnaire seul, et le lab l'annonce.
+  `null` et `random`, 4h ne peut pas être éprouvé par un argument jamais écrit dans
+  l'état : il l'est autrement, par une question de cours et par une question d'atelier
+  qui fait constater la valeur sensible en clair dans `terraform.tfstate`.

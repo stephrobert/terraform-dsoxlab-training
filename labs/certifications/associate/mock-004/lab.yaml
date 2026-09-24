@@ -19,6 +19,16 @@ certification_tags:
 runtime:
   type: shell
   workdir: challenge/work
+  fixtures:
+  - examen/questions.fr.md
+  - examen/questions.md
+  - examen/reponses.auto.tfvars
+  - examen/bareme.tf
+  - examen/versions.tf
+  - atelier/versions.tf
+  - atelier/variables.tf
+  - atelier/main.tf
+  - atelier/outputs.tf
 validation:
   functional: true
   security: false
