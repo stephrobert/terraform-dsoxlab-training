@@ -182,6 +182,6 @@ replay them against your configuration rather than take them on trust: should a
 future version change one, the lab will be declared due for remeasurement,
 rather than your work being failed.
 
-Exam objective targeted: **1b**.
+Exam objective targeted: **3d**.
 
 Reference: [preparing the Terraform Associate certification](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/certifications/associate/)

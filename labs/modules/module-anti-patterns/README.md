@@ -127,6 +127,6 @@ dsoxlab hint modules-module-anti-patterns
 
 It runs **offline**.
 
-Target exam sub-objective: **4c** (refactor an existing configuration).
+Target exam sub-objective: **4d** (refactor an existing configuration into modules).
 
 Reference: [module anti-patterns](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/anti-patterns-modules/)

@@ -1,6 +1,7 @@
 # Scénario : découper une configuration sans changer le plan
 
-**Sous-objectif d'examen visé : 2a (écrire et organiser une configuration).**
+**Sous-objectif d'examen visé : 1b (générer un plan d'exécution), la
+comparaison de deux plans étant la seule preuve d'invariance du découpage.**
 
 Le découpage d'un `main.tf` est présenté partout comme sans risque parce que
 `terraform validate` passe ensuite. Or `validate` « does not check if argument

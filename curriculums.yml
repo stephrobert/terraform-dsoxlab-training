@@ -1,0 +1,239 @@
+# Les grilles d'objectifs des certifications Terraform.
+#
+# POURQUOI CE FICHIER EXISTE
+#
+# Deux grilles coexistent dans ce catalogue, et elles se ressemblent assez pour
+# qu'on les confonde sans s'en apercevoir :
+#
+#     Associate 004                    Pro (Authoring and Operations)
+#     1b = avantages de l'IaC          1b = generer un plan d'execution
+#     3d = generer un plan             3d = partager des donnees entre configs
+#
+# Mesure du 2026-09-24 : `certifications/associate/essential-commands`, livre
+# le jour meme, annoncait « Associate 004 » et citait l'objectif 1b pour un lab
+# qui fait generer et lire un plan. Le chiffre venait de la grille Pro, ou il
+# est juste. Dans la grille annoncee, il designe une question de cours sur les
+# avantages de l'IaC, que le lab n'aborde pas.
+#
+# Aucun controle ne pouvait le voir : ces chiffres vivaient dans le texte de
+# chaque lab, et rien ne les comparait a leur source. Ils vivent desormais ici
+# une seule fois, avec l'URL d'ou ils sont lus et la date de la derniere
+# confrontation. `tests/test_curriculums.py` refuse toute mention du depot qui
+# les contredit.
+#
+# COMMENT LES REVERIFIER
+#
+#     Les deux pages publient la liste complete, objectif par objectif :
+#     https://developer.hashicorp.com/terraform/tutorials/certification-004/associate-review-004
+#     https://developer.hashicorp.com/terraform/tutorials/pro-cert/pro-review
+#
+# Une affirmation du type « verifie sur le site officiel » sans commande qui le
+# montre vaut zero. Mettez la date a jour en meme temps que les chiffres.
+
+curriculums:
+  associate:
+    nom: Terraform Associate 004
+    tag: tf-associate
+    source: https://developer.hashicorp.com/terraform/tutorials/certification-004/associate-review-004
+    derniere_verification: 2026-09-24
+    objectifs:
+      1:
+        titre: Infrastructure as Code (IaC) with Terraform
+        sous_objectifs:
+          1a: Explain what IaC is
+          1b: Describe the advantages of IaC patterns
+          1c: Explain how Terraform manages multi-cloud, hybrid cloud, and service-agnostic workflows
+      2:
+        titre: Terraform fundamentals
+        sous_objectifs:
+          2a: Install and version Terraform providers
+          2b: Describe how Terraform uses providers
+          2c: Write Terraform configuration using multiple providers
+          2d: Explain how Terraform uses and manages state
+      3:
+        titre: Core Terraform workflow
+        sous_objectifs:
+          3a: Describe the Terraform workflow
+          3b: Initialize a Terraform working directory
+          3c: Validate a Terraform configuration
+          3d: Generate and review an execution plan for Terraform
+          3e: Apply changes to infrastructure with Terraform
+          3f: Destroy Terraform-managed infrastructure
+          3g: Apply formatting and style adjustments to a configuration
+      4:
+        titre: Terraform configuration
+        sous_objectifs:
+          4a: Use and differentiate resource and data blocks
+          4b: Refer to resource attributes and create cross-resource references
+          4c: Use variables and outputs
+          4d: Understand and use complex types
+          4e: Write dynamic configuration using expressions and functions
+          4f: Define resource dependencies in configuration
+          4g: Validate configuration using custom conditions
+          4h: Understand best practices for managing sensitive data, including secrets management with Vault
+      5:
+        titre: Terraform modules
+        sous_objectifs:
+          5a: Explain how Terraform sources modules
+          5b: Describe variable scope within modules
+          5c: Use modules in configuration
+          5d: Manage module versions
+      6:
+        titre: Terraform state management
+        sous_objectifs:
+          6a: Describe the local backend
+          6b: Describe state locking
+          6c: Configure remote state using the backend block
+          6d: Manage resource drift and Terraform state
+      7:
+        titre: Maintain infrastructure with Terraform
+        sous_objectifs:
+          7a: Import existing infrastructure into your Terraform workspace
+          7b: Use the CLI to inspect state
+          7c: Describe when and how to use verbose logging
+      8:
+        titre: HCP Terraform
+        sous_objectifs:
+          8a: Use HCP Terraform to create infrastructure
+          8b: Describe HCP Terraform collaboration and governance features
+          8c: Describe how to organize and use HCP Terraform workspaces and projects
+          8d: Configure and use HCP Terraform integration
+
+  professional:
+    nom: Terraform Authoring and Operations Professional
+    tag: tf-professional
+    source: https://developer.hashicorp.com/terraform/tutorials/pro-cert/pro-review
+    derniere_verification: 2026-09-24
+    objectifs:
+      1:
+        titre: Manage resource lifecycle
+        sous_objectifs:
+          1a: Initialize a configuration using terraform init and its options
+          1b: Generate an execution plan using terraform plan and its options
+          1c: Apply configuration changes using terraform apply and its options
+          1d: Destroy resources using terraform destroy and its options
+          1e: Manage resource state, including importing resources and reconciling resource drift
+      2:
+        titre: Develop and troubleshoot dynamic configuration
+        sous_objectifs:
+          2a: Use language features to validate configuration
+          2b: Query providers using data sources
+          2c: Compute and interpolate data using HCL functions
+          2d: Use meta-arguments in configuration
+          2e: Configure input variables and outputs, including complex types
+          2f: Analyze best practices for managing sensitive data, such as using Vault for secrets management
+      3:
+        titre: Develop collaborative Terraform workflows
+        sous_objectifs:
+          3a: Manage the Terraform binary, providers, and modules using version constraints
+          3b: Configure remote state
+          3c: Use the Terraform workflow in automation
+          3d: Share data across configurations and workspaces
+      4:
+        titre: Create, maintain, and use Terraform modules
+        sous_objectifs:
+          4a: Create a module
+          4b: Use a module in configuration
+          4c: Refactor a module and use module versioning
+          4d: Refactor an existing configuration into modules
+      5:
+        titre: Configure and use Terraform providers
+        sous_objectifs:
+          5a: Understand Terraform's plugin-based architecture
+          5b: Configure providers, including aliasing, versioning, sourcing, and managing upgrades
+          5c: Manage provider authentication
+          5d: Troubleshoot provider errors
+      6:
+        titre: Collaborate on infrastructure as code using HCP Terraform
+        remarque: objectif evalue en questions a choix multiples uniquement
+        sous_objectifs:
+          6a: Analyze the HCP Terraform run workflow
+          6b: Understand HCP Terraform workspaces and their configuration options, including access management
+          6c: Manage provider credentials in HCP Terraform
+          6d: Analyze policy as code and governance features
+
+# --------------------------------------------------------------------------
+# Mots-cles de correspondance, pour le controle du LIBELLE
+# --------------------------------------------------------------------------
+#
+# Verifier que le code cite existe dans la grille ne suffit pas : c'est ce qui
+# a laisse passer le defaut du 2026-09-24. `1b` existe dans les DEUX grilles,
+# il y designe simplement autre chose.
+#
+# Ce que ces listes permettent : quand un lab accole un libelle a son code
+# (« 2d, les meta-arguments » ou « 4c (refactorer un module) »), le test exige
+# qu'au moins un de ces fragments y apparaisse. Un libelle qui n'en contient
+# aucun signale soit un code emprunte a l'autre grille, soit un lab qui a
+# derive de l'objectif qu'il annonce.
+#
+# La comparaison est faite sans accents et en minuscules, et sur des FRAGMENTS
+# (« valid » couvre valide, validation, validant). Un libelle traduit
+# librement peut donc passer, et c'est voulu : le test refuse une
+# contradiction, il ne note pas la redaction.
+mots_cles:
+  professional:
+    "1a": [init, initialis]
+    "1b": [plan]
+    "1c": [apply, appliqu]
+    "1d": [destroy, detru]
+    "1e": [state, import, drift, derive, etat, reconcili]
+    "2a": [valid]
+    "2b": [data source, source de donnee, donnees externes]
+    "2c": [fonction, function, hcl, interpol, expression]
+    "2d": [meta-argument, meta argument, metaargument]
+    "2e": [variable, output, sortie, type complexe, types complexes, expression]
+    "2f": [sensible, sensitive, secret, vault]
+    "3a": [version, contrainte, binaire, epingl]
+    "3b": [remote state, state distant, backend, etat distant, verrouillage]
+    "3c": [automation, automatisation, workflow, ci]
+    "3d": [partage, partager, entre configuration, workspace, remote state]
+    "4a": [creer un module, creation de module, creer module, ecrire un module]
+    "4b": [utiliser un module, consommer un module, appeler un module]
+    "4c": [refactorer un module, versionner, versionnement, version de module]
+    "4d": [refactorer une configuration, decouper en module, extraire un module, tester un module]
+    "5a": [plugin, architecture]
+    "5b": [alias, versionnement, sourcing, nom local, configuration des provider, configurations de provider, mise a jour]
+    "5c": [authentification, credential, identifiant]
+    "5d": [erreur, depanner, diagnostic, troubleshoot]
+    "6a": [run, execution hcp]
+    "6b": [workspace, acces]
+    "6c": [credential, identifiant]
+    "6d": [policy, politique, gouvernance]
+  associate:
+    "1a": [iac, infrastructure as code]
+    "1b": [avantage, benefice]
+    "1c": [multi-cloud, multicloud, hybride, agnostique]
+    "2a": [installer, install, version, provider]
+    "2b": [provider]
+    "2c": [provider]
+    "2d": [state, etat]
+    "3a": [workflow, flux]
+    "3b": [init, initialis]
+    "3c": [valid]
+    "3d": [plan]
+    "3e": [apply, appliqu]
+    "3f": [destroy, detru]
+    "3g": [format, style, fmt]
+    "4a": [resource, data, bloc]
+    "4b": [attribut, reference]
+    "4c": [variable, output, sortie]
+    "4d": [type complexe, types complexes, complexe]
+    "4e": [expression, fonction]
+    "4f": [dependance, depends_on, dependence]
+    "4g": [condition, validation]
+    "4h": [sensible, secret, vault]
+    "5a": [source, module]
+    "5b": [portee, scope, variable]
+    "5c": [module]
+    "5d": [version]
+    "6a": [backend local, local]
+    "6b": [verrou, lock]
+    "6c": [backend, remote, distant]
+    "6d": [drift, derive, state, etat]
+    "7a": [import]
+    "7b": [inspecter, cli, state, etat]
+    "7c": [log, verbeux, verbose, trace]
+    "8a": [hcp]
+    "8b": [collaboration, gouvernance]
+    "8c": [workspace, projet]
+    "8d": [integration]

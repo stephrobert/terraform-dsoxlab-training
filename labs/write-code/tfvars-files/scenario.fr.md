@@ -1,6 +1,7 @@
 # Scénario : la faute de frappe qui ne casse rien
 
-**Sous-objectif d'examen visé : 3c (fournir les valeurs des variables), avec un débord sur 2e pour la précédence.**
+**Sous-objectif d'examen visé : 2e (configurer les variables d'entrée et les
+sorties), la précédence des sources de valeurs en étant le coeur.**
 
 Une variable mal orthographiée dans un `.tfvars` ne fait pas échouer le plan : elle produit un avertissement, et la vraie variable reste à son défaut. C'est un faux diagnostic classique. L'apprenant doit corriger une telle faute et prouver qu'un `terraform.tfvars.json` l'emporte sur `terraform.tfvars`.
 

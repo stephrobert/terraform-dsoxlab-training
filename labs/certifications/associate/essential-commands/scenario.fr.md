@@ -1,6 +1,9 @@
 # Scénario : ce que les commandes essentielles répondent vraiment
 
-**Sous-objectif d'examen visé : 1b, générer et examiner un plan d'exécution.**
+**Sous-objectif d'examen visé : 3d, générer et examiner un plan d'exécution.**
+Mobilisés en appui : 3c (valider une configuration), 3g (format et style),
+4c (variables et outputs), 4h (données sensibles), 6d (state et dérive),
+7a (importer de l'existant) et 7b (inspecter le state par la CLI).
 
 L'Associate 004 est un QCM d'une heure sur Terraform 1.12 : on n'y tape rien, et
 c'est le piège. Réviser un tableau de commandes donne l'illusion de savoir,

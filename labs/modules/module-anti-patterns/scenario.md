@@ -1,6 +1,7 @@
 # Scenario: refactor a copy-pasted project without destroying anything
 
-**Target exam sub-objective: 4c (refactor an existing configuration).**
+**Target exam sub-objective: 4d (refactor an existing configuration into
+modules).**
 
 Terraform tracks **addresses**, not resources. Extracting copy-pasted code into a
 module changes those addresses, and without an explicit declaration the tool

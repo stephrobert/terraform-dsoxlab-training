@@ -186,6 +186,6 @@ tests les rejouent sur votre configuration plutôt que de les croire sur parole 
 si une version future en change un, c'est le lab qui sera déclaré à remesurer,
 et non votre travail qui sera recalé.
 
-Sous-objectif d'examen visé : **1b**.
+Sous-objectif d'examen visé : **3d**.
 
 Référence : [préparer la certification Terraform Associate](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/certifications/associate/)

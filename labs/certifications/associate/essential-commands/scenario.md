@@ -1,6 +1,10 @@
 # Scenario: what the essential commands really answer
 
-**Exam objective targeted: 1b, generate and review an execution plan.**
+**Exam objective targeted: 3d, generate and review an execution plan.**
+Supporting objectives: 3c (validate a configuration), 3g (formatting and
+style), 4c (variables and outputs), 4h (sensitive data), 6d (state and
+drift), 7a (import existing infrastructure) and 7b (inspect state with the
+CLI).
 
 The Associate 004 is a one-hour multiple-choice exam on Terraform 1.12: you
 type nothing, and that is the trap. Revising a table of commands feels like
