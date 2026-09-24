@@ -1,8 +1,10 @@
 ---
 id: certifications-associate-essential-commands
-title: 'Associate 004: essential commands'
-description: Review the Terraform workflow commands expected at the Associate 004
-  exam.
+title: The commands the exam expects, done rather than recited
+description: 'Eight gestures a candidate must be able to perform: `validate`, `fmt`, the precedence cascade, `moved`, `import`, `removed` without destroying, `-replace`, and what `sensitive` really protects.
+  Exit codes are recorded as they happen: they cannot be reconstructed afterwards.
+
+  '
 section: certif-associate
 level: l4
 difficulty: advanced
@@ -20,6 +22,14 @@ certification_tags:
 runtime:
   type: shell
   workdir: challenge/work
+  fixtures:
+  - versions.tf
+  - variables.tf
+  - main.tf
+  - outputs.tf
+  - terraform.tfvars
+  - env.auto.tfvars
+  - etat/preexistant.txt
 validation:
   functional: true
   security: false

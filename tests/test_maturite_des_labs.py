@@ -49,7 +49,6 @@ MARQUEUR_SQUELETTE = "tests non implémentés"
 # Labs dont le test reste à écrire, mesurés le 2026-09-23. Un lab écrit se
 # retire d'ici, et le test le vérifie.
 COQUILLES = {
-    "certifications/associate/essential-commands",
     "certifications/associate/mock-004",
     "certifications/professional/capstone1-resource-lifecycle",
     "certifications/professional/capstone2-dynamic-config",
