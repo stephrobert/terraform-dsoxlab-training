@@ -50,7 +50,6 @@ DETTE = {
     "first-infra/clean-destroy",
     "first-infra/debug-apply",
     "first-infra/variables-outputs",
-    "first-infra/virtual-network",
     "getting-started/providers-resources-data-sources",
     "getting-started/terraform-project-structure",
     "hcp-terraform/hcp-terraform-overview",

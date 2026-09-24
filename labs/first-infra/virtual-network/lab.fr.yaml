@@ -1,4 +1,9 @@
 ---
 id: first-infra-virtual-network
-title: Reseau Virtuel (squelette)
-description: Squelette du lab « Reseau Virtuel ». Scénario et tests restent à écrire.
+title: "La dépendance que Terraform ne peut pas deviner"
+description: |
+  Terraform construit son graphe à partir des RÉFÉRENCES qu'il trouve dans les
+  expressions. Neuf fois sur dix, un `depends_on` écrit à la main signale une
+  référence manquante. Ce lab porte sur la dixième : un bloc qui consomme une
+  variable et ne référence rien, où Terraform est libre d'agir dans le mauvais
+  ordre.

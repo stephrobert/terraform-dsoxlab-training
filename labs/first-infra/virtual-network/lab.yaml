@@ -1,8 +1,10 @@
 ---
 id: first-infra-virtual-network
-title: Reseau Virtuel (skeleton)
-description: Skeleton for the « Reseau Virtuel » lab. Scenario and tests still to
-  be written.
+title: The dependency Terraform cannot guess
+description: 'Terraform builds its graph from the REFERENCES it finds in expressions. Nine times out of ten a hand-written `depends_on` signals a missing reference. This lab is about the tenth: a block
+  that consumes a variable and references nothing, where Terraform is free to act in the wrong order.
+
+  '
 section: first-infra
 level: l1
 difficulty: beginner
@@ -19,6 +21,11 @@ certification_tags:
 runtime:
   type: shell
   workdir: challenge/work
+  fixtures:
+  - versions.tf
+  - variables.tf
+  - main.tf
+  - outputs.tf
 validation:
   functional: true
   security: false
