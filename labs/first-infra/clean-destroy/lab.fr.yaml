@@ -1,4 +1,8 @@
 ---
 id: first-infra-clean-destroy
-title: Destroy Propre (squelette)
-description: Squelette du lab « Destroy Propre ». Scénario et tests restent à écrire.
+title: "Détruire proprement, et les quatre choses que cela recouvre"
+description: |
+  Détruire n'est pas une seule opération. Constatez-en quatre qui ne se
+  ressemblent pas : le destroy global qu'un garde-fou peut REFUSER, le destroy
+  ciblé, le retrait d'une ressource DU CODE, et le destroy complet qui vide le
+  state sans supprimer son fichier.

@@ -59,7 +59,6 @@ COQUILLES = {
     "certifications/professional/capstone6-hcp",
     "certifications/professional/mock-pro",
     "first-infra/ansible",
-    "first-infra/clean-destroy",
     "getting-started/providers-resources-data-sources",
     "getting-started/terraform-project-structure",
     "hcp-terraform/hcp-terraform-overview",

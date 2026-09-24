@@ -1,8 +1,10 @@
 ---
 id: first-infra-clean-destroy
-title: Destroy Propre (skeleton)
-description: Skeleton for the « Destroy Propre » lab. Scenario and tests still to
-  be written.
+title: Destroying cleanly, and the four things it covers
+description: 'Destroying is not one operation. Observe four that do not resemble each other: the global destroy a guard can REFUSE, the targeted destroy, the removal of a resource FROM THE CODE, and the
+  full destroy that empties the state without deleting its file.
+
+  '
 section: first-infra
 level: l1
 difficulty: beginner
@@ -19,6 +21,9 @@ certification_tags:
 runtime:
   type: shell
   workdir: challenge/work
+  fixtures:
+  - versions.tf
+  - main.tf
 validation:
   functional: true
   security: false
