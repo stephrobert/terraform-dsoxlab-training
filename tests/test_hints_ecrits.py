@@ -35,8 +35,6 @@ COUTS_ATTENDUS = [10, 15, 20]
 # Labs dont les indices sont encore ceux du générateur, mesurés le 2026-09-18.
 # Un lab repris se retire d'ici, et le test le vérifie.
 DETTE = {
-    "aws/iam-role-policy-instance-profile",
-    "aws/import-moved-drift",
     "aws/launch-template-autoscaling",
     "aws/sg-subnet-instance",
     "certifications/associate/essential-commands",
