@@ -1,8 +1,10 @@
 ---
 id: state-understand-state
-title: Comprendre State (skeleton)
-description: Skeleton for the « Comprendre State » lab. Scenario and tests still to
-  be written.
+title: "Take over a secret already in service, without regenerating it"
+description: |
+  A plain `apply` would draw a new password. Attach the existing one through an
+  `import` block, then observe that the secret sits in clear text in the state while
+  being marked `sensitive_attributes`: masking is a display, not encryption.
 section: state
 level: l2
 difficulty: intermediate

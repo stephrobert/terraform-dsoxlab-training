@@ -1,4 +1,7 @@
 ---
 id: state-understand-state
-title: Comprendre State (squelette)
-description: Squelette du lab « Comprendre State ». Scénario et tests restent à écrire.
+title: "Reprendre un secret déjà en service, sans le régénérer"
+description: |
+  Un `apply` ordinaire tirerait un mot de passe neuf. Rattacher l'existant par un bloc
+  `import`, puis constater que le secret est en clair dans le state tout en étant marqué
+  `sensitive_attributes` : le masquage est un affichage, pas un chiffrement.

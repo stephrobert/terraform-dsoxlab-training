@@ -73,13 +73,9 @@ FICHIERS_DE_LECTURE = (
 # Labs écrits dont la rédaction reste à faire.
 #
 # Mesuré le 2026-09-24 : 27 labs, 79 fichiers, 62 en anglais et 17 en
-# français. `first-infra` et `aws` rédigés le jour même, il en reste 15.
+# français. `first-infra`, `aws`, `getting-started`, `modules` et `state` rédigés le jour
+# même : il ne reste que `write-code`, dont seule la version anglaise manque.
 DETTE = {
-    "getting-started/cli-terraform",
-    "getting-started/install-terraform",
-    "modules/create-modules",
-    "state/backends",
-    "state/understand-state",
     "write-code/conditionals",
     "write-code/data-sources",
     "write-code/declare-resources",
