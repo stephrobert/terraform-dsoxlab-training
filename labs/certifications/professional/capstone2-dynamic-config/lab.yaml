@@ -22,6 +22,11 @@ certification_tags:
 runtime:
   type: shell
   workdir: challenge/work
+  fixtures:
+  - versions.tf
+  - variables.tf
+  - main.tf
+  - outputs.tf
 validation:
   functional: true
   security: false
