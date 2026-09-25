@@ -53,6 +53,27 @@ def dans_prior_state(plan: dict, adresse: str) -> bool:
     return any(r["address"] == adresse for r in module.get("resources", []))
 
 
+def exiger_presente_au_plan(plan: dict, adresse: str) -> None:
+    """Un contrôle négatif doit d'abord établir que son sujet EXISTE.
+
+    Mesuré le 2026-09-23 : quatre tests de ce fichier étaient verts avant le
+    travail, et tous pour la même raison. Ils affirment qu'une adresse n'est PAS
+    reportée, ou qu'un output n'est PAS inconnu. Sur une configuration que
+    l'apprenant n'a pas encore écrite, l'adresse n'apparaît nulle part : le
+    symptôme est absent parce que le SUJET est absent, et le test passe sans
+    rien mesurer.
+
+    On exige donc d'abord la présence dans le `prior_state`, qui n'est peuplé
+    qu'une fois la data source réellement déclarée et lue.
+    """
+    assert dans_prior_state(plan, adresse), (
+        f"{adresse} n'apparaît pas dans l'état antérieur du plan : elle n'est "
+        "pas déclarée, ou n'a jamais été lue.\n\nCe contrôle vérifie qu'elle "
+        "n'est PAS reportée à l'apply : il faut d'abord qu'elle existe, sans "
+        "quoi il passerait sur une configuration vide."
+    )
+
+
 @pytest.fixture(scope="module")
 def applied() -> Path:
     exiger_workdir(WORKDIR, LAB_ID)
@@ -107,6 +128,7 @@ def test_depends_on_ne_reporte_pas_a_lui_seul(plan_stable: dict) -> None:
     `catalogue_ordonne` porte un `depends_on` explicite vers une ressource
     gérée. Tant que cette ressource est stable, la lecture reste au plan.
     """
+    exiger_presente_au_plan(plan_stable, ORDONNE)
     assert change(plan_stable, ORDONNE) is None, (
         "`catalogue_ordonne` est reportée alors que `random_pet.empreinte` est "
         "stable. Si ce test échoue avec une configuration correcte, c'est que "
@@ -140,6 +162,7 @@ def test_le_catalogue_reste_lu_au_plan_meme_quand_le_reste_bouge(
 ) -> None:
     """Contrôle négatif : sans lui, un plan globalement décalé ferait passer le
     test précédent sans rien prouver de spécifique."""
+    exiger_presente_au_plan(plan_mouvant, CATALOGUE)
     assert change(plan_mouvant, CATALOGUE) is None, (
         "`catalogue` est reportée alors que son argument ne dépend d'aucune "
         "ressource gérée. Vérifiez qu'il n'utilise que `path.module`."
@@ -156,7 +179,17 @@ def test_l_output_derive_d_une_lecture_reportee_est_inconnu(plan_mouvant: dict) 
 
 
 def test_l_output_derive_d_une_lecture_au_plan_est_connu(plan_mouvant: dict) -> None:
-    sortie = plan_mouvant.get("output_changes", {}).get("catalogue", {})
+    sorties = plan_mouvant.get("output_changes", {})
+    assert "catalogue" in sorties, (
+        f"L'output `catalogue` n'est pas déclaré. Présents : {sorted(sorties)}."
+        "\n\nCe contrôle vérifie que sa valeur est CONNUE au plan : un output "
+        "absent n'est pas un output connu."
+    )
+    sortie = sorties["catalogue"]
+    assert sortie.get("after") not in (None, ""), (
+        "L'output `catalogue` est déclaré mais sa valeur planifiée est vide. "
+        "Il doit dériver de la data source dont l'argument est connu."
+    )
     assert sortie.get("after_unknown") is not True, (
         "L'output `catalogue` est inconnu au plan. Il doit dériver de la data "
         "source dont l'argument est connu."
@@ -192,30 +225,49 @@ def test_le_state_distingue_ressources_gerees_et_data_resources(applied: Path) -
 # 4. Dérive par la donnée externe, et destruction
 # --------------------------------------------------------------------------
 
-def test_la_configuration_est_stable_apres_apply(applied: Path) -> None:
-    p = terraform("plan", "-input=false", "-detailed-exitcode", "-no-color", cwd=applied)
-    assert p.returncode == 0, (
-        f"`plan -detailed-exitcode` rend {p.returncode} (2 = des changements "
-        "restent planifiés). Un apply doit converger."
-    )
+def test_stable_au_repos_et_en_ecart_des_que_le_fichier_lu_change(
+    applied: Path,
+) -> None:
+    """La stabilité vit ici, et plus dans un test à elle.
 
+    Seule, elle était vraie avant le travail : une configuration qui ne déclare
+    presque rien converge parfaitement. Encadrant l'écart, elle devient la
+    moitié qui donne son sens à l'autre : le plan passe de 0 à 2 puis revient à
+    0, et c'est le fichier LU qui commande, sans qu'une ligne de `.tf` ait bougé.
 
-def test_modifier_le_fichier_lu_suffit_a_creer_un_ecart(applied: Path) -> None:
-    """La conséquence pratique la plus visible d'une data source : la dérive
-    n'a pas besoin qu'une ligne de `.tf` change."""
+    Sans le retour à 0, un plan durablement décalé ferait passer le milieu sans
+    rien prouver de spécifique.
+    """
     catalogue = applied / "catalogue.txt"
     original = catalogue.read_text(encoding="utf-8")
+
+    repos = terraform("plan", "-input=false", "-detailed-exitcode", "-no-color",
+                      cwd=applied)
+    assert repos.returncode == 0, (
+        f"`plan -detailed-exitcode` rend {repos.returncode} au repos (2 = des "
+        "changements restent planifiés). Un apply doit converger."
+    )
+
     try:
         catalogue.write_text(original + "ajout=externe\n", encoding="utf-8")
-        p = terraform("plan", "-input=false", "-detailed-exitcode", "-no-color",
-                      cwd=applied)
-        assert p.returncode == 2, (
-            f"`plan -detailed-exitcode` rend {p.returncode}, attendu 2. Modifier "
-            "le fichier lu par une data source doit produire un plan non vide, "
-            "sans qu'aucun fichier `.tf` n'ait bougé."
+        ecart = terraform("plan", "-input=false", "-detailed-exitcode", "-no-color",
+                          cwd=applied)
+        assert ecart.returncode == 2, (
+            f"`plan -detailed-exitcode` rend {ecart.returncode}, attendu 2. "
+            "Modifier le fichier lu par une data source doit produire un plan "
+            "non vide, sans qu'aucun fichier `.tf` n'ait bougé.\n\nUn retour 0 "
+            "ici signifie que la valeur lue n'irrigue rien : la data source est "
+            "déclarée, mais personne ne s'en sert."
         )
     finally:
         catalogue.write_text(original, encoding="utf-8")
+
+    retour = terraform("plan", "-input=false", "-detailed-exitcode", "-no-color",
+                       cwd=applied)
+    assert retour.returncode == 0, (
+        f"Le fichier remis à l'identique, le plan rend encore {retour.returncode}. "
+        "L'écart venait donc d'autre chose que de la lecture."
+    )
 
 
 def test_le_plan_de_destruction_ignore_les_data_sources(applied: Path) -> None:
@@ -226,6 +278,26 @@ def test_le_plan_de_destruction_ignore_les_data_sources(applied: Path) -> None:
     le reste. Elles ne « survivent » pas à un destroy.
     """
     plan = plan_json("-destroy", cwd=applied)
+
+    # Un contrôle négatif doit d'abord établir que son sujet existe.
+    #
+    # Première tentative, le 2026-09-23 : exiger que `local_file.rapport` soit
+    # bien détruite. Insuffisant, et le sens « 0 » l'a montré tout de suite : les
+    # fixtures la déclarent déjà, donc la garde passait sans le travail. La garde
+    # doit porter sur ce que SEUL le travail produit, c'est-à-dire les data
+    # sources dont on vérifie justement qu'elles sont épargnées.
+    module = show_json(applied).get("values", {}).get("root_module", {})
+    lues = {
+        r["address"] for r in module.get("resources", []) if r.get("mode") == "data"
+    }
+    manquantes = {CATALOGUE, ORDONNE, RELU} - lues
+    assert not manquantes, (
+        f"Ces data sources n'existent pas dans le state : {sorted(manquantes)}."
+        "\n\nCe contrôle vérifie que la destruction les ÉPARGNE : il faut "
+        "d'abord qu'elles soient là, sans quoi il passerait sur une "
+        "configuration qui n'en déclare aucune."
+    )
+
     data_detruites = [rc["address"] for rc in plan.get("resource_changes", [])
                       if rc.get("mode") == "data"]
     assert not data_detruites, (

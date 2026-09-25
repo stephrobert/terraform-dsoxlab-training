@@ -207,7 +207,28 @@ def test_output_est_une_map(applied: Path) -> None:
     )
 
 
-def test_configuration_idempotente(applied: Path) -> None:
+def test_la_configuration_converge_et_l_etat_porte_les_quatre_services(
+    applied: Path, etat: dict
+) -> None:
+    """L'idempotence vit ici, et plus dans un test à elle.
+
+    Seule, elle était VRAIE AVANT LE TRAVAIL, et même nécessairement : la
+    configuration de départ, indexée par `count`, converge parfaitement. Elle
+    accordait des points pour n'avoir rien changé.
+
+    Associée à l'inventaire du state, elle devient la moitié qui compte : le
+    plan est vide ET il l'est sur les quatre services correctement adressés.
+    C'est ce qui sépare un réadressage réussi d'une configuration restée en
+    l'état.
+    """
+    attendues = set(SERVICES_ORIGINE) | {SERVICE_AJOUTE}
+    obtenues = set(identites(etat))
+    assert obtenues == attendues, (
+        f"Le state porte les clés {sorted(obtenues)}, attendu "
+        f"{sorted(attendues)}. Le plan peut être vide et l'adressage faux : "
+        "c'est ce que les deux moitiés vérifient ensemble."
+    )
+
     proc = terraform(
         "plan", "-detailed-exitcode", "-input=false", "-no-color", cwd=applied
     )
