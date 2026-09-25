@@ -25,7 +25,25 @@ REPO = Path(__file__).resolve().parent.parent
 LABS = REPO / "labs"
 
 # Formules que le générateur laisse derrière lui, dans les deux langues.
-MARQUEURS = ("à écrire", "to write", "A_COMPLETER")
+#
+# Ce sont les PHRASES du gabarit, pas des fragments. La première version
+# cherchait « à écrire » et « to write », et cela a coûté un faux positif
+# mesuré le 2026-09-25 : l'indice anglais de `environments/when-to-use-workspaces`
+# dit « the block **to write** is a data "terraform_remote_state" », une tournure
+# parfaitement légitime dans un indice rédigé. Le lab était retenu dans la dette
+# alors que ses trois indices étaient écrits, et rien ne pouvait l'en sortir.
+#
+# Un détecteur trop large ne se contente pas de crier à tort : il rend la liste
+# de dette fausse, donc inutilisable.
+MARQUEURS = (
+    "Nudge à écrire",
+    "Méthode à écrire",
+    "Quasi-solution à écrire",
+    "Nudge to write",
+    "Method to write",
+    "Near-solution to write",
+    "A_COMPLETER",
+)
 
 # Convention MESURÉE sur les 51 labs déjà écrits, le 2026-09-18 : trois indices
 # aux coûts 10, 15 et 20. Le catalogue Kubernetes en recommande quatre ; c'est
@@ -38,7 +56,6 @@ DETTE = {
     "aws/sg-subnet-instance",
     "certifications/professional/capstone6-hcp",
     "certifications/professional/mock-pro",
-    "environments/when-to-use-workspaces",
 }
 
 

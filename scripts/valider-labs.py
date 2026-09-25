@@ -1,0 +1,393 @@
+#!/usr/bin/env python3
+"""Éprouve chaque lab dans les DEUX sens, par dsoxlab, et écrit son verdict.
+
+Pourquoi ce script existe
+-------------------------
+`scripts/test-all.sh` rejoue la solution de référence contre les tests du lab,
+par la fixture `_apply_lab_state` du `conftest.py`. C'est utile, et cela prouve
+exactement une chose : **la solution passe les tests**.
+
+Cela ne prouve pas l'autre moitié, **les tests échouent avant le travail**. Un
+lab dont les tests sont verts sur l'état de départ ne mesure rien, et rien dans
+le fichier ne le laisse deviner. Le catalogue Kubernetes a trouvé ainsi cinq
+labs en un jour, et six ont été trouvés ici (issue #17), dont un qui rendait
+50/100 sans qu'on ait touché à quoi que ce soit.
+
+Ce que le script fait, et rien de plus
+--------------------------------------
+Il **enchaîne les commandes dsoxlab**, il ne les réimplémente pas. Pour chaque
+lab :
+
+    dsoxlab clean <id>     on part d'un état connu
+    dsoxlab run   <id>     l'état de départ est posé
+    dsoxlab check <id>     DOIT rendre 0 : le travail n'est pas fait
+    (la solution de référence est déchiffrée dans le workdir et jouée)
+    dsoxlab check <id>     DOIT rendre 100
+    dsoxlab clean <id>     et il ne doit rien rester
+
+Le verdict va dans `validation-labs.json`, versionné : c'est la trace qui
+manquait, et elle distingue « livrable » de « validé ».
+
+Ce que le script surveille en plus
+----------------------------------
+**Les traces.** Un lab qui laisse un conteneur Docker derrière lui fait tomber
+le suivant, et le message ne parle alors ni du lab ni du conteneur. Mesuré le
+2026-09-24 sur ce dépôt : un conteneur `floci-ec2-*` orphelin retenait le port
+2201, et la création d'instance suivante échouait sur « Bind for 0.0.0.0:2201
+failed », sans un mot sur la cause. Le script photographie donc les conteneurs
+avant et après, et nomme ce qui a été laissé.
+
+Ce qu'il ne peut pas faire
+--------------------------
+Il ne juge pas la JUSTESSE d'un lab. Un lab peut rendre 0 puis 100 en ne
+mesurant rien d'intéressant. Le cycle prouve que les tests discriminent l'état
+de départ de l'état d'arrivée, pas que la question posée vaut la peine.
+
+Usage :
+    python3 scripts/valider-labs.py                    # tout le catalogue
+    python3 scripts/valider-labs.py --lab <id>          # un seul lab
+    python3 scripts/valider-labs.py --section hcp-terraform
+    python3 scripts/valider-labs.py --check             # échoue si un lab est ROUGE
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import re
+import shutil
+import subprocess
+import sys
+import time
+from dataclasses import asdict, dataclass, field
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from lecture_yaml import YamlIllisible, lire_yaml  # noqa: E402
+
+RACINE = Path(__file__).resolve().parent.parent
+LABS = RACINE / "labs"
+SOLUTIONS = RACINE / "solution"
+VERDICTS = RACINE / "validation-labs.json"
+VAULT = RACINE / ".vault-pass"
+
+# `dsoxlab check` affiche « Score : 87 / 100 pts » ; on lit le premier nombre.
+SCORE = re.compile(r"Score\s*:\s*(\d+)\s*/\s*100")
+TESTS = re.compile(r"Tests\s*:\s*[^\d]*(\d+)/(\d+)")
+
+# Un lab qui skippe n'est ni validé ni rouge : il n'a pas pu être joué.
+MARQUES_DE_SKIP = ("skipped", "SKIPPED", "Lab non joué")
+
+
+@dataclass
+class Verdict:
+    """Ce qu'on a mesuré d'un lab, et ce qui permet d'en juger."""
+
+    id: str
+    chemin: str
+    verdict: str = "INCONNU"
+    score_avant: int | None = None
+    score_apres: int | None = None
+    tests: str | None = None
+    duree_s: float = 0.0
+    traces: list[str] = field(default_factory=list)
+    pourquoi: str = ""
+
+
+def _dsoxlab(*args: str, timeout: int = 900) -> subprocess.CompletedProcess[str]:
+    env = dict(os.environ, LAB_HOME=str(RACINE))
+    return subprocess.run(
+        ["dsoxlab", *args],
+        cwd=RACINE,
+        env=env,
+        input="y\n",
+        capture_output=True,
+        text=True,
+        timeout=timeout,
+        check=False,
+    )
+
+
+def _score(sortie: str) -> int | None:
+    trouve = SCORE.search(sortie)
+    return int(trouve.group(1)) if trouve else None
+
+
+def _tests(sortie: str) -> str | None:
+    trouve = TESTS.search(sortie)
+    return f"{trouve.group(1)}/{trouve.group(2)}" if trouve else None
+
+
+def _conteneurs() -> set[str]:
+    """Les conteneurs Docker présents, pour comparer avant et après."""
+    if not shutil.which("docker"):
+        return set()
+    proc = subprocess.run(
+        ["docker", "ps", "-a", "--format", "{{.Names}}"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    return {l.strip() for l in proc.stdout.splitlines() if l.strip()}
+
+
+def labs_du_catalogue() -> list[tuple[str, Path]]:
+    """[(id, répertoire), ...] pour tout lab porteur d'un lab.yaml."""
+    trouves = []
+    for contrat in sorted(LABS.rglob("lab.yaml")):
+        try:
+            donnees = lire_yaml(contrat)
+        except YamlIllisible as erreur:
+            print(f"  lab illisible, écarté : {erreur}", file=sys.stderr)
+            continue
+        identifiant = donnees.get("id")
+        if identifiant:
+            trouves.append((identifiant, contrat.parent))
+    return trouves
+
+
+def _poser_la_solution(lab: Path) -> str | None:
+    """Déchiffre la solution dans le workdir et joue son script s'il y en a un.
+
+    Rend un message d'erreur, ou None si tout s'est bien passé.
+    """
+    rel = lab.relative_to(LABS)
+    source = SOLUTIONS / rel
+    if not source.is_dir() or not any(source.rglob("*")):
+        return f"aucune solution de référence sous solution/{rel}"
+
+    try:
+        donnees = lire_yaml(lab / "lab.yaml")
+    except YamlIllisible as erreur:
+        return str(erreur)
+    workdir = lab / ((donnees.get("runtime") or {}).get("workdir") or "challenge/work")
+    if not workdir.is_dir():
+        return f"le workdir {workdir.relative_to(RACINE)} n'existe pas après `run`"
+
+    # `rglob` et non `iterdir` : une solution peut être organisée en
+    # SOUS-RÉPERTOIRES, et beaucoup le sont (`socle/`, `app/`, `modules/`...).
+    #
+    # La première version de cette fonction ne copiait que les fichiers de la
+    # racine. Résultat mesuré le 2026-09-25 : quinze labs des sections `modules`
+    # et `environments` rendaient 0 -> 0, c'est-à-dire que la solution ne faisait
+    # passer aucun test. Un motif aussi systématique n'était pas quinze défauts
+    # indépendants : c'était le validateur qui n'avait rien posé.
+    #
+    # `conftest.py` faisait déjà juste, avec `rglob` et l'arborescence
+    # reproduite. Il fallait le lire plutôt que de réécrire à côté.
+    for chiffre in sorted(source.rglob("*")):
+        if not chiffre.is_file():
+            continue
+        cible = workdir / chiffre.relative_to(source)
+        cible.parent.mkdir(parents=True, exist_ok=True)
+        # ansible-vault exige des descripteurs bloquants : on les lui rend en
+        # lisant /dev/null et en écrivant dans un fichier.
+        with open(os.devnull) as entree, cible.open("w") as sortie:
+            proc = subprocess.run(
+                ["ansible-vault", "view", "--vault-password-file", str(VAULT), str(chiffre)],
+                stdin=entree,
+                stdout=sortie,
+                stderr=subprocess.PIPE,
+                text=True,
+                check=False,
+            )
+        if proc.returncode != 0:
+            return f"déchiffrement de {chiffre.name} : {proc.stderr[-200:]}"
+
+    script = workdir / "solution.sh"
+    if script.is_file():
+        proc = subprocess.run(
+            ["bash", "solution.sh"],
+            cwd=workdir,
+            capture_output=True,
+            text=True,
+            timeout=900,
+            check=False,
+        )
+        script.unlink()
+        if proc.returncode != 0:
+            return (
+                f"la solution a rendu {proc.returncode} : "
+                f"{(proc.stderr or proc.stdout)[-300:]}"
+            )
+    return None
+
+
+def valider(identifiant: str, lab: Path) -> Verdict:
+    """Le cycle complet sur un lab."""
+    v = Verdict(id=identifiant, chemin=str(lab.relative_to(LABS)))
+    debut = time.monotonic()
+    avant = _conteneurs()
+
+    try:
+        _dsoxlab("clean", identifiant, timeout=300)
+
+        pose = _dsoxlab("run", identifiant)
+        if pose.returncode != 0:
+            v.verdict = "ROUGE"
+            v.pourquoi = f"`run` a échoué : {(pose.stderr or pose.stdout)[-300:]}"
+            return v
+
+        # Sens « 0 » : les tests doivent échouer sur l'état de départ.
+        premier = _dsoxlab("check", identifiant)
+        sortie = premier.stdout + premier.stderr
+        if any(m in sortie for m in MARQUES_DE_SKIP) and _score(sortie) is None:
+            v.verdict = "SKIP"
+            v.pourquoi = "le lab se skippe : prérequis absent (service ou compte)"
+            return v
+
+        v.score_avant = _score(sortie)
+        if v.score_avant is None:
+            v.verdict = "ROUGE"
+            v.pourquoi = f"aucun score lisible au premier check : {sortie[-300:]}"
+            return v
+        if v.score_avant != 0:
+            v.verdict = "ROUGE"
+            v.pourquoi = (
+                f"le lab rend {v.score_avant}/100 AVANT tout travail. Un test vert "
+                "sur l'état de départ n'est pas un test, c'est une hypothèse du "
+                "setup."
+            )
+            return v
+
+        # Sens « 100 » : la solution de référence doit tout passer.
+        souci = _poser_la_solution(lab)
+        if souci:
+            v.verdict = "ROUGE"
+            v.pourquoi = souci
+            return v
+
+        second = _dsoxlab("check", identifiant)
+        sortie = second.stdout + second.stderr
+        v.score_apres = _score(sortie)
+        v.tests = _tests(sortie)
+        if v.score_apres != 100:
+            v.verdict = "ROUGE"
+            v.pourquoi = (
+                f"le lab rend {v.score_apres}/100 avec la solution de référence "
+                f"({v.tests}). Soit la solution est fausse, soit un test exige "
+                "l'impossible."
+            )
+            return v
+
+        v.verdict = "VALIDE"
+
+    except subprocess.TimeoutExpired as erreur:
+        v.verdict = "ROUGE"
+        v.pourquoi = f"délai dépassé : {erreur}"
+    finally:
+        _dsoxlab("clean", identifiant, timeout=300)
+        v.duree_s = round(time.monotonic() - debut, 1)
+
+        # Les traces : ce que le lab a laissé derrière lui.
+        laisses = _conteneurs() - avant
+        if laisses:
+            v.traces = sorted(laisses)
+            if v.verdict == "VALIDE":
+                v.verdict = "ROUGE"
+                v.pourquoi = (
+                    f"le lab laisse {len(laisses)} conteneur(s) derrière lui : "
+                    f"{v.traces}. C'est le lab suivant qui en paiera le prix."
+                )
+
+    return v
+
+
+def charger_verdicts() -> dict:
+    if not VERDICTS.is_file():
+        return {}
+    try:
+        return json.loads(VERDICTS.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+
+
+def version(*commande: str) -> str:
+    try:
+        proc = subprocess.run(commande, capture_output=True, text=True, check=False)
+        return proc.stdout.splitlines()[0].strip() if proc.stdout else "inconnue"
+    except (OSError, IndexError):
+        return "inconnue"
+
+
+def main() -> int:
+    analyseur = argparse.ArgumentParser(
+        description="Éprouve chaque lab dans les deux sens et écrit son verdict.",
+    )
+    analyseur.add_argument("--lab", help="un seul lab, par son id")
+    analyseur.add_argument("--section", help="une section, par son répertoire")
+    analyseur.add_argument(
+        "--check",
+        action="store_true",
+        help="ne rejoue rien ; échoue si un verdict enregistré est ROUGE",
+    )
+    arguments = analyseur.parse_args()
+
+    if arguments.check:
+        enregistres = charger_verdicts().get("labs", {})
+        if not enregistres:
+            print("aucun verdict enregistré : lancez le script sans --check", file=sys.stderr)
+            return 1
+        rouges = [i for i, v in enregistres.items() if v.get("verdict") == "ROUGE"]
+        if rouges:
+            print(f"{len(rouges)} lab(s) ROUGE : {rouges}", file=sys.stderr)
+            return 1
+        print(f"{len(enregistres)} labs, aucun ROUGE")
+        return 0
+
+    if not VAULT.is_file():
+        print(".vault-pass absent : les solutions ne peuvent pas être déchiffrées.", file=sys.stderr)
+        return 1
+
+    a_jouer = labs_du_catalogue()
+    if arguments.lab:
+        a_jouer = [(i, p) for i, p in a_jouer if i == arguments.lab]
+    if arguments.section:
+        a_jouer = [
+            (i, p) for i, p in a_jouer if str(p.relative_to(LABS)).startswith(arguments.section)
+        ]
+    if not a_jouer:
+        print("aucun lab à jouer avec ces critères", file=sys.stderr)
+        return 1
+
+    print(f"{len(a_jouer)} lab(s) à éprouver dans les deux sens\n")
+
+    resultats = charger_verdicts().get("labs", {})
+    for rang, (identifiant, lab) in enumerate(a_jouer, start=1):
+        print(f"[{rang}/{len(a_jouer)}] {identifiant} ... ", end="", flush=True)
+        v = valider(identifiant, lab)
+        resultats[identifiant] = asdict(v)
+        detail = f"{v.score_avant} -> {v.score_apres}" if v.score_avant is not None else ""
+        print(f"{v.verdict} {detail} ({v.duree_s}s)")
+        if v.pourquoi:
+            print(f"      {v.pourquoi}")
+
+        # On écrit au fil de l'eau : une campagne interrompue garde ce qu'elle
+        # a mesuré.
+        VERDICTS.write_text(
+            json.dumps(
+                {
+                    "genere_le": time.strftime("%Y-%m-%d %H:%M:%S"),
+                    "terraform": version("terraform", "version"),
+                    "dsoxlab": version("dsoxlab", "--version"),
+                    "labs": dict(sorted(resultats.items())),
+                },
+                ensure_ascii=False,
+                indent=2,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+
+    comptes: dict[str, int] = {}
+    for v in resultats.values():
+        comptes[v["verdict"]] = comptes.get(v["verdict"], 0) + 1
+    print("\n" + ", ".join(f"{n} {etat}" for etat, n in sorted(comptes.items())))
+    print(f"verdicts écrits dans {VERDICTS.relative_to(RACINE)}")
+
+    return 1 if comptes.get("ROUGE") else 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
