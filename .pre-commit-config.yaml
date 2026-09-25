@@ -168,6 +168,27 @@ repos:
         pass_filenames: false
         always_run: true
 
+      - id: meta-declare-les-labs
+        name: tout lab livré est déclaré dans meta.yml, et réciproquement
+        entry: uv run --no-project --with pytest --with pyyaml pytest tests/test_meta_declare_les_labs.py -q
+        language: system
+        pass_filenames: false
+        always_run: true
+
+      - id: liens-internes
+        name: les liens relatifs des Markdown mènent quelque part
+        entry: uv run --no-project --with pytest --with pyyaml pytest tests/test_liens_internes.py -q
+        language: system
+        pass_filenames: false
+        always_run: true
+
+      - id: style-apprenant
+        name: ni emoji hors des briefs, ni tiret cadratin
+        entry: uv run --no-project --with pytest --with pyyaml pytest tests/test_style_apprenant.py -q
+        language: system
+        pass_filenames: false
+        always_run: true
+
       - id: outillage-coherent
         name: chaque vérificateur est câblé, chaque hook pointe un test réel
         entry: uv run --no-project --with pytest --with pyyaml pytest tests/test_outillage_coherent.py -q
