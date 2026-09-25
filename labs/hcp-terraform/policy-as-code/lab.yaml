@@ -19,6 +19,15 @@ certification_tags:
 runtime:
   type: shell
   workdir: challenge/work
+  fixtures:
+  - versions.tf
+  - variables.tf
+  - situations.auto.tfvars.json
+  - verdicts.tf
+  - connaissances.tf
+  - evaluation.tf
+  - plans/plan-conforme.json
+  - plans/plan-non-conforme.json
 validation:
   functional: true
   security: false

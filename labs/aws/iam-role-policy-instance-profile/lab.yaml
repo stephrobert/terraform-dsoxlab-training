@@ -37,20 +37,8 @@ runtime:
     ready_tcp: 14566
     ready_exec: curl -f http://localhost:4566/_floci/health
     ready_timeout: 120
-    post_start:
-    - - bash
-      - -c
-      - |-
-        set -eu
-        # Floci vient de demarrer avec un etat neuf : tout conteneur floci-ec2-* encore
-        # present est un residu d'une session precedente, et il retient un port SSH que
-        # la prochaine instance ne pourra pas obtenir.
-        D=http://localhost/v1.44
-        S=/var/run/docker.sock
-        F=%7B%22name%22%3A%5B%22floci-ec2%22%5D%7D
-        ids=$(curl -s --unix-socket $S "$D/containers/json?all=1&filters=$F" | grep -o "\"Id\":\"[^\"]*" | cut -d"\"" -f4 || true)
-        for id in $ids; do curl -s -o /dev/null -X DELETE --unix-socket $S "$D/containers/$id?force=1&v=1"; done
-        test -n "$ids" && echo "conteneurs EC2 orphelins supprimes" || echo "aucun conteneur EC2 orphelin"
+    spawns:
+    - floci-ec2
 validation:
   functional: true
   security: false

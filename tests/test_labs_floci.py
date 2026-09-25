@@ -21,18 +21,26 @@ là-dessus, sur deux labs différents.
 **Un `destroy` en fin de tests** couvre le cas nominal : le lab range ce qu'il a
 sorti. Il ne couvre pas l'interruption, Ctrl-C ou échec avant le dernier test.
 
-**Un nettoyage au démarrage** couvre l'interruption : quand Floci vient de
-démarrer, son état est neuf, donc tout conteneur `floci-ec2-*` encore présent
-est forcément un résidu.
+**La déclaration `spawns`** couvre l'interruption : dsoxlab retire les
+conteneurs engendrés quand il (re)crée le conteneur de service et au `clean`.
 
 Aucune des deux ne suffit seule, et c'est pourquoi les deux sont exigées ici.
 
 ## Ce que ces tests ne peuvent pas faire
 
 Ils lisent la déclaration, pas l'exécution : ils vérifient qu'un lab Floci
-DÉCLARE le nettoyage et un destroy, pas que le nettoyage fonctionne. Cela se
-mesure en jouant le lab, et cela a été fait : un conteneur orphelin retenant le
-port 2200, posé à la main, a bien disparu au `dsoxlab run` suivant.
+DÉCLARE ce qu'il engendre et qu'il détruit, pas que dsoxlab nettoie. Cela se
+mesure en jouant le lab, et cela a été fait sur dsoxlab 0.1.89, dans les trois
+cas du contrat :
+
+- un orphelin retenant le port 2200, posé à la main, disparaît quand dsoxlab
+  crée le conteneur de service ;
+- une instance créée par l'apprenant SURVIT à un `run` qui réutilise un service
+  déjà debout ;
+- elle disparaît au `clean`.
+
+C'est la deuxième qui distingue la déclaration du contournement qu'elle
+remplace : celui-ci supprimait le travail en cours.
 """
 
 from pathlib import Path
@@ -43,7 +51,7 @@ import yaml
 REPO = Path(__file__).resolve().parent.parent
 LABS = REPO / "labs"
 
-MARQUEUR_NETTOYAGE = "conteneurs EC2 orphelins"
+FRAGMENT_ENGENDRE = "floci-ec2"
 PORT_CANONIQUE = "14566:4566"
 NOM_CANONIQUE = "floci"
 
@@ -83,24 +91,35 @@ def test_au_moins_un_lab_utilise_floci() -> None:
 
 
 @pytest.mark.parametrize("rel", LABS_FLOCI)
-def test_un_lab_floci_nettoie_les_conteneurs_orphelins_au_demarrage(rel: str) -> None:
-    service = service_floci(rel)
-    commandes = service.get("post_start") or []
+def test_un_lab_floci_declare_les_conteneurs_qu_il_engendre(rel: str) -> None:
+    """Le champ `spawns`, apparu en dsoxlab 0.1.89 sur l'issue #239.
 
-    assert commandes, (
-        f"{rel} n'a aucun `post_start`.\n\nUn lab Floci doit au minimum "
-        "supprimer les conteneurs `floci-ec2-*` laissés par une session "
-        "précédente : ils retiennent les ports SSH que Floci attribue, et la "
-        "prochaine instance échoue sur `port is already allocated`."
+    Il remplace le contournement que ce dépôt portait : un script curl vers
+    l'API Docker, posé en première commande de chaque `post_start`. Celui-ci
+    marchait et avait trois défauts que la déclaration supprime.
+
+    Il nettoyait à CHAQUE démarrage, y compris quand dsoxlab réutilisait un
+    conteneur debout : ce que le service avait engendré depuis était alors le
+    travail en cours de l'apprenant, et le contournement ne savait pas faire la
+    différence. `spawns` ne nettoie qu'à la (re)création et au `clean`, ce qui a
+    été vérifié dans les trois cas.
+
+    Il ne protégeait pas non plus les conteneurs de dsoxlab lui-même, et il
+    fallait le recopier dans chaque lab.
+    """
+    spawns = service_floci(rel).get("spawns") or []
+
+    assert spawns, (
+        f"{rel} ne déclare aucun `spawns`.\n\nFloci lance un vrai conteneur "
+        "Docker derrière chaque instance EC2, et lui publie un port SSH. dsoxlab "
+        "ne les connaît pas tant que le lab ne les déclare pas : ils survivent "
+        "alors au `clean`, et la prochaine instance échoue sur `port is already "
+        "allocated`, un message qui ne parle ni d'instance ni de lab."
     )
-
-    premiere = " ".join(str(part) for part in commandes[0])
-    assert MARQUEUR_NETTOYAGE in premiere, (
-        f"{rel} : la première commande de `post_start` ne nettoie pas les "
-        "conteneurs orphelins.\n\nElle doit venir EN PREMIER : tout ce qui est "
-        "créé avant elle serait supprimé par elle. Au démarrage du service, "
-        "Floci a un état neuf, donc tout conteneur `floci-ec2-*` présent est un "
-        "résidu."
+    assert FRAGMENT_ENGENDRE in spawns, (
+        f"{rel} déclare `spawns: {spawns}`, sans le fragment "
+        f"`{FRAGMENT_ENGENDRE}`.\n\nC'est ainsi que Floci nomme les conteneurs "
+        "qu'il lance."
     )
 
 

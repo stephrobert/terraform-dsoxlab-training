@@ -42,19 +42,6 @@ runtime:
       - -c
       - |-
         set -eu
-        # Floci vient de demarrer avec un etat neuf : tout conteneur floci-ec2-* encore
-        # present est un residu d'une session precedente, et il retient un port SSH que
-        # la prochaine instance ne pourra pas obtenir.
-        D=http://localhost/v1.44
-        S=/var/run/docker.sock
-        F=%7B%22name%22%3A%5B%22floci-ec2%22%5D%7D
-        ids=$(curl -s --unix-socket $S "$D/containers/json?all=1&filters=$F" | grep -o "\"Id\":\"[^\"]*" | cut -d"\"" -f4 || true)
-        for id in $ids; do curl -s -o /dev/null -X DELETE --unix-socket $S "$D/containers/$id?force=1&v=1"; done
-        test -n "$ids" && echo "conteneurs EC2 orphelins supprimes" || echo "aucun conteneur EC2 orphelin"
-    - - bash
-      - -c
-      - |-
-        set -eu
         API=http://localhost:4566/
         EC2AUTH="Authorization: AWS4-HMAC-SHA256 Credential=test/00000000/eu-west-3/ec2/aws4_request, SignedHeaders=host, Signature=0000"
         S3AUTH="Authorization: AWS4-HMAC-SHA256 Credential=test/00000000/eu-west-3/s3/aws4_request, SignedHeaders=host, Signature=0000"
@@ -67,6 +54,8 @@ runtime:
         test -n "$id" || { echo "creation impossible" >&2; exit 1; }
         ec2 "Action=CreateTags&Version=2016-11-15&ResourceId.1=$id&Tag.1.Key=Name&Tag.1.Value=capstone-facturation&Tag.2.Key=Owner&Tag.2.Value=finops&Tag.3.Key=Env&Tag.3.Value=prod" > /dev/null
         echo "instance heritee creee : $id"
+    spawns:
+    - floci-ec2
 validation:
   functional: true
   security: false
