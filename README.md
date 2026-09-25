@@ -2,8 +2,10 @@
 
 **Language:** [English](./README.md) · [Français](./README.fr.md)
 
+[![CI](https://github.com/stephrobert/terraform-dsoxlab-training/actions/workflows/ci.yml/badge.svg)](https://github.com/stephrobert/terraform-dsoxlab-training/actions/workflows/ci.yml)
 [![OpenSSF Scorecard](https://img.shields.io/ossf-scorecard/github.com/stephrobert/terraform-dsoxlab-training?label=OpenSSF%20Scorecard)](https://securityscorecards.dev/viewer/?uri=github.com/stephrobert/terraform-dsoxlab-training)
 [![Plumber compliance](https://score.getplumber.io/github.com/stephrobert/terraform-dsoxlab-training.svg)](https://score.getplumber.io/github.com/stephrobert/terraform-dsoxlab-training)
+[![SLSA 3](https://slsa.dev/images/gh-badge-level3.svg)](https://slsa.dev)
 [![License: CC BY 4.0](https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey.svg)](./LICENSE)
 
 Hands-on **Terraform** training, driven by the
