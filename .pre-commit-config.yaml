@@ -81,6 +81,20 @@ repos:
       #
       # Ce vérificateur existait déjà dans le dépôt sans être câblé nulle part :
       # il ne protégeait donc plus rien, en silence.
+      # Le catalogue des README doit lister TOUS les labs avec l'URL de leur
+      # guide. Il est généré depuis les vrais lab.yaml : un catalogue périmé
+      # bloque le push.
+      #
+      # `--no-project` : environnement éphémère avec juste pyyaml, pour que uv
+      # ne crée ni ne synchronise le venv du dépôt afin de lancer un script de
+      # catalogue.
+      - id: catalogue-a-jour
+        name: le catalogue des README est à jour (labs + URLs de guides)
+        entry: uv run --no-project --with pyyaml python scripts/gen_catalog.py --check
+        language: system
+        pass_filenames: false
+        stages: [pre-push]
+
       - id: solutions-chiffrees
         name: les solutions restent chiffrées par ansible-vault
         entry: uv run --no-project --with pytest --with pyyaml pytest tests/test_solutions_chiffrees.py -q
