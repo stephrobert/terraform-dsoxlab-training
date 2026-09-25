@@ -427,3 +427,12 @@ audit-terraform.md
 audit-corrections.json
 scripts/marquer-corrections.py
 solution/verified-with.json
+
+# Identifiants HCP Terraform. Ils vivent dans le répertoire personnel, jamais
+# ici : ces lignes ne sont qu'une ceinture, et `tests/test_aucun_jeton_versionne.py`
+# sont les bretelles, parce qu'un `.gitignore` ne protège que les chemins qu'on
+# a pensé à nommer et qu'un `git add -f` passe outre.
+credentials.tfrc.json
+credentials.tfrc
+.terraformrc
+*.tfrc

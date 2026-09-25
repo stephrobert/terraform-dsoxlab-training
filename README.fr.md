@@ -33,9 +33,17 @@ Selon les labs joués :
   un bloc `endpoints`, donc zéro compte AWS et zéro facture. Les labs qui
   déclarent un bloc `runtime.services` démarrent Floci tout seuls sous
   `dsoxlab run/check`.
+- **Un jeton HCP Terraform** : **aucun lab n'en exige.** Les sept labs
+  `hcp-terraform` s'arrêtent volontairement juste avant l'authentification, et
+  c'est ce qui les rend vérifiables partout. Un jeton ne sert qu'à aller plus
+  loin, et [`docs/hcp-token.fr.md`](./docs/hcp-token.fr.md) explique comment le
+  créer, où le poser, et lequel l'emporte quand plusieurs emplacements sont
+  remplis.
 
 ```bash
 uv tool install dsoxlab          # la CLI qui pilote les labs
+
+python3 scripts/diagnostic-jeton-hcp.py --verifier   # où est votre jeton, s'il y en a un
 ```
 
 ## Utilisation

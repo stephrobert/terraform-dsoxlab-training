@@ -33,9 +33,16 @@ Depending on the labs you play:
   through an `endpoints` block, so zero AWS account and zero bill. Labs that
   declare a `runtime.services` block start Floci automatically under
   `dsoxlab run/check`.
+- **An HCP Terraform token**: **no lab requires one.** The seven
+  `hcp-terraform` labs deliberately stop just short of authentication, which is
+  what makes them verifiable anywhere. A token is only needed to go further, and
+  [`docs/hcp-token.md`](./docs/hcp-token.md) covers creating it, where to put it,
+  and which location wins when several are filled.
 
 ```bash
 uv tool install dsoxlab          # the CLI that drives the labs
+
+python3 scripts/diagnostic-jeton-hcp.py --verifier   # where your token is, if any
 ```
 
 ## Usage
