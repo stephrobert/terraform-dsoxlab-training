@@ -21,6 +21,16 @@ certification_tags:
 runtime:
   type: shell
   workdir: challenge/work
+  fixtures:
+  - versions.tf
+  - main.tf
+  - terraform.tfstate
+  - out/api.json
+  - out/api.log
+  - out/web.json
+  - out/web.log
+  - out/batch.json
+  - out/batch.log
 validation:
   functional: true
   security: false
