@@ -84,10 +84,20 @@ norecursedirs = [
 package = false
 
 [dependency-groups]
-# dsoxlab embarque pytest + pytest-testinfra : aucun outil de test à installer
-# côté dépôt de labs. Gardé en dev-dep pour les contributeurs qui veulent un
-# venv local ; l'apprenant utilise le tool global (`uv tool install dsoxlab`).
+# dsoxlab n'est PAS déclaré ici, et c'est délibéré : c'est un OUTIL, pas une
+# dépendance de ce dépôt. Il s'installe à part, et la CI comme les hooks
+# l'appellent ainsi :
+#     uv tool install dsoxlab      # ou : uvx dsoxlab <commande>
+#
+# Le garder en dev-dep avait deux coûts. Dependabot ouvrait une PR à chaque
+# version de la CLI sur un dépôt qui ne l'embarque pas, et le catalogue Linux
+# jumeau, qui le déclare en source chemin local (`../dsoxlab`), rend son verrou
+# irrésoluble partout où ce répertoire manque, CI comprise. C'est la règle
+# commune aux cinq dépôts, et `ci.yml` la supposait déjà acquise.
+#
+# Le dépôt ne garde que ce dont ses propres vérificateurs ont besoin : lire des
+# YAML, et les exécuter.
 dev = [
     "pyyaml>=6",
-    "dsoxlab>=0.1.6",
+    "pytest>=8",
 ]
