@@ -157,7 +157,19 @@ def suite_verte(racine: Path) -> Iterator[Path]:
 # 1. La suite existe, au bon endroit, et elle passe
 # --------------------------------------------------------------------------
 
-def test_la_suite_vit_dans_le_repertoire_de_tests_du_module(racine: Path) -> None:
+def test_la_suite_vit_au_bon_endroit_et_elle_passe(racine: Path) -> None:
+    """L'emplacement de la suite vit ici, et plus dans un test a lui.
+
+    Seul, il etait VERT AVANT LE TRAVAIL : les fixtures posent deja un
+    `etiquette/tests/etiquette.tftest.hcl`, et constater sa presence revenait a
+    constater le setup. L'apprenant n'a pas a creer ce fichier, il a a le faire
+    PASSER.
+
+    L'emplacement reste a verifier, et pour une bonne raison : `terraform test`
+    ne dit rien quand il ne trouve aucune suite. Il affiche `Success! 0 passed,
+    0 failed.` et sort en 0. Une suite rangee ailleurs donnerait donc un succes
+    qui ne teste rien, et c'est exactement le piege que ce controle ferme.
+    """
     tests = _module(racine) / "tests"
     suites = sorted(tests.glob("*.tftest.hcl")) if tests.is_dir() else []
     assert suites, (
@@ -166,8 +178,6 @@ def test_la_suite_vit_dans_le_repertoire_de_tests_du_module(racine: Path) -> Non
         "affiche `Success! 0 passed, 0 failed.` et sort en 0."
     )
 
-
-def test_la_suite_passe_et_le_code_de_retour_vaut_zero(racine: Path) -> None:
     proc = _lancer_test(_module(racine))
     assert proc.returncode == 0, (
         f"`terraform test` sort en {proc.returncode}, attendu 0.\n"
