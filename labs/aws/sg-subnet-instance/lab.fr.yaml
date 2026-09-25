@@ -1,5 +1,5 @@
 ---
-title: 'Security group : regles dediees, for_each et subnet deterministe'
+title: 'Security group : règles dédiées, for_each et subnet déterministe'
 description: Construire un security group dont toutes les regles sont des
   ressources dediees, factoriser les regles d'entree par for_each, et poser une
   instance dans un subnet designe par son tag.

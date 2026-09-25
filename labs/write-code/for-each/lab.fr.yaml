@@ -1,6 +1,6 @@
 ---
 id: write-code-for-each
-title: Ajouter une instance sans detruire les autres
+title: Ajouter une instance sans détruire les autres
 description: Migrer count vers for_each avec des blocs moved sur une configuration
   deja appliquee, puis ajouter un service en prouvant zero destruction. Objectif Pro
   2d.

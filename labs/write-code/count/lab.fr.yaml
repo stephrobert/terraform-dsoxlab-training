@@ -1,6 +1,6 @@
 ---
 id: write-code-count
-title: count indexe par position, et la position ment
+title: count indexé par position, et la position ment
 description: 'Choisir count ou for_each pour chaque ressource et le prouver :
   indexer un ensemble par nom avec for_each, migrer une ressource count vers
   for_each sans rien detruire grace aux blocs moved, garder count pour des copies

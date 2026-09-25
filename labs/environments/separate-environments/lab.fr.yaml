@@ -1,4 +1,4 @@
 ---
 id: environments-separate-environments
-title: Deux racines, deux etats, un seul module partage
+title: Deux racines, deux états, un seul module partagé
 description: 'Brancher deux configurations racine sur un module partage avec un backend partiel, puis prouver en detruisant dev que prod n''a pas bouge.'
