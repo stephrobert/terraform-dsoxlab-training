@@ -1,4 +1,4 @@
 ---
 id: aws-backend-s3-remote-state
-title: Un state distant, verrouille, et lu par une autre stack
+title: Un state distant, verrouillé, et lu par une autre stack
 description: 'Reparer un bloc backend piege, rendre le verrou S3 reellement effectif, et faire consommer les outputs par une seconde configuration sans recopier une valeur.'

@@ -1,4 +1,4 @@
-# Un state distant, verrouille, et lu par une autre stack
+# Un state distant, verrouillé, et lu par une autre stack
 
 Deux croyances font tomber les candidats sur cet objectif :
 
