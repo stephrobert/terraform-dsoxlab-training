@@ -44,7 +44,6 @@ DETTE = {
     "hcp-terraform/projects-teams",
     "hcp-terraform/remote-runs",
     "hcp-terraform/shared-credentials",
-    "hcp-terraform/variable-sets",
 }
 
 
