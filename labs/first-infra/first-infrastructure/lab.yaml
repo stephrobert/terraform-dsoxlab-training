@@ -1,8 +1,10 @@
 ---
 id: first-infra-first-infrastructure
-title: Premiere Infrastructure (skeleton)
-description: Skeleton for the « Premiere Infrastructure » lab. Scenario and tests
-  still to be written.
+title: 'First infrastructure: the full cycle, proven'
+description: 'Run the Terraform cycle on a REAL resource rather than reciting it, and learn on the way that `~> 0.8` does not forbid `0.9.x`: the pessimistic operator increments the rightmost component,
+  and the 0.9 branch rewrote the resource schema.
+
+  '
 section: first-infra
 level: l1
 difficulty: beginner
@@ -19,6 +21,9 @@ certification_tags:
 runtime:
   type: shell
   workdir: challenge/work
+  fixtures:
+  - versions.tf
+  - main.tf
 validation:
   functional: true
   security: false

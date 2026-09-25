@@ -1,0 +1,25 @@
+# Configuration PARTIELLE du backend S3, fournie et complete.
+#
+# Le bloc `backend "s3" {}` de main.tf reste vide : ces arguments lui sont
+# donnes a l'initialisation, par
+#
+#   terraform init -backend-config=backend.tfbackend
+#
+# Un bloc `backend` n'accepte AUCUNE valeur nommee : ni variable, ni local. La
+# configuration partielle existe pour cela.
+
+bucket = "capstone3-etats"
+key    = "application/terraform.tfstate"
+region = "eu-west-3"
+
+use_lockfile = true
+
+use_path_style              = true
+skip_credentials_validation = true
+skip_metadata_api_check     = true
+skip_requesting_account_id  = true
+skip_region_validation      = true
+access_key                  = "test"
+secret_key                  = "test"
+
+endpoints = { s3 = "http://localhost:14566" }

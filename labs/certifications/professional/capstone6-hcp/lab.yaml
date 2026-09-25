@@ -1,14 +1,13 @@
 ---
 id: certifications-professional-capstone6-hcp
-title: 'Pro · Objective 6: HCP Terraform (multiple-choice)'
-description: 'Objective 6, assessed as multiple-choice at the exam: run workflow,
-  workspaces, credentials, policy as code. Configuration and policy validation, no
-  remote execution.'
+title: 'Pro · Objective 6: HCP Terraform, where the sub-objectives cross'
+description: |
+  Objective 6 is assessed by multiple choice, and needs no account. Six situations that each cross two sub-objectives, a `cloud` block to write, and a secret that must not reach the state. Six situations, six different outcomes: no constant answer passes.
 section: certif-pro
 level: l4
 difficulty: advanced
 lab_type: challenge
-estimated_time: 30m
+estimated_time: 45m
 skills:
 - terraform
 - hcp
@@ -22,6 +21,17 @@ certification_tags:
 runtime:
   type: shell
   workdir: challenge/work
+  fixtures:
+  - audit/versions.tf
+  - audit/variables.tf
+  - audit/situations.auto.tfvars.json
+  - audit/verdicts.tf
+  - audit/gouvernance.tf
+  - rattachement/versions.tf
+  - secret/versions.tf
+  - secret/variables.tf
+  - secret/jeton.auto.tfvars
+  - secret/main.tf
 validation:
   functional: true
   security: false

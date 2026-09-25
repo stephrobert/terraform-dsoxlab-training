@@ -1,5 +1,5 @@
 [project]
-name = "terraform-training"
+name = "terraform-dsoxlab-training"
 version = "0.1.0"
 description = "Lab pédagogique Terraform (Associate & Professional) — fournisseur de labs pour la CLI dsoxlab"
 requires-python = ">=3.11"
@@ -44,6 +44,18 @@ ignore = [
     # absolu, est le métier de ce dépôt. `terraform` et `tofu` viennent du
     # PATH, délibérément : c'est ainsi que l'apprenant les appelle.
     "S603", "S607",
+    # S310 : « URL open for permitted schemes ». La règle vise le cas où un
+    # schéma vient d'une entrée utilisateur, `file:` compris. Ici, les neuf
+    # appels visent deux destinations, toutes deux écrites en constante dans le
+    # fichier qui les emploie : l'émulateur local (`http://localhost:14566`) et
+    # l'API de HCP Terraform (`https://app.terraform.io`). Aucune n'est
+    # composée à partir de quoi que ce soit que l'apprenant fournit.
+    #
+    # Mesuré le 2026-09-25 : poser un `# noqa` par appel a cassé deux fichiers,
+    # parce que ces appels s'étendent sur plusieurs lignes et que la directive
+    # atterrissait au milieu d'un argument. Une règle qui se justifie une fois
+    # se désactive une fois, à l'endroit prévu pour cela.
+    "S310",
 ]
 
 [tool.ruff.lint.per-file-ignores]

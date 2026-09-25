@@ -1,4 +1,7 @@
 ---
 id: hcp-terraform-policy-as-code
-title: Policy As Code (squelette)
-description: Squelette du lab « Policy As Code ». Scénario et tests restent à écrire.
+title: "Policy as code : qui bloque un run, et qui peut passer outre"
+description: |
+  Un `hard-mandatory` n'est pas indépassable : c'est le réglage du policy set qui tranche,
+  croisé avec la permission de l'utilisateur. Qualifier sept runs, établir les niveaux des
+  trois frameworks, et écrire une règle qui refuse un plan non conforme et accepte l'autre.

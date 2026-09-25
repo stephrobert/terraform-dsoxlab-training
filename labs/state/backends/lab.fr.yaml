@@ -1,5 +1,8 @@
 ---
 id: state-backends
-title: Backends Terraform (squelette)
-description: Squelette du lab « Backends Terraform ». Scénario et tests restent à
-  écrire.
+title: "Migrer le state sans casser sa lignée"
+description: |
+  Un bloc backend n'accepte aucune valeur nommée. Passer d'un backend local implicite
+  à un backend paramétré par configuration partielle et `-backend-config`, et prouver
+  que le state a migré plutôt que d'être recréé : même `lineage`, deux ressources
+  toujours gérées.

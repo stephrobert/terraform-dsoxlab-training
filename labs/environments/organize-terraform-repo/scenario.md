@@ -1,6 +1,7 @@
 # Scenario: split a configuration without changing the plan
 
-**Target exam sub-objective: 2a (write and organise a configuration).**
+**Target exam sub-objective: 1b (generate an execution plan)**, comparing
+two plans being the only proof the split changed nothing.
 
 Splitting a `main.tf` is presented everywhere as risk-free because `terraform
 validate` passes afterwards. Yet `validate` "does not check if argument values are

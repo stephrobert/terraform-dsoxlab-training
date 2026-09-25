@@ -1,8 +1,10 @@
 ---
 id: first-infra-debug-apply
-title: Debug Apply (skeleton)
-description: Skeleton for the « Debug Apply » lab. Scenario and tests still to be
-  written.
+title: Resume after a failed apply, without redoing the work
+description: 'An apply that fails halfway leaves a PARTIAL state. It is not an accident to wipe: it is the starting point of the repair. Fix the cause in the configuration, and prove the already created
+  resources kept their identifiers.
+
+  '
 section: first-infra
 level: l1
 difficulty: beginner
@@ -19,6 +21,10 @@ certification_tags:
 runtime:
   type: shell
   workdir: challenge/work
+  fixtures:
+  - versions.tf
+  - main.tf
+  - terraform.tfstate
 validation:
   functional: true
   security: false

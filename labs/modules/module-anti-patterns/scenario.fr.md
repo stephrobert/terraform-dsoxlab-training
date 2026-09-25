@@ -1,6 +1,6 @@
 # Scénario : refactorer un projet copié-collé sans rien détruire
 
-**Sous-objectif d'examen visé : 4c (refactorer une configuration existante).**
+**Sous-objectif d'examen visé : 4d (refactorer une configuration existante en modules).**
 
 Terraform suit des **adresses**, pas des ressources. Extraire du code recopié dans
 un module change ces adresses, et sans déclaration explicite, l'outil détruit puis

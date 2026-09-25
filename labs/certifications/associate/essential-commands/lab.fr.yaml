@@ -1,5 +1,8 @@
 ---
 id: certifications-associate-essential-commands
-title: 'Associate 004 : commandes essentielles'
-description: Réviser les commandes du workflow Terraform attendues à l'examen Associate
-  004.
+title: "Les commandes que l'examen attend, faites plutôt que récitées"
+description: |
+  Huit gestes qu'un candidat doit savoir FAIRE : `validate`, `fmt`, la cascade
+  de précédence, `moved`, `import`, `removed` sans détruire, `-replace`, et ce
+  que `sensitive` protège vraiment. Les codes de retour se consignent au moment
+  où ils sont observés : ils ne se reconstituent pas après coup.

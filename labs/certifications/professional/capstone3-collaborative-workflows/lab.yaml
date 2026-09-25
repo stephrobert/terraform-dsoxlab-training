@@ -1,8 +1,7 @@
 ---
 id: certifications-professional-capstone3-collaborative-workflows
 title: 'Pro · Objective 3: collaborative workflows'
-description: Remote state (S3 backend on Floci), version constraints, workflow in
-  automation and data sharing via terraform_remote_state. Exam objective 3.
+description: Remote state (S3 backend on Floci), version constraints, workflow in automation and data sharing via terraform_remote_state. Exam objective 3.
 section: certif-pro
 level: l4
 difficulty: advanced
@@ -21,6 +20,41 @@ certification_tags:
 runtime:
   type: shell
   workdir: challenge/work
+  fixtures:
+  - reseau/main.tf
+  - reseau/backend.tfbackend
+  - application/main.tf
+  - application/backend.tfbackend
+  - CIBLE.md
+  services:
+  - name: floci
+    image: floci/floci:1.6.0
+    ports:
+    - 14566:4566
+    run_args:
+    - -u
+    - root
+    - -v
+    - /var/run/docker.sock:/var/run/docker.sock
+    ready_tcp: 14566
+    ready_exec: curl -f http://localhost:4566/_floci/health
+    ready_timeout: 120
+    post_start:
+    - - bash
+      - -c
+      - |-
+        set -eu
+        # Le bucket qui accueillera les deux states. Cree par le lab, pas par
+        # l'apprenant : ce n'est pas le sujet du capstone, et `aws/backend-s3-remote-state`
+        # le fait deja creer.
+        #
+        # PUT sur un bucket existant est idempotent : ce post_start est rejoue a chaque
+        # demarrage du service.
+        S3AUTH="Authorization: AWS4-HMAC-SHA256 Credential=test/00000000/eu-west-3/s3/aws4_request, SignedHeaders=host, Signature=0000"
+        curl -s -o /dev/null -X PUT "http://localhost:4566/capstone3-etats" -H "$S3AUTH"
+        echo "bucket de state pret : capstone3-etats"
+    spawns:
+    - floci-ec2
 validation:
   functional: true
   security: false

@@ -1,16 +1,19 @@
 ---
 id: hcp-terraform-shared-credentials
-title: Credentials Partage (skeleton)
-description: Skeleton for the « Credentials Partage » lab. Scenario and tests still
-  to be written.
+title: "Credentials: neither in the code, nor in the state"
+description: |
+  `sensitive` hides a value from the screen, and the state holds it in clear text all the
+  same. Take the provider's keys out of the configuration, replace a token carried in a tag
+  with its fingerprint, and establish how dynamic credentials work.
 section: hcp-terraform
 level: l3
 difficulty: advanced
 lab_type: lab
-estimated_time: 30m
+estimated_time: 35m
 skills:
 - terraform
 - credentials-partage
+- aws-provider
 distros:
 - debian13
 doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/hcp-terraform/credentials-partage/
@@ -19,6 +22,29 @@ certification_tags:
 runtime:
   type: shell
   workdir: challenge/work
+  fixtures:
+  - configuration/versions.tf
+  - configuration/variables.tf
+  - configuration/main.tf
+  - configuration/jeton.auto.tfvars
+  - questionnaire/versions.tf
+  - questionnaire/questionnaire.tf
+  - questionnaire/reponses.auto.tfvars
+  services:
+  - name: floci
+    image: floci/floci:1.6.0
+    ports:
+    - 14566:4566
+    run_args:
+    - -u
+    - root
+    - -v
+    - /var/run/docker.sock:/var/run/docker.sock
+    ready_tcp: 14566
+    ready_exec: curl -f http://localhost:4566/_floci/health
+    ready_timeout: 120
+    spawns:
+    - floci-ec2
 validation:
   functional: true
   security: false

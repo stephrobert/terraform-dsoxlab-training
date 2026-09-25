@@ -1,8 +1,11 @@
 ---
 id: state-backends
-title: Backends Terraform (skeleton)
-description: Skeleton for the « Backends Terraform » lab. Scenario and tests still
-  to be written.
+title: "Migrate the state without breaking its lineage"
+description: |
+  A backend block accepts no named value. Move from an implicit local backend to a
+  parameterised one through partial configuration and `-backend-config`, and prove the
+  state migrated rather than being recreated: same `lineage`, both resources still
+  managed.
 section: state
 level: l2
 difficulty: intermediate

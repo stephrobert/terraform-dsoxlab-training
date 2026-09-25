@@ -19,6 +19,7 @@ compte AWS :
 
 import json
 import os
+import socket
 import subprocess
 import time
 from collections.abc import Iterator
@@ -112,9 +113,51 @@ def _porte_des_ressources(stack: Path) -> bool:
     return bool(module.get("resources"))
 
 
+
+# ── Disponibilite de l'emulateur ────────────────────────────────────────────
+#
+# Floci est publie sur le port 14566 de l'hote (cf. `runtime.services` du lab).
+# Il n'est demarre QUE pendant une session `dsoxlab` : hors session, le port est
+# ferme et chaque commande Terraform echoue sur un point de terminaison
+# injoignable. Sans la garde ci-dessous, l'apprenant lit une pile d'erreurs
+# Terraform la ou une seule phrase suffit.
+FLOCI_HOST = "127.0.0.1"
+FLOCI_PORT = 14566
+
+
+def _floci_joignable() -> bool:
+    try:
+        with socket.create_connection((FLOCI_HOST, FLOCI_PORT), timeout=2):
+            return True
+    except OSError:
+        return False
+
+
+def _exiger_floci() -> None:
+    """Skippe proprement si l'emulateur n'est pas la, sauf pour le formateur.
+
+    `LAB_WORKDIR` est pose par `scripts/verify-solutions.py`, qui materialise
+    lui-meme le repertoire : dans ce cas un service absent est un vrai defaut et
+    doit ECHOUER, pas disparaitre dans un skip.
+    """
+    if _floci_joignable():
+        return
+    message = (
+        f"Floci n'est pas joignable sur {FLOCI_HOST}:{FLOCI_PORT}. Ce lab en a "
+        "besoin : Floci emule l'API AWS en local, sans compte ni carte "
+        "bancaire.\n\n"
+        "Lancez le lab avec `dsoxlab run aws-backend-s3-remote-state`, qui le demarre tout "
+        "seul, et faites votre `dsoxlab check` DEPUIS cette session : le "
+        "service s'arrete quand vous la quittez."
+    )
+    if os.environ.get("LAB_WORKDIR"):
+        pytest.fail(message)
+    pytest.skip(message)
+
 @pytest.fixture(scope="module")
 def travail() -> Iterator[Path]:
     exiger_workdir(WORKDIR, LAB_ID)
+    _exiger_floci()
 
     # La sonde est REESSAYEE : un emulateur conteneurise refuse parfois une
     # requete isolee alors qu'il est sain, notamment quand plusieurs rejeux
@@ -184,6 +227,24 @@ def travail() -> Iterator[Path]:
             )
 
     yield WORKDIR
+
+    # Teardown : detruire PENDANT que l'emulateur repond encore.
+    #
+    # Floci lance un conteneur Docker par instance EC2, et ces conteneurs
+    # survivent a son propre arret. Sans ce destroy, chaque execution de la
+    # suite en abandonne quelques-uns, indefiniment.
+    #
+    # Volontairement tolerant : une configuration d'apprenant incomplete fera
+    # echouer le destroy, et ce n'est pas au teardown de faire echouer la suite.
+    #
+    # L'ORDRE compte, et il n'est pas negociable : le `consumer` lit l'etat
+    # distant du `producer` par une data source. Detruire le producer d'abord
+    # lui retirerait ce qu'il lit, et le destroy du consumer echouerait sur une
+    # lecture impossible.
+    for nom in ("consumer", "producer"):
+        stack = WORKDIR / nom
+        if stack.is_dir():
+            _tf("destroy", "-auto-approve", "-input=false", "-no-color", cwd=stack)
 
 
 # ── 1. Le bucket de state ───────────────────────────────────────────────────

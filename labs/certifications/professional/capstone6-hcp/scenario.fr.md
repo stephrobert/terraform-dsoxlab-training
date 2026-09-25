@@ -1,51 +1,74 @@
-# Scénario : Pro · Objectif 6, HCP Terraform
+# Scénario : objectif 6, là où les sous-objectifs se croisent
 
-**Objectif d'examen visé : 6** (6a le workflow d'exécution, 6b les workspaces et
-la gestion des accès, 6c les credentials, 6d la policy as code et la
-gouvernance).
+**Objectif d'examen visé : 6 en entier** (6a le workflow d'un run, 6b les workspaces et les
+accès, 6c les identifiants, 6d la policy as code).
 
-**Particularité assumée : cet objectif est le seul évalué en QCM à l'examen.**
-HashiCorp ne demande aucune manipulation hands-on de HCP Terraform. Ce TP ne
-lance donc **aucune exécution distante** et ne requiert **aucun compte HCP** : il
-porte sur la **lecture, le diagnostic et la correction** d'une configuration et
-d'une policy.
+L'objectif 6 est le seul évalué **en QCM** : HashiCorp ne demande aucune manipulation dans
+HCP Terraform. Ce capstone ne réclame donc **aucun compte**, comme les sept labs de la
+section.
+
+## Ce qu'un capstone ajoute aux sept labs
+
+Les sept labs traitent un sous-objectif chacun. Ici, chaque situation en croise **deux**, et
+c'est tout l'exercice : pris séparément, chaque champ se traite par un réflexe acquis ;
+ensemble, ils se renforcent ou s'annulent, et l'ordre dans lequel on les regarde décide du
+résultat.
+
+Une équipe prépare un audit de conformité. Elle doit dire, pour sept runs décrits, ce qui
+s'est réellement passé, rattacher son répertoire d'audit au bon workspace, et publier une
+fiche que l'auditeur puisse vérifier sans que le jeton de service ne sorte.
 
 ## Capacité visée
 
-Analyser une configuration HCP Terraform et **repérer ce qui cloche** : un
-périmètre d'accès trop large, des credentials mal placés, une policy qui laisse
-passer ce qu'elle devrait refuser.
+Trancher une situation où plusieurs règles de l'objectif 6 s'appliquent en même temps, sans
+confondre ce que chacune décide.
 
 ## D'où part l'apprenant
 
-Un jeu de fichiers décrit une organisation fictive : plusieurs workspaces, des
-variable sets, une attribution d'accès par équipe, et une **policy as code** qui
-prétend interdire certaines configurations non conformes.
+`challenge/work` contient trois répertoires :
 
-Tout est fourni **en l'état, avec des défauts** : rien à provisionner, tout à
-auditer.
+1. `audit/`, sept situations décrites dans `situations.auto.tfvars.json`, chacune portant un
+   déclencheur, un réglage d'auto-apply, un mode d'exécution, la présence de changements, et
+   l'état d'une policy avec les deux conditions de son override. Deux fichiers troués de
+   `???` ;
+2. `rattachement/`, à qui il manque son bloc `cloud` ;
+3. `secret/`, où une fiche de service doit être écrite sans que le jeton y entre.
 
 ## L'état à atteindre
 
-1. Les défauts de **périmètre d'accès** sont identifiés et corrigés : chaque
-   équipe obtient le niveau minimal nécessaire, et rien de plus.
-2. Les **credentials** ne sont plus exposés au mauvais niveau : ils vivent là où
-   leur portée est correcte, et les valeurs sensibles sont marquées comme telles.
-3. La **policy** est corrigée : elle **refuse** effectivement une configuration
-   non conforme fournie en exemple, et **accepte** la configuration conforme.
-4. Les réponses aux questions de compréhension du workflow d'exécution
-   (qui déclenche quoi, quand un plan est appliqué, ce qu'un run distant
-   implique) sont justes.
+1. `verdicts` qualifie les sept situations, avec sept mots possibles et **sept issues
+   différentes** : aucune réponse constante ne passe, et il n'y a pas de majorité à jouer.
+2. `gouvernance` établit ce qui autorise un override, ce que deviennent les policies en mode
+   d'exécution `local`, et où vivent les identifiants d'un run.
+3. `rattachement/` se rattache par son **nom** au workspace `audit-conformite` de
+   l'organisation `atelier-dsoxlab`, et son `init` va jusqu'à la demande d'authentification.
+4. `secret/` écrit une fiche qui porte l'empreinte du jeton et jamais le jeton, et le state
+   ne contient nulle part la valeur du jeton.
+
+## Les trois croisements qui coûtent
+
+**Une policy `mandatory` en échec sur une pull request ne bloque rien.** Il n'y a rien à
+bloquer : un plan spéculatif ne peut pas appliquer. Le réflexe « mandatory donc bloqué » se
+trompe de question.
+
+**Un `advisory` en échec n'empêche pas un auto-apply.** Le niveau d'enforcement décide d'une
+seule chose, et ce n'est pas celle-là.
+
+**Un mode d'exécution `local` rend la question des policies sans objet.** Rien ne s'exécute
+chez HCP Terraform, donc aucune policy ne s'y évalue, quel que soit son niveau.
 
 ## Comment on le prouve
 
-- La policy est **évaluée localement** contre deux jeux d'entrée : elle doit
-  refuser le non conforme et accepter le conforme. Un test qui ne vérifierait
-  que l'acceptation ne prouverait rien.
-- La configuration corrigée est validée structurellement : les accès et la
-  portée des variables correspondent à ce qui est attendu.
-- Les réponses de compréhension sont vérifiées automatiquement.
+Les tests lisent `terraform output -json` pour l'audit, la sortie de l'initialisation pour
+le rattachement, et le state pour le secret. Un test vérifie en plus que **les sept verdicts
+sont tous différents** : deux cas qui recevraient la même issue signaleraient une règle qui
+les confond.
 
-> Note de conception : l'outillage exact d'évaluation de la policy reste à
-> arrêter (Sentinel ou OPA) et doit être validé en conditions réelles avant
-> d'écrire les tests, comme cela a été fait pour Floci.
+Pour le rattachement, deux conditions sont exigées ensemble, parce qu'une mesure du
+2026-09-25 l'impose : une configuration portant `backend` et `cloud` affiche « Required
+token could not be found » **à côté** de sa faute. La marque de frontière, seule,
+déclarerait donc juste une configuration cassée.
+
+Pour le secret, le state entier est balayé, et non le seul attribut attendu : un secret
+déplacé ailleurs serait tout aussi exposé. Le dernier test exerce les deux côtés, car une
+fiche vidée de tout satisferait l'interdit sans plus rendre aucun service.

@@ -1,6 +1,7 @@
 # Scenario: the typo that breaks nothing
 
-**Exam objective: 3c (providing variable values), with a spillover to 2e for precedence.**
+**Exam objective: 2e (configure input variables and outputs)**, the precedence
+of value sources being the heart of it.
 
 A misspelled variable in a `.tfvars` does not fail the plan: it produces a warning, and the real variable stays at its default. It is a classic false diagnostic. The learner must fix such a typo and prove that a `terraform.tfvars.json` outranks `terraform.tfvars`.
 

@@ -1,7 +1,7 @@
 ---
 id: aws-backend-s3-remote-state
 title: A remote state, locked, and read by another stack
-description: 'Repair a trapped backend block, make the S3 lock actually effective, and have a second configuration consume the outputs without copying a single value.'
+description: Repair a trapped backend block, make the S3 lock actually effective, and have a second configuration consume the outputs without copying a single value.
 section: aws
 level: l3
 difficulty: advanced
@@ -33,11 +33,10 @@ runtime:
     ports:
     - 14566:4566
     ready_tcp: 14566
-    # Sonde jouee DANS le conteneur, reprise de son propre HEALTHCHECK. Le
-    # ready_tcp seul ne prouve rien : mesure, le proxy Docker accepte la
-    # connexion sur le port publie alors que le service n'est pas encore pret.
     ready_exec: curl -f http://localhost:4566/_floci/health
     ready_timeout: 120
+    spawns:
+    - floci-ec2
 validation:
   functional: true
   security: false

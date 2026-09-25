@@ -1,7 +1,10 @@
 ---
 id: first-infra-ansible
-title: Ansible (skeleton)
-description: Skeleton for the « Ansible » lab. Scenario and tests still to be written.
+title: Produce an Ansible inventory from the state
+description: 'Terraform knows what it created; Ansible must know it too. Build the bridge, and make it RELIABLE rather than merely functional: a typed variable, addresses computed by an HCL function, a
+  serialised file, and an inventory that disappears with the fleet it describes.
+
+  '
 section: first-infra
 level: l1
 difficulty: beginner
@@ -18,6 +21,11 @@ certification_tags:
 runtime:
   type: shell
   workdir: challenge/work
+  fixtures:
+  - versions.tf
+  - variables.tf
+  - main.tf
+  - outputs.tf
 validation:
   functional: true
   security: false

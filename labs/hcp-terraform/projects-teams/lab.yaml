@@ -1,8 +1,10 @@
 ---
 id: hcp-terraform-projects-teams
-title: Projects Equipes (skeleton)
-description: Skeleton for the « Projects Equipes » lab. Scenario and tests still to
-  be written.
+title: "Permissions add up, they do not override"
+description: |
+  A permission set at the organization level can beat one set on the workspace, and the
+  reverse is also true: the most permissive wins, never the most specific. Write the rule
+  that computes six teams' effective access, and establish two scales that are not the same.
 section: hcp-terraform
 level: l3
 difficulty: advanced
@@ -19,6 +21,14 @@ certification_tags:
 runtime:
   type: shell
   workdir: challenge/work
+  fixtures:
+  - acces/versions.tf
+  - acces/variables.tf
+  - acces/equipes.auto.tfvars.json
+  - acces/acces.tf
+  - questionnaire/versions.tf
+  - questionnaire/questionnaire.tf
+  - questionnaire/reponses.auto.tfvars
 validation:
   functional: true
   security: false

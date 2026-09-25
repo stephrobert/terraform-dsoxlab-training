@@ -1,5 +1,5 @@
 """
-Configuration pytest globale pour le repo terraform-training.
+Configuration pytest globale pour le repo terraform-dsoxlab-training.
 
 Tous les labs sont de type `shell` : ils s'exécutent dans `challenge/work` sur
 la machine de l'apprenant, où `terraform` (ou `tofu`) est sur le PATH. Il n'y a

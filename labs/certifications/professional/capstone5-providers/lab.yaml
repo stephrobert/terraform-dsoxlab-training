@@ -1,8 +1,7 @@
 ---
 id: certifications-professional-capstone5-providers
 title: 'Pro · Objective 5: configure and use providers'
-description: Plugin architecture, aliasing, versioning/sourcing/upgrades, authentication
-  and provider error troubleshooting (on Floci). Exam objective 5.
+description: Plugin architecture, aliasing, versioning/sourcing/upgrades, authentication and provider error troubleshooting (on Floci). Exam objective 5.
 section: certif-pro
 level: l4
 difficulty: advanced
@@ -22,6 +21,24 @@ certification_tags:
 runtime:
   type: shell
   workdir: challenge/work
+  fixtures:
+  - main.tf
+  - CIBLE.md
+  services:
+  - name: floci
+    image: floci/floci:1.6.0
+    ports:
+    - 14566:4566
+    run_args:
+    - -u
+    - root
+    - -v
+    - /var/run/docker.sock:/var/run/docker.sock
+    ready_tcp: 14566
+    ready_exec: curl -f http://localhost:4566/_floci/health
+    ready_timeout: 120
+    spawns:
+    - floci-ec2
 validation:
   functional: true
   security: false

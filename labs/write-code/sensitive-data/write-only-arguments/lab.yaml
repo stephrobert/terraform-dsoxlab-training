@@ -1,8 +1,7 @@
 ---
 id: write-code-sensitive-data-write-only-arguments
-title: "Write-only arguments: a secret that never lands in the state"
-description: Send a secret to the provider without ever persisting it in the Terraform
-  state, using write-only arguments against a local AWS emulator.
+title: 'Write-only arguments: a secret that never lands in the state'
+description: Send a secret to the provider without ever persisting it in the Terraform state, using write-only arguments against a local AWS emulator.
 section: write-code
 level: l2
 difficulty: intermediate
@@ -29,17 +28,19 @@ runtime:
   - providers.tf
   - terraform.tfvars
   services:
-  - name: cloud
+  - name: floci
     image: floci/floci:1.6.0
     ports:
-    - "4566:4566"
+    - 14566:4566
     run_args:
     - -u
     - root
     - -v
     - /var/run/docker.sock:/var/run/docker.sock
-    ready_tcp: 4566
+    ready_tcp: 14566
     ready_timeout: 120
+    spawns:
+    - floci-ec2
 validation:
   functional: true
   security: true

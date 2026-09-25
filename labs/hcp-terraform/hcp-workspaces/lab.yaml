@@ -1,8 +1,11 @@
 ---
 id: hcp-terraform-hcp-workspaces
-title: Workspaces Hcp (skeleton)
-description: Skeleton for the « Workspaces Hcp » lab. Scenario and tests still to
-  be written.
+title: "Workspaces: one word, two meanings, two attachment strategies"
+description: |
+  A CLI workspace is one more state in the same directory; an HCP Terraform workspace is a
+  unit of execution with its own variables, permissions and history. Repair two `cloud`
+  blocks, attach one by name and the other by tags, and establish what `terraform validate`
+  does not catch.
 section: hcp-terraform
 level: l3
 difficulty: advanced
@@ -19,6 +22,12 @@ certification_tags:
 runtime:
   type: shell
   workdir: challenge/work
+  fixtures:
+  - nomme/main.tf
+  - etiquete/main.tf
+  - questionnaire/questionnaire.tf
+  - questionnaire/versions.tf
+  - questionnaire/reponses.auto.tfvars
 validation:
   functional: true
   security: false

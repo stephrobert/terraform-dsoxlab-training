@@ -1,8 +1,8 @@
 ---
 id: certifications-professional-mock-pro
-title: Pro · Integrative 4h mock exam
-description: 'Professional mock exam: real tasks covering the 6 objectives within
-  the time limit, validated by pytest.'
+title: 'Pro · Integrative mock exam: the six objectives in one sitting'
+description: |
+  A rehearsal, not a lesson: six tasks, one per objective, to be played in one go once the six capstones are done. Drift reconciliation, dynamic configuration, two states that talk, a module that recreates nothing, two configurations of one provider, and a twelve-question HCP paper scored per sub-objective.
 section: certif-pro
 level: l4
 difficulty: advanced
@@ -21,6 +21,25 @@ certification_tags:
 runtime:
   type: shell
   workdir: challenge/work
+  fixtures:
+  - t1-derive/versions.tf
+  - t1-derive/main.tf
+  - t1-derive/existant.txt
+  - t2-dynamique/versions.tf
+  - t2-dynamique/main.tf
+  - t3-etats/socle/versions.tf
+  - t3-etats/socle/main.tf
+  - t3-etats/app/versions.tf
+  - t3-etats/app/main.tf
+  - t4-module/versions.tf
+  - t4-module/main.tf
+  - t5-providers/versions.tf
+  - t5-providers/main.tf
+  - t6-hcp/versions.tf
+  - t6-hcp/bareme.tf
+  - t6-hcp/reponses.auto.tfvars
+  - t6-hcp/questions.md
+  - t6-hcp/questions.fr.md
 validation:
   functional: true
   security: false

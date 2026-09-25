@@ -1,5 +1,8 @@
 ---
 id: first-infra-first-infrastructure
-title: Premiere Infrastructure (squelette)
-description: Squelette du lab « Premiere Infrastructure ». Scénario et tests restent
-  à écrire.
+title: "Première infrastructure : le cycle complet, prouvé"
+description: |
+  Déroulez le cycle Terraform sur une ressource RÉELLE plutôt que de le réciter,
+  et découvrez au passage que `~> 0.8` n'interdit pas `0.9.x` : l'opérateur
+  pessimiste incrémente le composant le plus à droite, et la branche 0.9 a
+  réécrit le schéma des ressources.

@@ -23,8 +23,21 @@ est **déjà appliquée** : un state existe, les ressources sont créées.
    et documentées, des outputs utiles, et **aucune valeur en dur**.
 2. La racine appelle ce module **trois fois** (ou une fois avec `for_each`), et
    la duplication a disparu.
-3. Le module est **versionné** : sa source est référencée avec une contrainte de
-   version explicite.
+3. Le module porte ses **propres exigences de version** : un bloc
+   `required_providers` avec une contrainte, et **aucune configuration de
+   provider**, celles-ci étant héritées de l'appelant.
+
+   Attention au piège que le lab fait constater : l'argument `version` d'un bloc
+   `module` **ne s'applique qu'aux modules de registry**. Sur une source locale,
+   Terraform refuse à l'`init` :
+
+   ```text
+   Error: Invalid registry module source address
+   you also set the argument "version", which applies only to registry modules.
+   ```
+
+   Mesuré le 2026-09-25. Versionner un module local passe donc par le dépôt qui
+   le porte, pas par cet argument.
 4. **Le point décisif** : après le refactor, `terraform plan` annonce **zéro
    changement**. Les ressources ont changé d'adresse dans le state (elles vivent
    désormais sous `module.*`) mais n'ont pas été recréées. Cela suppose de

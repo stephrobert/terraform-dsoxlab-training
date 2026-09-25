@@ -1,5 +1,5 @@
 ---
 id: certifications-professional-capstone6-hcp
-title: 'Pro · Objectif 6 : HCP Terraform (QCM)'
-description: 'Objectif 6, évalué en QCM à l''examen : run workflow, workspaces, credentials,
-  policy as code. Validation de configuration et de policy, sans exécution distante.'
+title: 'Pro · Objectif 6 : HCP Terraform, là où les sous-objectifs se croisent'
+description: |
+  L'objectif 6 est évalué en QCM, et ne demande aucun compte. Six situations qui croisent chacune deux sous-objectifs, un bloc `cloud` à écrire, et un secret qui ne doit pas atteindre le state. Six situations, six issues différentes : aucune réponse constante ne passe.

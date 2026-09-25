@@ -1,6 +1,9 @@
 # Scénario : ce que les commandes essentielles répondent vraiment
 
-**Sous-objectif d'examen visé : 1b, générer et examiner un plan d'exécution.**
+**Sous-objectif d'examen visé : 3d, générer et examiner un plan d'exécution.**
+Mobilisés en appui : 3c (valider une configuration), 3g (format et style),
+4c (variables et outputs), 4h (données sensibles), 6d (state et dérive),
+7a (importer de l'existant) et 7b (inspecter le state par la CLI).
 
 L'Associate 004 est un QCM d'une heure sur Terraform 1.12 : on n'y tape rien, et
 c'est le piège. Réviser un tableau de commandes donne l'illusion de savoir,
@@ -50,19 +53,24 @@ adopté. Ni `.terraform/`, ni state, ni répertoire `preuves/`.
 Les tests s'exécutent dans `challenge/work`, n'ouvrent jamais le `main.tf` de
 l'apprenant et ne lisent aucune sortie destinée à un humain.
 
-- Les six gestes du point 2 sont rejoués dans une copie jetable du répertoire :
-  les tests relèvent eux mêmes les codes et les comparent à `codes.json`, donc un
-  fichier recopié depuis un mémo échoue. C'est là que tombe l'idée reçue :
-  `validate` sans `init` sort en erreur, et il attrape un attribut inconnu, ce
-  que « syntaxe uniquement » laissait croire impossible.
-- La précédence est lue dans `output -json`, les tests relançant eux mêmes
-  l'apply avec et sans `-var`, et avec `TF_VAR_` dans leur environnement.
+- Les six gestes du point 2 sont rejoués dans des copies jetables du répertoire :
+  les tests relèvent eux mêmes les codes, sur votre configuration, et les
+  comparent à ceux de `codes.json`. Un chiffre recopié de travers tombe. C'est
+  là que tombe aussi l'idée reçue : `validate` sans `init` sort en erreur, et il
+  attrape un attribut inconnu, ce que « syntaxe uniquement » laissait croire
+  impossible. Ce rejeu sert surtout la justesse du lab : le jour où une version
+  de Terraform change un de ces codes, c'est le rejeu qui le dit, plutôt qu'un
+  candidat irréprochable qui se voit recalé.
+- La précédence est lue dans `output -json`, donc dans l'état que **votre**
+  apply a produit. Les tests n'appliquent rien eux mêmes : ils se contentent de
+  poser dans leur environnement les `TF_VAR_` que l'énoncé fixe, faute de quoi
+  la variable d'environnement retomberait sur son `default`.
 - Les points 4 et 5 sont lus dans `show -json` : adresses présentes ou absentes,
   `mode: managed`, croisés avec l'existence des fichiers sur le disque. Le point
   5 ne passe que si le state a oublié la ressource pendant que le fichier
   survit, soit le contraire du défaut de `removed`.
 - Le point 6 est vérifié sur le plan converti en JSON : `actions` vaut
-  `["delete", "create"]` et `action_reason` vaut `replace_by_request`. Le point 7
+  `["delete", "create"]` et le plan ne touche que cette adresse. Le point 7
   croise `output -json`, qui donne `"sensitive": true`, et `show -json`, où la
   même valeur apparaît en clair : le masquage est une commodité d'affichage, pas
   un chiffrement.

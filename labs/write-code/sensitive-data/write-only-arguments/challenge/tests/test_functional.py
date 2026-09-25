@@ -36,7 +36,7 @@ SENTINELLE = "WO-SENTINELLE-NE-DOIT-PAS-FUITER"
 # Floci est publie sur le port 4566 de l'hote (cf. runtime.services du lab et
 # la valeur par defaut de var.floci_endpoint).
 FLOCI_HOST = "127.0.0.1"
-FLOCI_PORT = 4566
+FLOCI_PORT = 14566
 
 
 def _floci_joignable() -> bool:

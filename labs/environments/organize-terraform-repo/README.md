@@ -116,6 +116,6 @@ dsoxlab hint environments-organize-terraform-repo
 
 It runs **offline**.
 
-Target exam sub-objective: **2a** (write and organise a configuration).
+Target exam sub-objective: **1b** (generate an execution plan).
 
 Reference: [organising a Terraform repository](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/organiser-repo-terraform/)

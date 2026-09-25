@@ -16,7 +16,7 @@ non l'inverse.
 
 ## D'où part l'apprenant
 
-Floci tourne en local sur `localhost:4566` (socket Docker monté, `-u root`).
+Floci tourne en local sur `localhost:14566` (socket Docker monté, `-u root`).
 L'étape de mise en place a créé, **via l'AWS CLI et non via Terraform**, une
 instance EC2 taguée `Name = legacy-billing-api` et `Owner = finops`. Son
 identifiant est déposé dans `challenge/work/existing-instance.txt`.

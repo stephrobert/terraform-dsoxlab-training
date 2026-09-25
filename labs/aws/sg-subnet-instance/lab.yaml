@@ -1,9 +1,7 @@
 ---
 id: aws-sg-subnet-instance
 title: 'Security group: dedicated rules, for_each and a deterministic subnet'
-description: Build a security group whose rules are all dedicated resources,
-  factor the ingress rules with for_each, and place an instance in a subnet
-  designated by its tag.
+description: Build a security group whose rules are all dedicated resources, factor the ingress rules with for_each, and place an instance in a subnet designated by its tag.
 section: aws
 level: l3
 difficulty: intermediate
@@ -34,8 +32,6 @@ runtime:
     image: floci/floci:1.6.0
     ports:
     - 14566:4566
-    # L'emulateur cree un vrai conteneur derriere chaque instance : sans le
-    # socket Docker ni les droits root, l'instance reste bloquee en `pending`.
     run_args:
     - -u
     - root
@@ -44,6 +40,8 @@ runtime:
     ready_tcp: 14566
     ready_exec: curl -f http://localhost:4566/_floci/health
     ready_timeout: 120
+    spawns:
+    - floci-ec2
 validation:
   functional: true
   security: false

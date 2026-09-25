@@ -1,8 +1,10 @@
 ---
 id: hcp-terraform-variable-sets
-title: Variable Sets (skeleton)
-description: Skeleton for the « Variable Sets » lab. Scenario and tests still to be
-  written.
+title: "Fifteen precedence levels, and one inversion"
+description: |
+  Among priority variable sets the broadest scope wins, whereas among normal sets it is
+  the narrowest. Build the complete fifteen-level table, then resolve cases the tests
+  generate and that no case-by-case answer can handle.
 section: hcp-terraform
 level: l3
 difficulty: advanced
@@ -19,6 +21,14 @@ certification_tags:
 runtime:
   type: shell
   workdir: challenge/work
+  fixtures:
+  - versions.tf
+  - variables.tf
+  - cas.auto.tfvars
+  - VOCABULAIRE.md
+  - precedence.tf
+  - resolution.tf
+  - qcm.tf
 validation:
   functional: true
   security: false

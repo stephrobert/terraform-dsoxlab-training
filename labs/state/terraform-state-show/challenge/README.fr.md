@@ -51,9 +51,12 @@ Sont prouvés, par exécution :
   que la fiche caviarde en `(sensitive value)` et que `sensitive_values` signale ;
 - votre liste d'attributs masqués est comparée à celle que le test **recalcule**
   depuis le JSON, et le test vérifie qu'ils sont bien absents de la fiche ;
-- `terraform state show` n'a pas d'option `-json` (code 1) et **ne rafraîchit
-  rien** : après une modification hors Terraform, sa sortie est inchangée alors
-  que `plan -detailed-exitcode` rend 2 ;
+- `terraform state show` et `-json` : le test lit votre **version** au lieu de
+  la supposer. Jusqu'à la 1.15 le drapeau n'existe pas et la commande sort en 1 ;
+  depuis la 1.16 il existe et rend une ressource, là où `show -json` rend le
+  state entier. Ce qui ne change pas, c'est le périmètre de chacune ;
+- `terraform state show` **ne rafraîchit rien** : après une modification hors
+  Terraform, sa sortie est inchangée alors que `plan -detailed-exitcode` rend 2 ;
 - `plan -detailed-exitcode` rend 0 à la fin : renseigner des outputs ne change
   rien à l'infrastructure.
 

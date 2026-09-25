@@ -1,8 +1,11 @@
 ---
 id: getting-started-providers-resources-data-sources
-title: Providers Resources Data Sources (skeleton)
-description: Skeleton for the « Providers Resources Data Sources » lab. Scenario and
-  tests still to be written.
+title: "What Terraform manages, and what it merely reads"
+description: |
+  One word separates the two kinds of block: `resource` creates and manages, `data`
+  reads. Prove it in the `mode` field of state, then observe the two consequences: a
+  `destroy` does not touch what it did not create, and a data source is re-read on
+  every plan.
 section: getting-started
 level: l1
 difficulty: beginner
@@ -19,6 +22,11 @@ certification_tags:
 runtime:
   type: shell
   workdir: challenge/work
+  fixtures:
+  - versions.tf
+  - main.tf
+  - outputs.tf
+  - catalogue.txt
 validation:
   functional: true
   security: false

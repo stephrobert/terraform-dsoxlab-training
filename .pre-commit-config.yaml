@@ -81,12 +81,131 @@ repos:
       #
       # Ce vérificateur existait déjà dans le dépôt sans être câblé nulle part :
       # il ne protégeait donc plus rien, en silence.
+      # Le catalogue des README doit lister TOUS les labs avec l'URL de leur
+      # guide. Il est généré depuis les vrais lab.yaml : un catalogue périmé
+      # bloque le push.
+      #
+      # `--no-project` : environnement éphémère avec juste pyyaml, pour que uv
+      # ne crée ni ne synchronise le venv du dépôt afin de lancer un script de
+      # catalogue.
+      - id: catalogue-a-jour
+        name: le catalogue des README est à jour (labs + URLs de guides)
+        entry: uv run --no-project --with pyyaml python scripts/gen_catalog.py --check
+        language: system
+        pass_filenames: false
+        stages: [pre-push]
+
       - id: solutions-chiffrees
         name: les solutions restent chiffrées par ansible-vault
         entry: uv run --no-project --with pytest --with pyyaml pytest tests/test_solutions_chiffrees.py -q
         language: system
         pass_filenames: false
         always_run: true
+
+      # LES HUIT VÉRIFICATEURS QUI NE PROTÉGEAIENT RIEN
+      #
+      # Mesuré le 2026-09-25 : le dépôt portait neuf vérificateurs dans `tests/`
+      # et un seul était câblé à un hook. Les huit autres ne tournaient que si
+      # quelqu'un lançait `pytest tests/` à la main, c'est-à-dire jamais pendant
+      # un commit. C'est pire que de ne pas les avoir : on les croit en poste.
+      #
+      # `tests/test_outillage_coherent.py` empêche désormais le défaut de
+      # revenir, en exigeant que chaque test soit câblé ici ou recensé avec sa
+      # raison.
+      - id: aucun-jeton-versionne
+        name: aucun jeton, clé AWS ou bloc credentials dans le dépôt
+        entry: uv run --no-project --with pytest --with pyyaml pytest tests/test_aucun_jeton_versionne.py -q
+        language: system
+        pass_filenames: false
+        always_run: true
+
+      - id: briefs-pointent-juste
+        name: un énoncé ne cite aucun chemin inexistant
+        entry: uv run --no-project --with pytest --with pyyaml pytest tests/test_briefs_pointent_juste.py -q
+        language: system
+        pass_filenames: false
+        always_run: true
+
+      - id: curriculums-coherents
+        name: un objectif cité existe dans SA grille de certification
+        entry: uv run --no-project --with pytest --with pyyaml pytest tests/test_curriculums.py -q
+        language: system
+        pass_filenames: false
+        always_run: true
+
+      - id: indices-ecrits
+        name: les indices ne sont pas restés au gabarit du générateur
+        entry: uv run --no-project --with pytest --with pyyaml pytest tests/test_hints_ecrits.py -q
+        language: system
+        pass_filenames: false
+        always_run: true
+
+      - id: labs-floci
+        name: un lab Floci déclare ce qu'il engendre et le détruit
+        entry: uv run --no-project --with pytest --with pyyaml pytest tests/test_labs_floci.py -q
+        language: system
+        pass_filenames: false
+        always_run: true
+
+      - id: langue-officielle
+        name: aucun fichier de lecture n'est resté au gabarit
+        entry: uv run --no-project --with pytest --with pyyaml pytest tests/test_langue_officielle.py -q
+        language: system
+        pass_filenames: false
+        always_run: true
+
+      - id: maturite-des-labs
+        name: un squelette ne passe pas pour un lab qui prouve quelque chose
+        entry: uv run --no-project --with pytest --with pyyaml pytest tests/test_maturite_des_labs.py -q
+        language: system
+        pass_filenames: false
+        always_run: true
+
+      - id: script-de-solution
+        name: un solution.sh laisse sa trace et disparaît du workdir
+        entry: uv run --no-project --with pytest --with pyyaml pytest tests/test_script_de_solution.py -q
+        language: system
+        pass_filenames: false
+        always_run: true
+
+      - id: meta-declare-les-labs
+        name: tout lab livré est déclaré dans meta.yml, et réciproquement
+        entry: uv run --no-project --with pytest --with pyyaml pytest tests/test_meta_declare_les_labs.py -q
+        language: system
+        pass_filenames: false
+        always_run: true
+
+      - id: liens-internes
+        name: les liens relatifs des Markdown mènent quelque part
+        entry: uv run --no-project --with pytest --with pyyaml pytest tests/test_liens_internes.py -q
+        language: system
+        pass_filenames: false
+        always_run: true
+
+      - id: style-apprenant
+        name: ni emoji hors des briefs, ni tiret cadratin
+        entry: uv run --no-project --with pytest --with pyyaml pytest tests/test_style_apprenant.py -q
+        language: system
+        pass_filenames: false
+        always_run: true
+
+      - id: outillage-coherent
+        name: chaque vérificateur est câblé, chaque hook pointe un test réel
+        entry: uv run --no-project --with pytest --with pyyaml pytest tests/test_outillage_coherent.py -q
+        language: system
+        pass_filenames: false
+        always_run: true
+
+      # Le contrat du catalogue, au push : `validate-structure` lit meta.yml,
+      # chaque lab.yaml, chaque fixture déclarée et chaque lien relatif des
+      # README. Il attrape ce qu'aucun test local ne voit.
+      - id: contrat-du-catalogue
+        name: dsoxlab validate-structure
+        entry: uvx dsoxlab validate-structure
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-push]
 
 # POURQUOI IL N'Y A PAS DE HOOK `terraform fmt`, ET POURQUOI IL NE FAUT PAS
 # L'AJOUTER TEL QUEL.

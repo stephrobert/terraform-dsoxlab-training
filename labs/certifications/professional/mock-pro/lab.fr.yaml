@@ -1,5 +1,5 @@
 ---
 id: certifications-professional-mock-pro
-title: Pro · Mock intégratif 4h
-description: 'Examen blanc du Professional : tâches réelles couvrant les 6 objectifs
-  dans le temps imparti, validées par pytest.'
+title: 'Pro · Examen blanc intégratif : les six objectifs d''une traite'
+description: |
+  Une répétition générale, pas une leçon : six tâches, une par objectif, à jouer d'un trait une fois les six capstones réussis. Réconciliation d'une dérive, configuration dynamique, deux états qui communiquent, un module qui ne recrée rien, deux configurations d'un provider, et un QCM de douze questions noté par sous-objectif.

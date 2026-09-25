@@ -1,13 +1,15 @@
 ---
 id: hcp-terraform-remote-runs
-title: Remote Runs (skeleton)
-description: Skeleton for the « Remote Runs » lab. Scenario and tests still to be
-  written.
+title: "The stream a run sends back, and the three ways to start one"
+description: |
+  What a CLI receives from a remote run is the structured stream `terraform apply -json`
+  also produces locally. Record it, analyse it in HCL — two `change_summary` messages, only
+  one of which says what happened — and establish what each of the three workflows allows.
 section: hcp-terraform
 level: l3
 difficulty: advanced
 lab_type: lab
-estimated_time: 30m
+estimated_time: 35m
 skills:
 - terraform
 - remote-runs
@@ -19,6 +21,13 @@ certification_tags:
 runtime:
   type: shell
   workdir: challenge/work
+  fixtures:
+  - flux/main.tf
+  - analyse/versions.tf
+  - analyse/analyse.tf
+  - questionnaire/versions.tf
+  - questionnaire/questionnaire.tf
+  - questionnaire/reponses.auto.tfvars
 validation:
   functional: true
   security: false

@@ -1,5 +1,7 @@
 ---
 id: aws-import-moved-drift
-title: Import Moved Drift (squelette)
-description: Squelette du lab « Import Moved Drift ». Scénario et tests restent à
-  écrire.
+title: "Import, moved et dérive : les trois pièges qu'un tutoriel ne montre jamais"
+description: |
+  Placez sous contrôle de Terraform une instance EC2 créée en dehors de lui,
+  changez son adresse logique sans que l'objet réel soit recréé, puis
+  réconciliez une dérive en ACCEPTANT la réalité plutôt qu'en l'écrasant.

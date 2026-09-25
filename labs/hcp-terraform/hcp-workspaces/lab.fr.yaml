@@ -1,4 +1,8 @@
 ---
 id: hcp-terraform-hcp-workspaces
-title: Workspaces Hcp (squelette)
-description: Squelette du lab « Workspaces Hcp ». Scénario et tests restent à écrire.
+title: "Workspaces : un mot, deux sens, deux stratégies de rattachement"
+description: |
+  Un workspace CLI est un état de plus dans le même répertoire ; un workspace HCP Terraform
+  est une unité d'exécution, avec ses variables, ses droits et son historique. Réparer deux
+  blocs `cloud`, rattacher l'un par nom et l'autre par étiquettes, et établir ce que
+  `terraform validate` ne voit pas.

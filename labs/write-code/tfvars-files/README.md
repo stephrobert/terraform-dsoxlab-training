@@ -55,6 +55,6 @@ dsoxlab check write-code-tfvars-files
 dsoxlab hint write-code-tfvars-files
 ```
 
-Exam objective: **3c** (providing variable values).
+Exam objective: **2e** (configure input variables and outputs).
 
 Reference: [tfvars files in Terraform](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/fichiers-tfvars/)

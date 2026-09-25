@@ -10,7 +10,7 @@ Convertir un argument ordinaire en sa variante **write-only** (`_wo`), comprendr
 
 ## D'où part l'apprenant
 
-`challenge/work/` contient un projet incomplet qui vise **Floci**, un émulateur AWS local écoutant sur `http://localhost:4566`. Sous `dsoxlab run`, Floci est démarré automatiquement par le mécanisme `runtime.services` du lab : aucune commande Docker à taper, aucun compte AWS, aucune facture.
+`challenge/work/` contient un projet incomplet qui vise **Floci**, un émulateur AWS local écoutant sur `http://localhost:14566`. Sous `dsoxlab run`, Floci est démarré automatiquement par le mécanisme `runtime.services` du lab : aucune commande Docker à taper, aucun compte AWS, aucune facture.
 
 Sont **complets** : `versions.tf` (provider `hashicorp/aws` en `~> 6.0`), `providers.tf` (identifiants factices, `endpoints` vers Floci, `skip_*`), `variables.tf`, `terraform.tfvars` (qui fournit la valeur du secret) et `outputs.tf`. Seul `main.tf` est troué :
 

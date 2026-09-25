@@ -1,70 +1,66 @@
-# Scénario : deux mots « workspace », deux stratégies de rattachement
+# Scénario : un mot, deux sens, deux stratégies de rattachement
 
-**Sous-objectif d'examen visé : 6b.**
+**Sous-objectif d'examen visé : 6b, les workspaces HCP Terraform et leurs options de
+configuration.**
 
-L'objectif 6 est évalué en QCM : aucun compte HCP Terraform ici, rien ne part en
-exécution distante. Le lab traite les deux pièges qui font tomber les candidats :
-confondre le workspace CLI, simple state nommé dans un répertoire, avec le
-workspace HCP Terraform, unité d'exécution avec ses variables et ses droits, et
-croire que `name` et `tags` cohabitent dans un bloc `cloud`.
+L'objectif 6 est évalué en QCM : ni compte HCP Terraform, ni run distant. Ce lab ne demande
+donc **aucun compte et aucun `terraform login`**, et il prouve pourtant quelque chose de
+réel, parce qu'un bloc `cloud` est contrôlé bien avant toute authentification.
+
+Deux équipes partagent un dépôt. L'une rattache son répertoire à un workspace unique
+désigné par son nom, l'autre en sélectionne tout un ensemble par étiquettes. Ni l'une ni
+l'autre configuration ne s'initialise, et `terraform validate` répond que tout va bien.
 
 ## Capacité visée
 
-Écrire un bloc `cloud` correct du premier coup, trancher entre stratégie `name`
-et stratégie `tags`, et savoir quel contrôle attrape quelle faute : ce que
-`terraform validate` voit, ce que seule l'initialisation du backend voit.
+Distinguer les deux choses que le mot *workspace* désigne, rattacher un répertoire à HCP
+Terraform par la bonne stratégie, et savoir où un bloc `cloud` est contrôlé, ce qui décide
+de ce que `validate` peut dire et de ce qu'il ne peut pas dire.
 
 ## D'où part l'apprenant
 
-`challenge/work` contient trois répertoires, aucun provider, donc aucun accès
-réseau. `nomme/` est à réparer, rattaché par nom au workspace `app-prod`, et
-cumule trois fautes : un `backend "local"` cohabite avec le bloc `cloud`, le bloc
-`workspaces` déclare à la fois `name` et `tags`, et `organization` pointe sur
-`var.organisation`. `etiquete/` est à réparer, rattaché par étiquettes : deux
-blocs `cloud` concurrents et un second `workspaces` vide, l'état visé imposant
-une map clé-valeur, un `project` et donc un `required_version` compatible avec la
-forme map. `questionnaire/` fournit un `questionnaire.tf` à ne pas modifier :
-variable `reponses` d'un type objet strict, blocs `validation` qui refusent tout
-mot hors de l'énuméré, `output` qui republient les réponses. Seul
-`reponses.auto.tfvars` est à remplir, ses valeurs étant remplacées par `???`.
+`challenge/work` contient trois répertoires :
+
+1. `nomme/`, qui doit se rattacher **par nom** au workspace `app-prod` de l'organisation
+   `atelier-dsoxlab`. Il porte trois fautes, et elles ne tombent pas au même endroit.
+2. `etiquete/`, qui doit se rattacher **par étiquettes**, avec un `project` et aucun
+   `name`. Il porte deux fautes d'une autre nature.
+3. `questionnaire/`, cinq réponses à poser dans `reponses.auto.tfvars`. Le type est fourni
+   et validé : une réponse hors de l'énuméré est refusée **au plan**, avec un message qui
+   dit quoi écrire.
 
 ## L'état à atteindre
 
-1. `nomme/` et `etiquete/` sont valides : plus aucun diagnostic d'erreur, ni
-   conflit `cloud` contre `backend`, ni `cloud` en double.
-2. `nomme/` est rattaché par la stratégie `name` sur le workspace exact
-   `app-prod`, et son `organization` est une chaîne littérale.
-3. `etiquete/` est rattaché par la stratégie `tags`, avec `project` déclaré et
-   sans aucun `name`.
-4. Aucun des deux ne s'initialise vraiment : l'initialisation s'arrête au jeton
-   absent ou à la découverte du service, frontière assumée du lab.
-5. Le questionnaire s'applique et ses outputs tranchent : workspace CLI contre
-   workspace HCP Terraform, les quatre modes d'exécution et le réglage par défaut
-   d'un workspace, les workspace variables non évaluées en mode Local, les deux
-   seules opérations qui ignorent le verrou, le réglage à activer avant tout plan
-   de destruction, la règle de suppression, les versions minimales pour `project`
-   et pour les tags clé-valeur, et les messages exacts du conflit `cloud` contre
-   `backend` et du jeton manquant.
+1. `nomme/` se rattache par nom, avec `organization` en **chaîne littérale** : un bloc
+   `cloud` est résolu avant toute évaluation d'expression, il ne peut donc référencer
+   aucune valeur nommée, pas même une variable avec une valeur par défaut.
+2. `nomme/` ne porte plus de bloc `backend` : un bloc `cloud` **est** le backend, et les
+   deux ne peuvent pas cohabiter.
+3. `nomme/` ne porte plus de `tags` à côté de `name` : ce sont deux stratégies de
+   rattachement, et elles s'excluent.
+4. `etiquete/` déclare un seul bloc `cloud`, avec `project` et `tags`, et aucun `name`.
+5. Les cinq réponses établissent ce que crée un workspace CLI (un state), ce qu'est un
+   workspace HCP (une unité d'exécution), où vivent les variables d'entrée d'un run (le
+   workspace), pourquoi `name` et `tags` s'excluent (deux stratégies) et ce que `validate`
+   attrape des trois fautes de `nomme/` (le seul conflit de backend).
 
 ## Comment on le prouve
 
-Les tests n'ouvrent aucun `.tf`. Pour les points 1 à 3 ils lancent
-`terraform validate -json` puis `terraform init -input=false -json`, ne gardent
-que les objets de type `diagnostic` et raisonnent sur leur `summary` : les résumés
-`Conflicting 'cloud' and 'backend' configuration blocks are present`,
-`Duplicate HCP Terraform configurations`, `Variables not allowed` et
-`Missing workspace mapping strategy` doivent tous avoir disparu.
+Les deux répertoires réparés sont initialisés, et les tests exigent que l'initialisation
+s'arrête **au jeton**, et nulle part ailleurs. C'est la frontière assumée du lab : un bloc
+`cloud` correct va jusqu'à `Required token could not be found`, qu'aucune configuration
+fautive n'atteint.
 
-La stratégie retenue se prouve par sonde : dans `nomme/`, initialiser avec
-`TF_WORKSPACE` posé sur un autre nom doit produire `Specified workspace "name"
-conflicts with TF_WORKSPACE environment variable.`, et la même commande avec
-`TF_WORKSPACE=app-prod` ne doit plus la produire, ce qui identifie le nom exact ;
-dans `etiquete/`, aucune valeur ne déclenche ce conflit, puisque `name` est
-absent. Le point 4 est un contrôle négatif : le code de retour de
-l'initialisation n'est jamais assuré, seule compte l'absence de ces résumés.
+Ce seul marqueur ne suffirait pas, et la mesure dit pourquoi. Le 2026-09-25, sur Terraform
+1.16.1, une configuration portant à la fois un `backend` et un `cloud`, comme une
+configuration portant deux blocs `cloud`, affichent **aussi** `Required token could not be
+found`, à côté de leur faute. Les tests exigent donc les deux : le message de jeton
+présent, et aucun des messages de faute. Chacun de ces messages a été relevé sur un cas
+minimal, et non supposé.
 
-Le questionnaire suit les autres labs de la section : `terraform apply
--auto-approve -input=false`, lecture de `terraform output -json`, égalité stricte
-sur les listes ordonnées, égalité d'ensembles sinon, puis
-`terraform plan -detailed-exitcode` attendu en code 0. Un `challenge/work` vide
-ne produit ni output, ni `valid: true`, ni diagnostic de sonde.
+Les tests neutralisent par ailleurs tout jeton présent sur le poste, fichier de
+configuration CLI vide et aucune variable `TF_TOKEN_*`, car la même configuration correcte
+répond `Failed to read organization` sur un poste ayant fait `terraform login`. Sans cela,
+un apprenant qui utilise HCP Terraform par ailleurs serait recalé pour un travail juste.
+
+Le questionnaire se lit dans `terraform output -json`, jamais dans le fichier.

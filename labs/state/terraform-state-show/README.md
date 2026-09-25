@@ -118,8 +118,11 @@ terraform show -json | jq '.values.root_module.resources[]
 ## Switching to JSON, and its downside
 
 As soon as a value must serve anywhere other than under your eyes, the docs name
-the correct path: `terraform show -json`, then decode the documented structure.
-Careful, `terraform state show` has **no** `-json` option:
+the correct path: a JSON output, then decode the documented structure.
+
+Careful, the answer **changed with the version**, and many tutorials online
+stayed on the old one. Up to Terraform 1.15 included, `terraform state show` did
+not accept `-json`:
 
 ```bash
 terraform state show -json random_pet.env
@@ -130,7 +133,22 @@ Failed to parse command-line flags
 flag provided but not defined: -json
 ```
 
-It is `terraform show -json`, without `state`, that produces the full document.
+Since **1.16**, that flag exists and the command returns a JSON document. So
+check your version before copying an answer found elsewhere:
+
+```bash
+terraform version
+```
+
+What does not move is the **scope** of each command:
+
+| Command | What it returns |
+|---|---|
+| `terraform state show -json <address>` | **one** resource, since 1.16 |
+| `terraform show -json` | the **whole** state, outputs included |
+
+For a single value you now have a choice; for an overview it is still
+`terraform show -json`, without `state`.
 
 The downside matters: **JSON exposes sensitive values in plain text**. The
 official page says so plainly, "any sensitive values in Terraform state will be

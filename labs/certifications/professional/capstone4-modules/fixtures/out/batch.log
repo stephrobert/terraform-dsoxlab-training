@@ -1,0 +1,1 @@
+service=batch replicas=1

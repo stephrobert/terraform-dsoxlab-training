@@ -1,4 +1,8 @@
 ---
 id: first-infra-ansible
-title: Ansible (squelette)
-description: Squelette du lab « Ansible ». Scénario et tests restent à écrire.
+title: "Produire un inventaire Ansible depuis le state"
+description: |
+  Terraform sait ce qu'il a créé ; Ansible doit le savoir aussi. Construisez le
+  pont, et rendez-le FIABLE plutôt que seulement fonctionnel : une variable
+  typée, des adresses calculées par une fonction HCL, un fichier sérialisé, et
+  un inventaire qui disparaît avec le parc qu'il décrit.

@@ -1,6 +1,7 @@
 # Scénario : la précédence HCP Terraform à 15 niveaux, simulée en local
 
-**Sous-objectif d'examen visé : 6b (HCP Terraform, évalué en QCM uniquement).**
+**Sous-objectif d'examen visé : 6b (workspaces HCP Terraform et leurs options
+de configuration), objectif évalué en QCM uniquement.**
 
 Quinze étages, et une inversion que presque personne ne voit : chez les variable
 sets **priority**, le scope le plus **large** gagne, alors que chez les sets

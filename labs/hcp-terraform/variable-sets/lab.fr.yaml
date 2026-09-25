@@ -1,4 +1,7 @@
 ---
 id: hcp-terraform-variable-sets
-title: Variable Sets (squelette)
-description: Squelette du lab « Variable Sets ». Scénario et tests restent à écrire.
+title: "Quinze niveaux de précédence, et une inversion"
+description: |
+  Chez les variable sets prioritaires, la portée la plus large gagne, alors que chez les
+  sets normaux c'est la plus étroite. Construire la table complète des quinze niveaux, puis
+  résoudre des cas que les tests génèrent et qu'aucune réponse écrite cas par cas ne traite.

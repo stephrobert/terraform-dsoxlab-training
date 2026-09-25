@@ -1,5 +1,8 @@
 ---
 id: aws-iam-role-policy-instance-profile
-title: Iam Role Policy Instance Profile (squelette)
-description: Squelette du lab « Iam Role Policy Instance Profile ». Scénario et tests
-  restent à écrire.
+title: Composer la chaîne IAM, et nommer ses deux policies correctement
+description: |
+  `aws_iam_policy_document` est une data source LOCALE : elle n'interroge rien,
+  elle fabrique du JSON. Composez la chaîne policy, rôle, instance profile,
+  instance, et prouvez dans l'état structuré que la trust policy et les
+  permissions empruntent deux chemins distincts jusqu'au rôle.

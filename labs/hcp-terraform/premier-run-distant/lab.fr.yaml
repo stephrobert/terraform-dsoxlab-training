@@ -1,0 +1,8 @@
+---
+id: hcp-terraform-premier-run-distant
+title: "Le premier run distant, pour de vrai (optionnel, demande un compte)"
+description: |
+  Le seul lab du catalogue qui demande un compte HCP Terraform. Provisionner la plateforme
+  avec le provider `tfe` (projet, workspace, réglages, une variable sensible), rattacher une
+  configuration par un bloc `cloud`, et voir un run s'exécuter sur l'infrastructure de
+  HashiCorp.

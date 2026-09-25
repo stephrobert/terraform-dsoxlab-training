@@ -1,219 +1,320 @@
 # Terraform Training: Associate & Professional 2026
 
-Public hands-on Terraform course from the blog
-[blog.stephane-robert.info](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/parcours/).
+**Language:** [English](./README.md) · [Français](./README.fr.md)
 
-Each lab is self-contained: a guided tutorial (aligned with a course guide) plus
-a challenge whose final state is proven by `pytest`. This repository is a **lab
-provider** for the [`dsoxlab`](https://pypi.org/project/dsoxlab/) CLI.
+[![CI](https://github.com/stephrobert/terraform-dsoxlab-training/actions/workflows/ci.yml/badge.svg)](https://github.com/stephrobert/terraform-dsoxlab-training/actions/workflows/ci.yml)
+[![OpenSSF Scorecard](https://img.shields.io/ossf-scorecard/github.com/stephrobert/terraform-dsoxlab-training?label=OpenSSF%20Scorecard)](https://securityscorecards.dev/viewer/?uri=github.com/stephrobert/terraform-dsoxlab-training)
+[![Plumber compliance](https://score.getplumber.io/github.com/stephrobert/terraform-dsoxlab-training.svg)](https://score.getplumber.io/github.com/stephrobert/terraform-dsoxlab-training)
+[![SLSA 3](https://slsa.dev/images/gh-badge-level3.svg)](https://slsa.dev)
+[![License: CC BY 4.0](https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey.svg)](./LICENSE)
 
-> **No VM, no control node.** Unlike Ansible, Terraform runs on the learner's own
-> machine: every lab is a `shell` lab, no `dsoxlab provision`. You write HCL and
-> run `terraform` locally.
+Hands-on **Terraform** training, driven by the
+[`dsoxlab`](https://github.com/stephrobert/dsoxlab) CLI. This repository is the
+**lab catalog** behind the Terraform track of
+[blog.stephane-robert.info](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/parcours/),
+geared toward the **Terraform Associate (004)** and **Terraform Authoring and
+Operations Professional** certifications.
 
-> **Lab folders are named in English** (English is the primary language of this
-> repo). Lab content stays bilingual: `README.md`/`scenario.md`/`challenge` in
-> English, `*.fr.md` for French.
+## What it is
 
-> **Status: scenarios written, tests being added.** `meta.yml` declares the order
-> of 10 sections / 87 labs. The first 8 sections follow the blog course (one lab
-> per guide); the last two prepare the certifications, including **6 capstones
-> aligned with the 6 Professional exam objectives**.
+`terraform-dsoxlab-training` is a **content repository**, not an application. It
+provides:
+
+- **guided labs** whose brief describes a situation, never a set of steps;
+- **challenges** with no step-by-step, to test autonomy;
+- **capstones** aligned with the six objectives of the Professional exam;
+- **automated validation** that proves the state the configuration computes, not
+  that a command was typed;
+- **scoring** with cost-weighted hints.
+
+The `dsoxlab` CLI is the single entry point: it sets a lab up, shows the brief,
+validates, scores and reports. It lives in **its own repository** and is
+installed **separately**.
 
 ## Requirements
 
-Depending on the labs you play:
+- Python 3.11+ and [`uv`](https://docs.astral.sh/uv/)
+- `git`
+- **`terraform` (or `tofu`) on the PATH**: every lab.
+- **`libvirtd` and the `dmacvicar/libvirt` provider**: the `first-infra` section
+  only, which provisions real local resources.
+- **Docker and [Floci](https://blog.stephane-robert.info/docs/cloud/aws/floci/)**,
+  a local MIT-licensed AWS emulator (`floci/floci:1.6.0`): the `aws` section and
+  a few AWS-targeting labs. The `hashicorp/aws` provider points at Floci through
+  an `endpoints` block: no AWS account, no bill. Those labs declare Floci in
+  `runtime.services`, and dsoxlab starts it for you.
+- **Docker**, for the `vault-secrets` lab: it starts a `hashicorp/vault:1.21`
+  server in development mode, declared the same way.
+- **An HCP Terraform token**: **exactly one lab out of 88 requires one**, and it
+  is optional. Without a token its tests skip instead of failing. See
+  [`docs/hcp-token.md`](./docs/hcp-token.md).
 
-- **`terraform` (or `tofu`) on the PATH**: all labs.
-- **`libvirtd` + the `dmacvicar/libvirt` provider**: the `first-infra` section
-  only (it provisions real local resources).
-- **Docker + [Floci](https://blog.stephane-robert.info/docs/cloud/aws/floci/)**
-  (local MIT AWS emulator, container `floci/floci:1.6.0` on `:4566`): the `aws`
-  section and the write-only lab only. The `hashicorp/aws` provider targets Floci
-  through an `endpoints` block, so zero AWS account and zero bill. Labs that
-  declare a `runtime.services` block start Floci automatically under
-  `dsoxlab run/check`.
+No VM, no `dsoxlab provision`: unlike the Ansible and Linux catalogs, Terraform
+runs on the learner's own machine. Every lab is `runtime: shell`.
 
-```bash
-uv tool install dsoxlab          # the CLI that drives the labs
-```
+## Install
 
-## Usage
-
-```bash
-cd terraform-training
-dsoxlab list-labs                # the 87-lab catalog
-dsoxlab run <lab-id>             # play a lab (in challenge/work)
-dsoxlab check <lab-id>           # validate with pytest
-```
-
-Trainer-side, replay every reference solution against its own tests:
+`dsoxlab` is published on [PyPI](https://pypi.org/project/dsoxlab/). Install it
+as a standalone tool:
 
 ```bash
-scripts/test-all.sh              # plays all labs (needs .vault-pass)
-scripts/verify-solutions.py      # replays solutions in isolated temp dirs
-scripts/render-readme.py         # regenerate the lab list below (EN + FR)
+# 1. Install the dsoxlab CLI (external tool, stays out of this repo)
+uv tool install dsoxlab        # or: pipx install dsoxlab
+
+# 2. Clone this lab catalog
+git clone https://github.com/stephrobert/terraform-dsoxlab-training.git
+cd terraform-dsoxlab-training
+
+# 3. Check the contract is valid
+dsoxlab validate-structure
 ```
 
-## Labs
+### Your first lab, in five minutes
 
-<!-- LABS_LIST_START -->
+```bash
+dsoxlab list-labs                                     # browse the catalog
+dsoxlab run       getting-started-terraform-workflow  # set the starting state
+dsoxlab challenge getting-started-terraform-workflow  # read the mission
+# ... you work in challenge/work ...
+dsoxlab check     getting-started-terraform-workflow  # validate and score
+```
 
-**87 labs** across **10 sections** (source of truth: [`meta.yml`](./meta.yml)).
+`run` creates the lab's work directory and copies the declared fixtures into it.
+Everything then happens in `challenge/work`: it is the only place you change,
+and `dsoxlab clean` removes it.
 
+Stuck? `dsoxlab hint <id>` reveals a hint, whose cost is deducted from the score.
+
+### Keeping it up to date
+
+```bash
+git pull                       # the catalog
+uv tool upgrade dsoxlab        # the engine
+```
+
+The two evolve separately. A lab that fails after a Terraform upgrade is a defect
+in the catalog: open an issue, and `dsoxlab support --issue` arrives pre-filled.
+
+## How it works
+
+### The declarative contract (two levels)
+
+The catalog is described by data, not code, which keeps the `dsoxlab` engine
+domain-agnostic:
+
+- **`meta.yml`** at the root declares the repository identity and the **order**
+  of the sections shown by `list-labs`;
+- **`lab.yaml`** per lab declares its `skills`, `level`, `runtime` (type,
+  fixtures, services), `distros`, `doc_url` and a `validation` block. A
+  `lab.fr.yaml` overrides `title` and `description` in French, and nothing else.
+
+`dsoxlab validate-structure` checks the whole contract: `meta.yml` is well
+formed, every referenced lab exists with a valid `lab.yaml`, every declared test
+and fixture file is really there, and every relative link in a README leads
+somewhere.
+
+### The lab lifecycle
+
+```bash
+dsoxlab list-labs              # browse the catalog
+dsoxlab show      <id>         # metadata and status of one lab
+dsoxlab run       <id>         # set the starting state
+dsoxlab challenge <id>         # read the mission, no step-by-step
+dsoxlab hint      <id>         # reveal a hint (deducted from the score)
+dsoxlab check     <id>         # run the tests, compute and record the score
+dsoxlab clean     <id>         # remove the work directory
+dsoxlab progress               # per-section progress, average score
+```
+
+### Runtimes
+
+| Runtime | What the lab asks for |
+|---|---|
+| `shell` | a terminal and `terraform`. The tests read the state your configuration computes, on your own machine. |
+| `shell` + `floci` | Docker as well: dsoxlab starts the AWS emulator declared in `runtime.services`, and stops it with the session. |
+| `shell` + HCP account | a single, optional lab, which runs a real remote run on HCP Terraform. |
+
+### The validation model
+
+Validation **proves the state, it does not trust the learner**. Each lab ships
+`pytest` tests under `challenge/tests/` that query `terraform show -json` and
+`terraform output -json`: what the configuration COMPUTES, never what a file
+contains.
+
+And a lab is proven **in both directions**: the tests must fail before the work
+and pass after it. A test that is green before the work is not a test, it is an
+assumption about the setup. The root `conftest.py` replays the reference solution
+before the tests in instructor mode, to prove the solution itself is correct;
+`dsoxlab check` goes through the learner's path instead.
+
+Reference solutions live under `solution/`, **encrypted with ansible-vault**: a
+solution shipped in clear text spoils the lab, and git keeps it forever.
+
+### Scoring, hints, progress
+
+`check` records a score (tests passed out of total, minus the cost of any hints
+revealed). Hints are **base64-encoded** in `challenge/hints.yaml`, so that
+opening the file does not give them away, and their cost grows with their
+precision. History lives in a SQLite database **local to this repository**.
+
+## Catalog
+
+Labs live under `labs/` and are ordered by `meta.yml`. The table below is
+generated from the real `lab.yaml` files: run `python3 scripts/gen_catalog.py`
+to refresh it.
+
+<!-- LABS:START -->
 ### Discover Terraform
 
-First contact: declarative vs imperative, OpenTofu, installation, CLI, workflow, providers/resources/data sources, project structure.
-
-- [`terraform overview`](./labs/getting-started/terraform-overview/)
-- [`declarative vs imperative`](./labs/getting-started/declarative-vs-imperative/)
-- [`terraform vs opentofu`](./labs/getting-started/terraform-vs-opentofu/)
-- [`install terraform`](./labs/getting-started/install-terraform/)
-- [`cli terraform`](./labs/getting-started/cli-terraform/)
-- [`terraform workflow`](./labs/getting-started/terraform-workflow/)
-- [`providers resources data sources`](./labs/getting-started/providers-resources-data-sources/)
-- [`terraform project structure`](./labs/getting-started/terraform-project-structure/)
+| Lab (id) | Title | Level | Certif | Runtime | Companion guide |
+|---|---|---|---|---|---|
+| `getting-started-terraform-overview` | Prove that Terraform has a memory | l1 | TF-ASSOCIATE | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/decouvrir/presentation-terraform/) |
+| `getting-started-declarative-vs-imperative` | Prove idempotence where the imperative script diverges | l1 | TF-ASSOCIATE | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/decouvrir/declaratif-vs-imperatif/) |
+| `getting-started-terraform-vs-opentofu` | Prove Terraform / OpenTofu compatibility, and where it stops | l1 | TF-ASSOCIATE | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/decouvrir/terraform-vs-opentofu/) |
+| `getting-started-install-terraform` | Pin the CLI version and lock the providers | l1 | TF-ASSOCIATE | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/decouvrir/installer-terraform/) |
+| `getting-started-cli-terraform` | Make fmt, validate and the outputs agree | l1 | TF-ASSOCIATE | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/decouvrir/cli-terraform/) |
+| `getting-started-terraform-workflow` | Read a plan before applying it | l1 | TF-ASSOCIATE | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/decouvrir/workflow-terraform/) |
+| `getting-started-providers-resources-data-sources` | What Terraform manages, and what it merely reads | l1 | TF-ASSOCIATE | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/decouvrir/providers-resources-data-sources/) |
+| `getting-started-terraform-project-structure` | Split a monolith without moving the plan | l1 | TF-ASSOCIATE | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/decouvrir/structure-projet-terraform/) |
 
 ### First infrastructures
 
-Provision for real: first infra, variables/outputs, virtual network, libvirt VM, calling Ansible, debugging an apply, clean destroy.
-
-- [`first infrastructure`](./labs/first-infra/first-infrastructure/)
-- [`variables outputs`](./labs/first-infra/variables-outputs/)
-- [`virtual network`](./labs/first-infra/virtual-network/)
-- [`vm libvirt`](./labs/first-infra/vm-libvirt/)
-- [`ansible`](./labs/first-infra/ansible/)
-- [`debug apply`](./labs/first-infra/debug-apply/)
-- [`clean destroy`](./labs/first-infra/clean-destroy/)
+| Lab (id) | Title | Level | Certif | Runtime | Companion guide |
+|---|---|---|---|---|---|
+| `first-infra-first-infrastructure` | First infrastructure: the full cycle, proven | l1 | TF-ASSOCIATE | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/premieres-infras/premiere-infrastructure/) |
+| `first-infra-variables-outputs` | Variables, locals and the real precedence order | l1 | TF-ASSOCIATE | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/premieres-infras/variables-outputs/) |
+| `first-infra-virtual-network` | The dependency Terraform cannot guess | l1 | TF-ASSOCIATE | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/premieres-infras/reseau-virtuel/) |
+| `first-infra-vm-libvirt` | Update in place or replacement: read it in the plan | l1 | TF-ASSOCIATE | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/premieres-infras/vm-libvirt/) |
+| `first-infra-ansible` | Produce an Ansible inventory from the state | l1 | TF-ASSOCIATE | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/premieres-infras/ansible/) |
+| `first-infra-debug-apply` | Resume after a failed apply, without redoing the work | l1 | TF-ASSOCIATE | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/premieres-infras/debug-apply/) |
+| `first-infra-clean-destroy` | Destroying cleanly, and the four things it covers | l1 | TF-ASSOCIATE | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/premieres-infras/destroy-propre/) |
 
 ### Writing Terraform code
 
-The HCL language in depth: providers, resources, variables, outputs, locals, data sources, expressions, functions, conditionals, count, for_each, for loops, dynamic blocks, depends_on, lifecycle, tfvars, version constraints, style, sensitive data.
-
-- [`providers`](./labs/write-code/providers/)
-- [`declare resources`](./labs/write-code/declare-resources/)
-- [`variables`](./labs/write-code/variables/)
-- [`outputs`](./labs/write-code/outputs/)
-- [`locals`](./labs/write-code/locals/)
-- [`data sources`](./labs/write-code/data-sources/)
-- [`expressions`](./labs/write-code/expressions/)
-- [`functions`](./labs/write-code/functions/)
-- [`provider defined functions`](./labs/write-code/provider-defined-functions/)
-- [`conditionals`](./labs/write-code/conditionals/)
-- [`validation check preconditions`](./labs/write-code/validation-check-preconditions/)
-- [`count`](./labs/write-code/count/)
-- [`for each`](./labs/write-code/for-each/)
-- [`for loops`](./labs/write-code/for-loops/)
-- [`dynamic blocks`](./labs/write-code/dynamic-blocks/)
-- [`depends on`](./labs/write-code/depends-on/)
-- [`lifecycle`](./labs/write-code/lifecycle/)
-- [`tfvars files`](./labs/write-code/tfvars-files/)
-- [`version constraints`](./labs/write-code/version-constraints/)
-- [`style guide`](./labs/write-code/style-guide/)
-- [`sensitive values`](./labs/write-code/sensitive-data/sensitive-values/)
-- [`ephemeral values`](./labs/write-code/sensitive-data/ephemeral-values/)
-- [`write only arguments`](./labs/write-code/sensitive-data/write-only-arguments/)
-- [`vault secrets`](./labs/write-code/sensitive-data/vault-secrets/)
+| Lab (id) | Title | Level | Certif | Runtime | Companion guide |
+|---|---|---|---|---|---|
+| `write-code-providers` | Explicit source and provider alias | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/providers-terraform/) |
+| `write-code-declare-resources` | Read a resource's lifecycle in the plan | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/declarer-ressources/) |
+| `write-code-variables` | Variables typing, validation and precedence | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/variables-terraform/) |
+| `write-code-outputs` | The secret the output does not hide | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/outputs-terraform/) |
+| `write-code-locals` | The local that is not resolved at plan time | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/locals-terraform/) |
+| `write-code-data-sources` | When exactly does Terraform read a data source? | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/data-sources/) |
+| `write-code-expressions` | What expressions really compute | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/expressions-terraform/) |
+| `write-code-functions` | Compose values with HCL functions | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/fonctions-terraform/) |
+| `write-code-provider-defined-functions` | Provider-defined functions | l2 | TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/provider-defined-functions/) |
+| `write-code-conditionals` | The configuration that refuses absurd values | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/conditions-terraform/) |
+| `write-code-validation-check-preconditions` | Custom conditions: precondition, postcondition and check blocks | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/custom-conditions/) |
+| `write-code-count` | count indexes by position, and the position lies | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/count-terraform/) |
+| `write-code-for-each` | Add an instance without destroying the others | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/for-each-terraform/) |
+| `write-code-for-loops` | Transform a catalog with for expressions | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/boucles-for-terraform/) |
+| `write-code-dynamic-blocks` | Generate blocks, and know when not to | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/blocs-dynamiques/) |
+| `write-code-depends-on` | depends_on belongs only where a reference cannot go | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/depends-on/) |
+| `write-code-lifecycle` | The lifecycle block decides the order, not you | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/lifecycle-terraform/) |
+| `write-code-tfvars-files` | The typo that breaks nothing | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/fichiers-tfvars/) |
+| `write-code-version-constraints` | Version constraints and the lock file | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/version-constraints-terraform/) |
+| `write-code-style-guide` | The config that works but no CI accepts | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/style-guide-terraform/) |
+| `write-code-sensitive-data-sensitive-values` | When sensitivity breaks for_each | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/gestion-donnees-sensibles/sensitive-terraform/) |
+| `write-code-sensitive-data-ephemeral-values` | The value that never touches the state | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/gestion-donnees-sensibles/ephemeral-values/) |
+| `write-code-sensitive-data-write-only-arguments` | Write-only arguments: a secret that never lands in the state | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell + floci | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/gestion-donnees-sensibles/write-only-arguments/) |
+| `write-code-sensitive-data-vault-secrets` | Read secrets from Vault | l2 | TF-PROFESSIONAL | shell + vault | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/gestion-donnees-sensibles/vault-secrets/) |
 
 ### Terraform State
 
-Understand and manipulate the state: backends, locking, terraform state list/show/mv/rm, backup/restore, diagnosis.
-
-- [`understand state`](./labs/state/understand-state/)
-- [`backends`](./labs/state/backends/)
-- [`state locking`](./labs/state/state-locking/)
-- [`terraform state list`](./labs/state/terraform-state-list/)
-- [`terraform state show`](./labs/state/terraform-state-show/)
-- [`terraform state mv`](./labs/state/terraform-state-mv/)
-- [`terraform state rm`](./labs/state/terraform-state-rm/)
-- [`removed block`](./labs/state/removed-block/)
-- [`backup restore state`](./labs/state/backup-restore-state/)
-- [`diagnose state`](./labs/state/diagnose-state/)
+| Lab (id) | Title | Level | Certif | Runtime | Companion guide |
+|---|---|---|---|---|---|
+| `state-understand-state` | Take over a secret already in service, without regenerating it | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/comprendre-state/) |
+| `state-backends` | Migrate the state without breaking its lineage | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/backends-terraform/) |
+| `state-state-locking` | State locking, what it really blocks | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/verrouillage-state/) |
+| `state-terraform-state-list` | terraform state list, the address is the identity | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/terraform-state-list/) |
+| `state-terraform-state-show` | terraform state show, ce que la fiche cache | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/terraform-state-show/) |
+| `state-terraform-state-mv` | terraform state mv and the moved block, refactor without destroying | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/terraform-state-mv/) |
+| `state-terraform-state-rm` | terraform state rm and the removed block, stop managing without destroying | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/terraform-state-rm/) |
+| `state-removed-block` | The removed block: bequeath an infrastructure without destroying it | l2 | TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/bloc-removed/) |
+| `state-backup-restore-state` | Restore an amputated state: pick the right backup, prove nothing was recreated | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/sauvegarder-restaurer-state/) |
+| `state-diagnose-state` | Diagnose a drift and adopt an orphan resource, without losing its value | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/diagnostiquer-state/) |
 
 ### Terraform Modules
 
-Factor out with modules: creation, structure, variables/outputs, local module, registry, versioning, tests, best practices and anti-patterns.
-
-- [`create modules`](./labs/modules/create-modules/)
-- [`module structure`](./labs/modules/module-structure/)
-- [`module variables outputs`](./labs/modules/module-variables-outputs/)
-- [`module local`](./labs/modules/module-local/)
-- [`module registry`](./labs/modules/module-registry/)
-- [`version modules`](./labs/modules/version-modules/)
-- [`test module`](./labs/modules/test-module/)
-- [`module best practices`](./labs/modules/module-best-practices/)
-- [`module anti patterns`](./labs/modules/module-anti-patterns/)
+| Lab (id) | Title | Level | Certif | Runtime | Companion guide |
+|---|---|---|---|---|---|
+| `modules-create-modules` | A reusable module configures no provider of its own | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/creation-modules/) |
+| `modules-module-structure` | Refactor a monolith into the standard module structure | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/structure-module/) |
+| `modules-module-variables-outputs` | A module interface is a contract, not just types | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/variables-outputs-module/) |
+| `modules-module-local` | A local module is read in place, not installed | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/module-local/) |
+| `modules-module-registry` | A registry module is downloaded, versioned, and never locked | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/module-registry/) |
+| `modules-version-modules` | Publish and consume module versions with Git tags | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/versionner-modules/) |
+| `modules-test-module` | Prove a module with terraform test, mutations included | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/tester-module/) |
+| `modules-module-best-practices` | Make a module composable, and prove it from the plan JSON | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/bonnes-pratiques-modules/) |
+| `modules-module-anti-patterns` | Refactor a copy-pasted project without destroying anything | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/anti-patterns-modules/) |
 
 ### Environments
 
-Organize several environments: repo structure, dev/staging/prod separation, per-environment variables, workspaces (and when to use them), monorepo vs repo per stack.
-
-- [`organize terraform repo`](./labs/environments/organize-terraform-repo/)
-- [`separate environments`](./labs/environments/separate-environments/)
-- [`per environment variables`](./labs/environments/per-environment-variables/)
-- [`workspace`](./labs/environments/workspace/)
-- [`when to use workspaces`](./labs/environments/when-to-use-workspaces/)
-- [`monorepo vs repo per stack`](./labs/environments/monorepo-vs-repo-per-stack/)
-- [`terraform in automation`](./labs/environments/terraform-in-automation/)
+| Lab (id) | Title | Level | Certif | Runtime | Companion guide |
+|---|---|---|---|---|---|
+| `environments-organize-terraform-repo` | Split a monolithic configuration, and prove the plan did not move | l3 | TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/organiser-repo-terraform/) |
+| `environments-separate-environments` | Two roots, two states, one shared module | l3 | TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/separer-environnements/) |
+| `environments-per-environment-variables` | Which value wins, and how to prove it | l3 | TF-ASSOCIATE | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/variables-par-environnement/) |
+| `environments-workspace` | One directory, three states that never see each other | l3 | TF-ASSOCIATE | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/workspace/) |
+| `environments-when-to-use-workspaces` | Workspaces or separate configurations, and what the split costs | l3 | TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/quand-utiliser-workspaces/) |
+| `environments-monorepo-vs-repo-per-stack` | Split a monorepo into two stacks that talk to each other | l3 | TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/monorepo-vs-repo-par-stack/) |
+| `environments-terraform-in-automation` | Run Terraform in automation (CI/CD) | l3 | TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/terraform-en-automation/) |
 
 ### Terraform on AWS (via Floci)
 
-Apply Terraform to a real cloud provider emulated locally by Floci: first EC2, security group/subnet/instance, IAM, S3 remote-state backend, launch template + autoscaling, import/moved/drift. Feeds the Professional capstones (objectives 1 and 5).
-
-- [`provider aws first ec2`](./labs/aws/provider-aws-first-ec2/)
-- [`sg subnet instance`](./labs/aws/sg-subnet-instance/)
-- [`iam role policy instance profile`](./labs/aws/iam-role-policy-instance-profile/)
-- [`backend s3 remote state`](./labs/aws/backend-s3-remote-state/)
-- [`launch template autoscaling`](./labs/aws/launch-template-autoscaling/)
-- [`import moved drift`](./labs/aws/import-moved-drift/)
+| Lab (id) | Title | Level | Certif | Runtime | Companion guide |
+|---|---|---|---|---|---|
+| `aws-provider-aws-first-ec2` | AWS provider: authentication, endpoints and default tags | l3 | TF-ASSOCIATE | shell + floci | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/aws/provider-aws-premiere-ec2/) |
+| `aws-sg-subnet-instance` | Security group: dedicated rules, for_each and a deterministic subnet | l3 | TF-ASSOCIATE | shell + floci | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/aws/sg-subnet-instance/) |
+| `aws-iam-role-policy-instance-profile` | Compose the IAM chain, and name its two policies correctly | l3 | TF-PROFESSIONAL | shell + floci | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/aws/iam-role-policy-instance-profile/) |
+| `aws-backend-s3-remote-state` | A remote state, locked, and read by another stack | l3 | TF-PROFESSIONAL | shell + floci | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/aws/backend-s3-remote-state/) |
+| `aws-launch-template-autoscaling` | Read a replacement in the plan, before it happens | l3 | TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/aws/launch-template-autoscaling/) |
+| `aws-import-moved-drift` | Import, moved and drift: the three traps a tutorial never shows | l3 | TF-PROFESSIONAL | shell + floci | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/aws/import-moved-drift/) |
 
 ### HCP Terraform
 
-The HashiCorp platform (Professional objective 6, assessed by MCQ): run workflow, workspaces and access management, credentials and dynamic credentials, policy as code and governance.
-
-- [`hcp terraform overview`](./labs/hcp-terraform/hcp-terraform-overview/)
-- [`hcp workspaces`](./labs/hcp-terraform/hcp-workspaces/)
-- [`remote runs`](./labs/hcp-terraform/remote-runs/)
-- [`variable sets`](./labs/hcp-terraform/variable-sets/)
-- [`shared credentials`](./labs/hcp-terraform/shared-credentials/)
-- [`projects teams`](./labs/hcp-terraform/projects-teams/)
-- [`policy as code`](./labs/hcp-terraform/policy-as-code/)
+| Lab (id) | Title | Level | Certif | Runtime | Companion guide |
+|---|---|---|---|---|---|
+| `hcp-terraform-hcp-terraform-overview` | The run workflow: played in two steps, then qualified | l3 | TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/hcp-terraform/presentation-hcp-terraform/) |
+| `hcp-terraform-hcp-workspaces` | Workspaces: one word, two meanings, two attachment strategies | l3 | TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/hcp-terraform/workspaces-hcp/) |
+| `hcp-terraform-remote-runs` | The stream a run sends back, and the three ways to start one | l3 | TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/hcp-terraform/remote-runs/) |
+| `hcp-terraform-variable-sets` | Fifteen precedence levels, and one inversion | l3 | TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/hcp-terraform/variable-sets/) |
+| `hcp-terraform-shared-credentials` | Credentials: neither in the code, nor in the state | l3 | TF-PROFESSIONAL | shell + floci | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/hcp-terraform/credentials-partage/) |
+| `hcp-terraform-projects-teams` | Permissions add up, they do not override | l3 | TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/hcp-terraform/projects-equipes/) |
+| `hcp-terraform-policy-as-code` | Policy as code: what blocks a run, and who can override it | l3 | TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/hcp-terraform/policy-as-code/) |
+| `hcp-terraform-premier-run-distant` | The first remote run, for real (optional, needs an account) | l3 | TF-PROFESSIONAL | shell + HCP account | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/hcp-terraform/remote-runs/) |
 
 ### Associate Certification (004)
 
-Prepare the Associate 004 exam (MCQ): essential commands and a mock exam.
-
-- [`essential commands`](./labs/certifications/associate/essential-commands/)
-- [`mock 004`](./labs/certifications/associate/mock-004/)
+| Lab (id) | Title | Level | Certif | Runtime | Companion guide |
+|---|---|---|---|---|---|
+| `certifications-associate-essential-commands` | The commands the exam expects, done rather than recited | l4 | TF-ASSOCIATE | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/certifications/associate/) |
+| `certifications-associate-mock-004` | Associate 004: mock exam | l4 | TF-ASSOCIATE | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/certifications/associate/) |
 
 ### Professional Certification (capstones by objective)
 
-One capstone lab per objective of the Terraform Authoring and Operations Professional exam (the highest, hands-on level), plus a 4h integrative mock.
+| Lab (id) | Title | Level | Certif | Runtime | Companion guide |
+|---|---|---|---|---|---|
+| `certifications-professional-capstone1-resource-lifecycle` | Pro · Objective 1: resource lifecycle, import and drift reconciliation | l4 | TF-PROFESSIONAL | shell + floci | [guide](https://developer.hashicorp.com/terraform/tutorials/pro-cert/pro-review) |
+| `certifications-professional-capstone2-dynamic-config` | Pro · Objective 2: dynamic configuration and troubleshooting | l4 | TF-PROFESSIONAL | shell | [guide](https://developer.hashicorp.com/terraform/tutorials/pro-cert/pro-review) |
+| `certifications-professional-capstone3-collaborative-workflows` | Pro · Objective 3: collaborative workflows | l4 | TF-PROFESSIONAL | shell + floci | [guide](https://developer.hashicorp.com/terraform/tutorials/pro-cert/pro-review) |
+| `certifications-professional-capstone4-modules` | Pro · Objective 4: create, maintain and use modules | l4 | TF-PROFESSIONAL | shell | [guide](https://developer.hashicorp.com/terraform/tutorials/pro-cert/pro-review) |
+| `certifications-professional-capstone5-providers` | Pro · Objective 5: configure and use providers | l4 | TF-PROFESSIONAL | shell + floci | [guide](https://developer.hashicorp.com/terraform/tutorials/pro-cert/pro-review) |
+| `certifications-professional-capstone6-hcp` | Pro · Objective 6: HCP Terraform, where the sub-objectives cross | l4 | TF-PROFESSIONAL | shell | [guide](https://developer.hashicorp.com/terraform/tutorials/pro-cert/pro-review) |
+| `certifications-professional-mock-pro` | Pro · Integrative mock exam: the six objectives in one sitting | l4 | TF-PROFESSIONAL | shell | [guide](https://developer.hashicorp.com/terraform/tutorials/pro-cert/pro-review) |
 
-- [`capstone1 resource lifecycle`](./labs/certifications/professional/capstone1-resource-lifecycle/)
-- [`capstone2 dynamic config`](./labs/certifications/professional/capstone2-dynamic-config/)
-- [`capstone3 collaborative workflows`](./labs/certifications/professional/capstone3-collaborative-workflows/)
-- [`capstone4 modules`](./labs/certifications/professional/capstone4-modules/)
-- [`capstone5 providers`](./labs/certifications/professional/capstone5-providers/)
-- [`capstone6 hcp`](./labs/certifications/professional/capstone6-hcp/)
-- [`mock pro`](./labs/certifications/professional/mock-pro/)
+_88 labs, table generated by `scripts/gen_catalog.py`._
+<!-- LABS:END -->
 
-<!-- LABS_LIST_END -->
+## Contributing and license
 
-The exact order is the **source of truth** in [`meta.yml`](meta.yml).
+Contributions are welcome: read [CONTRIBUTING.md](./CONTRIBUTING.md), which
+describes the real anatomy of a lab in this repository and the golden rule, a
+lab is proven in both directions. The [code of
+conduct](./CODE_OF_CONDUCT.md) applies to every exchange, and vulnerabilities are
+reported privately: [SECURITY.md](./SECURITY.md).
 
-## Professional exam alignment
+### License
 
-Section 10 breaks the [Terraform Authoring and Operations Professional exam
-review](https://developer.hashicorp.com/terraform/tutorials/pro-cert/pro-review)
-down into one capstone lab per objective:
-
-| Exam objective | Capstone | Draws from |
-|---|---|---|
-| 1. Manage resource lifecycle | `capstone1-resource-lifecycle` | aws (Floci), state |
-| 2. Develop & troubleshoot dynamic config | `capstone2-dynamic-config` | write-code |
-| 3. Develop collaborative workflows | `capstone3-collaborative-workflows` | state, environments |
-| 4. Create/maintain/use modules | `capstone4-modules` | modules |
-| 5. Configure & use providers | `capstone5-providers` | write-code, aws (Floci) |
-| 6. Collaborate with HCP Terraform (MCQ) | `capstone6-hcp` | hcp-terraform |
-| Integration of all 6 objectives (4h) | `mock-pro` | the whole course |
+This content is published under [Creative Commons Attribution 4.0
+International](./LICENSE) (CC BY 4.0). You may share and adapt it, including
+commercially, provided you credit the source.

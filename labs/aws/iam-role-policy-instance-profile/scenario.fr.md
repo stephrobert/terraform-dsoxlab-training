@@ -14,7 +14,7 @@ empruntent deux chemins distincts jusqu'au rôle.
 
 ## D'où part l'apprenant
 
-Floci tourne sur `localhost:4566` : aucun compte AWS, aucune facture. Le
+Floci tourne sur `localhost:14566` : aucun compte AWS, aucune facture. Le
 répertoire `challenge/work` est vierge, sans `.terraform/`, sans fichier de
 verrouillage, sans state. Le `versions.tf` fourni est complet : il épingle
 `hashicorp/aws` en `~> 6.0` et vise Floci par un bloc `endpoints` et les trois

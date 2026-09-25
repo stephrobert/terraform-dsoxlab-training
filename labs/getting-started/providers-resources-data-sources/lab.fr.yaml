@@ -1,5 +1,8 @@
 ---
 id: getting-started-providers-resources-data-sources
-title: Providers Resources Data Sources (squelette)
-description: Squelette du lab « Providers Resources Data Sources ». Scénario et tests
-  restent à écrire.
+title: "Ce que Terraform gère, ce qu'il se contente de lire"
+description: |
+  Un mot sépare les deux natures de blocs : `resource` crée et gère, `data` lit.
+  Le prouver dans le champ `mode` du state, puis constater les deux conséquences :
+  un `destroy` ne touche pas ce qu'il n'a pas créé, et une data source est relue à
+  chaque plan.

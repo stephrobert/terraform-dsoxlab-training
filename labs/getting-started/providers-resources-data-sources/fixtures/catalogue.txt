@@ -1,0 +1,3 @@
+reference=TF-2026-0042
+famille=socle
+revision=3

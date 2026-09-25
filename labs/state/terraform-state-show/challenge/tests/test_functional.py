@@ -16,13 +16,19 @@ Faits verifies sur Terraform 1.15.4 (random + local, hors ligne) :
   expose explicitement a `null` ;
 - une adresse sans index sur une ressource en `count` echoue en code 1 sur
   « No instance found for the given address! », alors que `[1]` rend 0 ;
-- `state show` n'accepte PAS `-json` : code 1, « Failed to parse command-line
-  flags / flag provided but not defined: -json » ;
+- `state show` et `-json` : le comportement DEPEND de la version, et le test le
+  lit au lieu de le supposer. Jusqu'a Terraform 1.15 inclus, le drapeau n'existe
+  pas et la commande sort en 1 sur « flag provided but not defined: -json ».
+  Depuis la 1.16 il existe et rend un document JSON. Source : CHANGELOG de
+  Terraform, « state show: The `state show` command can now produce
+  machine-readable output when supplied with the `-json` flag », hashicorp/
+  terraform#23940, livre en 1.16 ;
 - `state show` ne rafraichit rien : apres une modification hors Terraform, il
   affiche toujours l'ancienne empreinte, et c'est `plan -detailed-exitcode` qui
   sort en 2.
 """
 
+import json
 from collections.abc import Iterator
 from pathlib import Path
 
@@ -226,19 +232,71 @@ def test_la_fiche_humaine_omet_bien_ces_attributs(etat: dict) -> None:
 
 
 # --------------------------------------------------------------------------
-# 7. state show n'accepte pas -json, et ne rafraichit rien
+# 7. state show et -json : un comportement qui a change de version
 # --------------------------------------------------------------------------
 
-def test_state_show_refuse_l_option_json(etat: dict) -> None:
+def _version_terraform() -> tuple[int, ...]:
+    """La version du binaire, lue et non supposee."""
+    brut = terraform("version", "-json", cwd=Path.cwd()).stdout
+    numero = json.loads(brut)["terraform_version"]
+    return tuple(int(n) for n in numero.split("-")[0].split("."))
+
+
+def test_state_show_et_l_option_json_selon_la_version(etat: dict) -> None:
+    """Ce test a ete ECRIT FAUX, et l'a reste jusqu'au 2026-09-23.
+
+    Il affirmait que `state show` n'accepte pas `-json`. C'etait vrai sur la
+    1.15.4, sur laquelle il avait ete eprouve. La 1.16 a livre ce drapeau, et le
+    test est devenu rouge sur un poste a jour. Le probleme depassait le test :
+    le lab ENSEIGNAIT une chose fausse a l'apprenant.
+
+    La lecon juste n'est pas « ce drapeau n'existe pas », qui est date. C'est
+    que les deux commandes ne rendent pas la meme chose : `state show -json`
+    decrit UNE ressource, `show -json` decrit le state ENTIER, avec ses outputs
+    et ses valeurs sensibles. C'est cette distinction qui ne vieillira pas.
+
+    Source du changement : CHANGELOG de Terraform, hashicorp/terraform#23940,
+    livre en 1.16.
+    """
     proc = terraform("state", "show", "-no-color", "-json", "random_pet.env",
                      cwd=etat["cwd"])
-    assert proc.returncode == 1, (
-        f"`state show -json` rend {proc.returncode}, attendu 1 : la commande "
-        "n'a pas d'option -json, c'est `terraform show -json` qu'il faut."
+    version = _version_terraform()
+
+    if version < (1, 16):
+        assert proc.returncode == 1, (
+            f"Sur Terraform {'.'.join(map(str, version))}, `state show -json` "
+            f"rend {proc.returncode}, attendu 1 : le drapeau n'existe pas "
+            "encore, c'est `terraform show -json` qu'il faut."
+        )
+        sortie = proc.stdout + proc.stderr
+        assert "flag provided but not defined: -json" in sortie, (
+            f"Message attendu sur le drapeau inconnu, obtenu :\n{sortie[-400:]}"
+        )
+        return
+
+    assert proc.returncode == 0, (
+        f"Sur Terraform {'.'.join(map(str, version))}, `state show -json` "
+        f"devrait reussir : le drapeau existe depuis la 1.16.\n"
+        f"{(proc.stdout + proc.stderr)[-400:]}"
     )
-    sortie = proc.stdout + proc.stderr
-    assert "flag provided but not defined: -json" in sortie, (
-        f"Message attendu sur le drapeau inconnu, obtenu :\n{sortie[-400:]}"
+    fiche = json.loads(proc.stdout)
+    assert "resource" in fiche, (
+        f"`state show -json` devrait decrire UNE ressource. Cles obtenues : "
+        f"{sorted(fiche)}."
+    )
+
+    # La distinction qui compte, et qui ne depend d'aucune version : l'une
+    # decrit une ressource, l'autre le state entier.
+    complet = json.loads(
+        terraform("show", "-json", cwd=etat["cwd"]).stdout
+    )
+    assert "values" in complet and "outputs" in complet.get("values", {}), (
+        "`show -json` devrait rendre le state entier, outputs compris. C'est ce "
+        "qui le distingue de `state show -json`, limite a une ressource."
+    )
+    assert "outputs" not in fiche.get("resource", {}), (
+        "`state show -json` ne doit pas rendre les outputs : il ne decrit "
+        "qu'une ressource."
     )
 
 
