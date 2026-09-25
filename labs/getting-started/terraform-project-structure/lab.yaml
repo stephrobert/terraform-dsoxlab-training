@@ -1,8 +1,10 @@
 ---
 id: getting-started-terraform-project-structure
-title: Structure Projet Terraform (skeleton)
-description: Skeleton for the « Structure Projet Terraform » lab. Scenario and tests
-  still to be written.
+title: "Split a monolith without moving the plan"
+description: |
+  File names have no functional effect: Terraform reads every `.tf` as one document.
+  Split a monolith into six thematic files and prove, by comparing two JSON plans, that
+  nothing changed. Then observe which value source wins.
 section: getting-started
 level: l1
 difficulty: beginner
@@ -19,6 +21,9 @@ certification_tags:
 runtime:
   type: shell
   workdir: challenge/work
+  fixtures:
+  - tout.tf
+  - reference/monolithe.tf.txt
 validation:
   functional: true
   security: false

@@ -1,5 +1,8 @@
 ---
 id: getting-started-terraform-project-structure
-title: Structure Projet Terraform (squelette)
-description: Squelette du lab « Structure Projet Terraform ». Scénario et tests restent
-  à écrire.
+title: "Découper un monolithe sans bouger le plan"
+description: |
+  Le nom des fichiers n'a aucun effet fonctionnel : Terraform lit tous les `.tf` comme
+  un seul document. Découper un monolithe en six fichiers thématiques et prouver, en
+  comparant deux plans JSON, que rien n'a changé. Puis constater quelle source de valeur
+  l'emporte.

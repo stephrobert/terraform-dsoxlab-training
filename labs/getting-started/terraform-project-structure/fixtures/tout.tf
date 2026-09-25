@@ -1,0 +1,91 @@
+# Tout le projet, dans un seul fichier, et dans le desordre.
+#
+# Terraform evalue TOUS les fichiers `.tf` d'un repertoire comme un document
+# unique : le nom des fichiers et leur ordre n'ont aucun effet fonctionnel.
+# Decouper ce fichier doit donc produire EXACTEMENT le meme plan.
+#
+# C'est cela que le lab prouve, et non la presence de fichiers bien nommes.
+
+output "region_effective" {
+  value = var.region
+}
+
+variable "projet" {
+  description = "Le nom du projet."
+  type        = string
+  default     = "atelier"
+}
+
+resource "random_pet" "empreinte" {
+  length    = 2
+  separator = "-"
+}
+
+provider "local" {}
+
+variable "environnement" {
+  description = "L'environnement vise."
+  type        = string
+  default     = "dev"
+}
+
+locals {
+  etiquette = "${var.projet}-${var.environnement}-${var.region}"
+}
+
+output "projet_effectif" {
+  value = var.projet
+}
+
+terraform {
+  required_version = ">= 1.11.0"
+
+  required_providers {
+    local = {
+      source  = "hashicorp/local"
+      version = "~> 2.5"
+    }
+    null = {
+      source  = "hashicorp/null"
+      version = "~> 3.2"
+    }
+    random = {
+      source  = "hashicorp/random"
+      version = "~> 3.6"
+    }
+  }
+}
+
+resource "local_file" "rapport" {
+  filename = "${path.module}/rapport.txt"
+  content  = "etiquette=${local.etiquette}\nrevision=${var.revision}\n"
+}
+
+provider "null" {}
+
+variable "region" {
+  description = "La region visee."
+  type        = string
+  default     = "eu-ouest"
+}
+
+output "environnement_effectif" {
+  value = var.environnement
+}
+
+provider "random" {}
+
+variable "revision" {
+  description = "La revision livree. SANS default : elle doit etre fournie."
+  type        = string
+}
+
+resource "null_resource" "sceau" {
+  triggers = {
+    etiquette = local.etiquette
+  }
+}
+
+output "revision_effective" {
+  value = var.revision
+}
