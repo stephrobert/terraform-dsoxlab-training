@@ -233,7 +233,7 @@ wheels = [
 
 [[package]]
 name = "dsoxlab"
-version = "0.1.87"
+version = "0.1.88"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "ansible-core", version = "2.19.13", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
@@ -245,9 +245,9 @@ dependencies = [
     { name = "rich" },
     { name = "typer" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/53/b4/83d54e309a7e9d6753a0a52e011b3c130b78c9f45babf24b4ceb69827220/dsoxlab-0.1.87.tar.gz", hash = "sha256:31745b9123edc912cdc5f32a65d2d6afe59b65130a9be6ea4be1373c04664230", size = 1609973, upload-time = "2026-09-17T10:18:57.417Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/59/ed/bfc543fc1d48f6ee6b749993f3cc611e5174914f8a5f0d9df2ee4e8a763c/dsoxlab-0.1.88.tar.gz", hash = "sha256:adc6d8eddfbaa7d737696f9fa543bdd4230cd0e2cb123f877fda30fb3c356227", size = 1618981, upload-time = "2026-09-20T07:52:52.785Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/e5/4f/41ea2f3c4107c37c3a51d44987ceb2f57d422eaf55b7cfe425aed3f285eb/dsoxlab-0.1.87-py3-none-any.whl", hash = "sha256:3c7578122a32bd5e0238ddccb6b54cb8e50e0559197f5d2a065fcea4d7ab973c", size = 370446, upload-time = "2026-09-17T10:18:56.014Z" },
+    { url = "https://files.pythonhosted.org/packages/f5/8b/6a261b50d05e32637fa378552fca0ef9f4bf96d0cf1e8b9c30123f22bc96/dsoxlab-0.1.88-py3-none-any.whl", hash = "sha256:37b835cd7e3897d4c44e76f2bd9a2b5e3f3e92617f5b7efed7579ab530357ebc", size = 372000, upload-time = "2026-09-20T07:52:51.007Z" },
 ]
 
 [[package]]
