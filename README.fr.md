@@ -292,20 +292,20 @@ est générée à partir des vrais `lab.yaml` : lancez
 
 | Lab (id) | Titre | Niveau | Certif | Runtime | Guide compagnon |
 |---|---|---|---|---|---|
-| `certifications-associate-essential-commands` | Les commandes que l'examen attend, faites plutôt que récitées | l4 | TF-ASSOCIATE | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/certifications/associate/) |
-| `certifications-associate-mock-004` | Associate 004 : examen blanc | l4 | TF-ASSOCIATE | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/certifications/associate/) |
+| `certifications-associate-essential-commands` | Les commandes que l'examen attend, faites plutôt que récitées | l4 | TF-ASSOCIATE | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/certifications/associate/exercices/) |
+| `certifications-associate-mock-004` | Associate 004 : examen blanc | l4 | TF-ASSOCIATE | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/certifications/associate/exercices/) |
 
 ### Professional Certification (capstones by objective)
 
 | Lab (id) | Titre | Niveau | Certif | Runtime | Guide compagnon |
 |---|---|---|---|---|---|
-| `certifications-professional-capstone1-resource-lifecycle` | Pro · Objectif 1 : cycle de vie, import et réconciliation de drift | l4 | TF-PROFESSIONAL | shell + floci | [guide](https://developer.hashicorp.com/terraform/tutorials/pro-cert/pro-review) |
-| `certifications-professional-capstone2-dynamic-config` | Pro · Objectif 2 : configuration dynamique et troubleshooting | l4 | TF-PROFESSIONAL | shell | [guide](https://developer.hashicorp.com/terraform/tutorials/pro-cert/pro-review) |
-| `certifications-professional-capstone3-collaborative-workflows` | Pro · Objectif 3 : workflows collaboratifs | l4 | TF-PROFESSIONAL | shell + floci | [guide](https://developer.hashicorp.com/terraform/tutorials/pro-cert/pro-review) |
-| `certifications-professional-capstone4-modules` | Pro · Objectif 4 : créer, maintenir et utiliser des modules | l4 | TF-PROFESSIONAL | shell | [guide](https://developer.hashicorp.com/terraform/tutorials/pro-cert/pro-review) |
-| `certifications-professional-capstone5-providers` | Pro · Objectif 5 : configurer et utiliser les providers | l4 | TF-PROFESSIONAL | shell + floci | [guide](https://developer.hashicorp.com/terraform/tutorials/pro-cert/pro-review) |
-| `certifications-professional-capstone6-hcp` | Pro · Objectif 6 : HCP Terraform, là où les sous-objectifs se croisent | l4 | TF-PROFESSIONAL | shell | [guide](https://developer.hashicorp.com/terraform/tutorials/pro-cert/pro-review) |
-| `certifications-professional-mock-pro` | Pro · Examen blanc intégratif : les six objectifs d'une traite | l4 | TF-PROFESSIONAL | shell | [guide](https://developer.hashicorp.com/terraform/tutorials/pro-cert/pro-review) |
+| `certifications-professional-capstone1-resource-lifecycle` | Pro · Objectif 1 : cycle de vie, import et réconciliation de drift | l4 | TF-PROFESSIONAL | shell + floci | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/certifications/professional/exercices/) |
+| `certifications-professional-capstone2-dynamic-config` | Pro · Objectif 2 : configuration dynamique et troubleshooting | l4 | TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/certifications/professional/exercices/) |
+| `certifications-professional-capstone3-collaborative-workflows` | Pro · Objectif 3 : workflows collaboratifs | l4 | TF-PROFESSIONAL | shell + floci | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/certifications/professional/exercices/) |
+| `certifications-professional-capstone4-modules` | Pro · Objectif 4 : créer, maintenir et utiliser des modules | l4 | TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/certifications/professional/exercices/) |
+| `certifications-professional-capstone5-providers` | Pro · Objectif 5 : configurer et utiliser les providers | l4 | TF-PROFESSIONAL | shell + floci | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/certifications/professional/exercices/) |
+| `certifications-professional-capstone6-hcp` | Pro · Objectif 6 : HCP Terraform, là où les sous-objectifs se croisent | l4 | TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/certifications/professional/exercices/) |
+| `certifications-professional-mock-pro` | Pro · Examen blanc intégratif : les six objectifs d'une traite | l4 | TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/certifications/professional/exercices/) |
 
 _88 labs, table générée par `scripts/gen_catalog.py`._
 <!-- LABS:END -->

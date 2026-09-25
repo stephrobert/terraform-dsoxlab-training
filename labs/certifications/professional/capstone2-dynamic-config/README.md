@@ -125,4 +125,4 @@ your files.
 
 Exam objective targeted: **2**, across its six sub-objectives.
 
-Reference: [the Terraform Authoring and Operations Professional syllabus](https://developer.hashicorp.com/terraform/tutorials/pro-cert/pro-review)
+Reference: [Professional exercises](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/certifications/professional/exercices/)

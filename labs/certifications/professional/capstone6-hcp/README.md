@@ -61,4 +61,4 @@ receiving the same outcome would signal a rule that confuses them.
 
 Exam objective targeted: **6**, in full.
 
-Reference: [the Professional exam review](https://developer.hashicorp.com/terraform/tutorials/pro-cert/pro-review)
+Reference: [Professional exercises](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/certifications/professional/exercices/)

@@ -107,4 +107,4 @@ le state ni chez le fournisseur.
 
 Objectif d'examen visé : **1**, et surtout **1e**.
 
-Référence : [le programme du Terraform Authoring and Operations Professional](https://developer.hashicorp.com/terraform/tutorials/pro-cert/pro-review)
+Référence : [Exercices Professional](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/certifications/professional/exercices/)
