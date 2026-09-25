@@ -68,4 +68,14 @@ jobs:
           # Fine-grained PAT (Administration + Contents + Metadata = Read),
           # stored as an environment secret in the protected `security`
           # environment, so branchMustBeProtected is verified for real.
-          github-token: ${{ secrets.PLUMBER_ADMIN_TOKEN }}
+          #
+          # The token does TWO things, and a first attempt missed the second:
+          # besides the branch-protection check, the action uses it to verify
+          # the provenance attestation of the binary it has just downloaded,
+          # through `gh attestation verify`. Measured here on 2026-09-25, and on
+          # the Kubernetes catalogue on 2026-09-15: an empty token fails that
+          # step with `exit 4` on "set the GH_TOKEN environment variable", and
+          # the whole job falls over before analysing anything. Hence the
+          # fallback to the job token: with no PAT, provenance is still verified
+          # and only the branch-protection check abstains.
+          github-token: ${{ secrets.PLUMBER_ADMIN_TOKEN || github.token }}
