@@ -64,7 +64,7 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from lecture_yaml import YamlIllisible, lire_yaml  # noqa: E402
+from lecture_yaml import YamlIllisible, lire_yaml
 
 RACINE = Path(__file__).resolve().parent.parent
 LABS = RACINE / "labs"
@@ -129,7 +129,7 @@ def _conteneurs() -> set[str]:
         text=True,
         check=False,
     )
-    return {l.strip() for l in proc.stdout.splitlines() if l.strip()}
+    return {ligne.strip() for ligne in proc.stdout.splitlines() if ligne.strip()}
 
 
 def labs_du_catalogue() -> list[tuple[str, Path]]:

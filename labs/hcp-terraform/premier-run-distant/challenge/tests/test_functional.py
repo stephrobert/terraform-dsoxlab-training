@@ -37,8 +37,9 @@ import subprocess
 import time
 import urllib.error
 import urllib.request
+from collections.abc import Iterator
 from pathlib import Path
-from typing import Any, Iterator
+from typing import Any
 
 import pytest
 

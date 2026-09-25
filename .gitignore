@@ -436,3 +436,22 @@ credentials.tfrc.json
 credentials.tfrc
 .terraformrc
 *.tfrc
+
+# LES FIXTURES NE S'IGNORENT JAMAIS, QUELLE QUE SOIT LEUR EXTENSION.
+#
+# Mesuré le 2026-09-25, par la CI, à son tout premier passage : cinq fixtures
+# déclarées dans un `lab.yaml` existaient sur la machine de l'auteur mais
+# n'étaient pas versionnées, exclues par `labs/**/*.log` et par `*.tfstate`.
+#
+#   capstone4-modules      out/api.log, out/web.log, out/batch.log
+#   module-anti-patterns   projet/terraform.tfstate
+#   terraform-state-mv     reference/etat-initial.tfstate
+#
+# Trois labs étaient donc cassés pour quiconque clone le dépôt, et intacts ici :
+# le genre de défaut qu'aucun contrôle local ne peut voir, puisque le fichier
+# est là. `dsoxlab validate-structure` l'a dit en CI, sur un checkout propre.
+#
+# Un état Terraform ou un journal PEUT être une fixture : c'est le matériel de
+# départ d'un lab qui fait lire un state, ou diagnostiquer une sortie. Cette
+# exception passe donc après toutes les règles qui les excluent.
+!labs/**/fixtures/**

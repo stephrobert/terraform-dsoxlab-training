@@ -29,7 +29,6 @@ chercher au mauvais endroit. Les deux autres n'apparaissent qu'ensuite.
 from __future__ import annotations
 
 import json
-import re
 import shutil
 import subprocess
 from pathlib import Path
@@ -298,7 +297,10 @@ def test_la_sortie_des_secrets_est_declaree_sensible(sorties: dict, joue: Path) 
     )
 
     humaine = _tf("output", "-no-color")
-    ligne = next((l for l in humaine.stdout.splitlines() if l.startswith("secrets")), "")
+    ligne = next(
+        (sortie for sortie in humaine.stdout.splitlines() if sortie.startswith("secrets")),
+        "",
+    )
     assert "<sensitive>" in ligne, (
         f"L'affichage rend {ligne!r} : rien n'est masque a l'ecran."
     )

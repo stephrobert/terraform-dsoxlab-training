@@ -33,7 +33,7 @@ from pathlib import Path
 
 # Un seul chemin de lecture pour tout le catalogue : voir scripts/lecture_yaml.py.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from lecture_yaml import YamlIllisible, lire_yaml  # noqa: E402
+from lecture_yaml import YamlIllisible, lire_yaml
 
 ROOT = Path(__file__).resolve().parent.parent
 META = ROOT / "meta.yml"

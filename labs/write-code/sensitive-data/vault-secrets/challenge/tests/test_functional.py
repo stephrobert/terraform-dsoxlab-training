@@ -44,13 +44,13 @@ def _vault(method: str, path: str, payload: dict | None = None) -> dict:
     data = json.dumps(payload).encode() if payload is not None else None
     # S310 vise les deux appels, la requête comme son ouverture : l'adresse est
     # la constante VAULT_ADDR, en http://127.0.0.1, et non une entrée.
-    req = urllib.request.Request(  # noqa: S310
+    req = urllib.request.Request(
         f"{VAULT_ADDR}/v1/{path}",
         data=data,
         method=method,
         headers={"X-Vault-Token": VAULT_TOKEN},
     )
-    with urllib.request.urlopen(req, timeout=5) as resp:  # noqa: S310 (URL locale fixe)
+    with urllib.request.urlopen(req, timeout=5) as resp:
         body = resp.read()
     return json.loads(body) if body else {}
 

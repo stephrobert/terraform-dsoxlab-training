@@ -34,8 +34,8 @@ import json
 import os
 import subprocess
 import time
+from collections.abc import Iterator
 from pathlib import Path
-from typing import Iterator
 
 import pytest
 
@@ -140,7 +140,11 @@ def _environnement_de_run(tmp: Path) -> dict[str, str]:
     }
     env["HOME"] = str(tmp)
     env["AWS_ACCESS_KEY_ID"] = "identifiant-pose-par-la-plateforme"
-    env["AWS_SECRET_ACCESS_KEY"] = "secret-pose-par-la-plateforme"
+    # Ruff y voit un secret en dur, et c'en est un. C'est
+    # précisément le sujet du lab : la plateforme pose un identifiant
+    # factice dans l'environnement du run, et la configuration doit le
+    # recevoir au lieu de le contenir. L'émulateur ne le vérifie pas.
+    env["AWS_SECRET_ACCESS_KEY"] = "secret-pose-par-la-plateforme"  # noqa: S105
     env["AWS_REGION"] = "eu-west-3"
     return env
 

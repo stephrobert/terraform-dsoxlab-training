@@ -177,7 +177,8 @@ def test_la_valeur_sensible_est_masquee_a_l_ecran_et_en_clair_dans_le_state(
     humaine = _tf("output", "-no-color", cwd=joue / ATELIER)
     assert humaine.returncode == 0, f"`terraform output` a echoue.\n{humaine.stderr}"
     ligne = next(
-        (l for l in humaine.stdout.splitlines() if l.startswith("jeton_expose")), ""
+        (ligne for ligne in humaine.stdout.splitlines() if ligne.startswith("jeton_expose")),
+        "",
     )
     assert "<sensitive>" in ligne, (
         f"L'affichage rend {ligne!r} : la sortie `jeton_expose` n'est pas marquee "

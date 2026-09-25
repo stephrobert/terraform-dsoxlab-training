@@ -106,7 +106,7 @@ def test_les_trois_providers_sont_contraints_et_installes(joue: Path) -> None:
     )
     contenu = verrou.read_text(encoding="utf-8")
     for provider in PROVIDERS_ATTENDUS:
-        assert f'constraints' in contenu and provider in contenu, (
+        assert 'constraints' in contenu and provider in contenu, (
             f"Le verrou ne porte pas de contrainte pour {provider}.\n\nUne "
             "contrainte de version est attendue, pas une installation libre."
         )

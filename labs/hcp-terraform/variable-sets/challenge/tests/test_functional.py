@@ -29,7 +29,6 @@ from __future__ import annotations
 
 import json
 import subprocess
-from pathlib import Path
 
 import pytest
 
@@ -195,7 +194,12 @@ def test_la_table_est_dans_l_ordre_officiel(sorties: dict) -> None:
     listes : sur quinze entrees, un diff brut ne se lit pas.
     """
     ordre = sorties["ordre_precedence"]
-    for rang, (obtenu, attendu) in enumerate(zip(ordre, ORDRE_OFFICIEL), start=1):
+    # `strict=True` : si la table de l'apprenant n'a pas le bon nombre de rangs,
+    # `zip` s'arrêterait en silence sur la plus courte et le test passerait
+    # sur une table tronquée. On veut que cela échoue.
+    for rang, (obtenu, attendu) in enumerate(
+        zip(ordre, ORDRE_OFFICIEL, strict=True), start=1
+    ):
         assert obtenu == attendu, (
             f"Au rang {rang}, la table porte {obtenu!r}, {attendu!r} attendu.\n\n"
             "Rappel de l'inversion : chez les sets PRIORITY le scope le plus "
@@ -219,7 +223,7 @@ def test_chaque_cas_fourni_est_resolu(sorties: dict) -> None:
             f"`{nom}` rend {sorted(resolu)}, attendu au moins `source` et "
             "`valeur`."
         )
-        assert resolu["source"] in ORDRE_OFFICIEL + [SENTINELLE], (
+        assert resolu["source"] in [*ORDRE_OFFICIEL, SENTINELLE], (
             f"`{nom}` designe la source {resolu['source']!r}, qui n'existe pas."
         )
 

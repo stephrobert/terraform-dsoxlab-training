@@ -191,7 +191,10 @@ def codes_rejoues(joue: Path, tmp_path_factory: pytest.TempPathFactory) -> dict[
     mal_indente = _copie_jetable(racine, "mal-indente")
     cible = mal_indente / "versions.tf"
     cible.write_text(
-        "".join("    " + l if l.strip() else l for l in cible.read_text(encoding="utf-8").splitlines(True)),
+        "".join(
+            "    " + ligne if ligne.strip() else ligne
+            for ligne in cible.read_text(encoding="utf-8").splitlines(True)
+        ),
         encoding="utf-8",
     )
     releves["fmt_check_avant"] = _tf_dans(mal_indente, "fmt", "-check", "-recursive", "-no-color").returncode
@@ -377,7 +380,11 @@ def test_la_sortie_sensible_est_masquee_mais_en_clair_dans_le_state(
     humaine = _tf("output", "-no-color")
     assert humaine.returncode == 0, f"`terraform output` a echoue.\n{humaine.stderr}"
     ligne = next(
-        (l for l in humaine.stdout.splitlines() if l.startswith("identifiant_sensible")),
+        (
+            ligne
+            for ligne in humaine.stdout.splitlines()
+            if ligne.startswith("identifiant_sensible")
+        ),
         "",
     )
     assert "<sensitive>" in ligne, f"L'affichage rend {ligne!r} : rien n'est masque."

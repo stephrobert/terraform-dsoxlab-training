@@ -121,7 +121,7 @@ def messages(joue: Path) -> list[dict]:
         "c'est le sujet du lab."
     )
 
-    lignes = [l for l in journal.read_text(encoding="utf-8").splitlines() if l.strip()]
+    lignes = [ligne for ligne in journal.read_text(encoding="utf-8").splitlines() if ligne.strip()]
     assert lignes, f"`{FLUX}/{JOURNAL}` est vide."
 
     decodes = []
