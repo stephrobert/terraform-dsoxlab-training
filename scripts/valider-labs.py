@@ -262,12 +262,22 @@ def valider(identifiant: str, lab: Path) -> Verdict:
         sortie = second.stdout + second.stderr
         v.score_apres = _score(sortie)
         v.tests = _tests(sortie)
-        if v.score_apres != 100:
+
+        # On juge sur les TESTS, pas sur le score. Mesuré le 2026-09-25 :
+        # `essential-commands` rendait 8/8 tests et 90/100, parce qu'un indice
+        # de coût 10 avait été révélé sur ce poste le 24. Le score porte
+        # l'historique local de l'apprenant, le lab n'y est pour rien, et un
+        # validateur qui le lit accuse un lab juste.
+        reussis, total = (v.tests or "0/0").split("/")
+        if not total or total == "0":
+            v.verdict = "ROUGE"
+            v.pourquoi = f"aucun test lisible après la solution : {sortie[-300:]}"
+            return v
+        if reussis != total:
             v.verdict = "ROUGE"
             v.pourquoi = (
-                f"le lab rend {v.score_apres}/100 avec la solution de référence "
-                f"({v.tests}). Soit la solution est fausse, soit un test exige "
-                "l'impossible."
+                f"la solution de référence ne passe que {v.tests} tests. Soit "
+                "elle est fausse, soit un test exige l'impossible."
             )
             return v
 
@@ -281,7 +291,20 @@ def valider(identifiant: str, lab: Path) -> Verdict:
         v.duree_s = round(time.monotonic() - debut, 1)
 
         # Les traces : ce que le lab a laissé derrière lui.
-        laisses = _conteneurs() - avant
+        #
+        # Les conteneurs préfixés `dsoxlab-` sont ceux que l'outil gère, y
+        # compris les services qu'un lab déclare : il les arrête avec la
+        # session, et les compter ici accuse le lab pour le travail de l'outil.
+        # Mesuré le 2026-09-25 : `write-code-tfvars-files`, qui ne déclare
+        # AUCUN service, s'est vu attribuer un `dsoxlab-dsoxlab-test-net-pytest-db`
+        # apparu pendant sa fenêtre et créé par tout autre chose.
+        #
+        # Ce qu'on surveille vraiment, ce sont les conteneurs qu'un service
+        # ENGENDRE, comme les `floci-ec2-*` qui retiennent un port SSH et font
+        # tomber le lab suivant.
+        laisses = {
+            c for c in _conteneurs() - avant if not c.startswith("dsoxlab-")
+        }
         if laisses:
             v.traces = sorted(laisses)
             if v.verdict == "VALIDE":

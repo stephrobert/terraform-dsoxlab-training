@@ -54,7 +54,6 @@ COUTS_ATTENDUS = [10, 15, 20]
 # Un lab repris se retire d'ici, et le test le vérifie.
 DETTE = {
     "aws/sg-subnet-instance",
-    "certifications/professional/capstone6-hcp",
     "certifications/professional/mock-pro",
 }
 
