@@ -109,4 +109,4 @@ question d'atelier qui fait constater la valeur sensible en clair dans le state.
 
 Objectif visé : les **huit** du programme Associate 004.
 
-Référence : [préparer la certification Terraform Associate](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/certifications/associate/)
+Référence : [Exercices Associate](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/certifications/associate/exercices/)

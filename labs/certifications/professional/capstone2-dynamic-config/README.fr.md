@@ -125,4 +125,4 @@ vos fichiers.
 
 Objectif d'examen visé : **2**, dans ses six sous-objectifs.
 
-Référence : [le programme du Terraform Authoring and Operations Professional](https://developer.hashicorp.com/terraform/tutorials/pro-cert/pro-review)
+Référence : [Exercices Professional](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/certifications/professional/exercices/)

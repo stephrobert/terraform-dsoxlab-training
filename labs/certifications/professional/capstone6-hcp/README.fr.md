@@ -62,4 +62,4 @@ confond.
 
 Objectif d'examen visé : **6**, en entier.
 
-Référence : [la revue de l'examen Professional](https://developer.hashicorp.com/terraform/tutorials/pro-cert/pro-review)
+Référence : [Exercices Professional](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/certifications/professional/exercices/)

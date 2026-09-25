@@ -91,4 +91,4 @@ verrou.
 
 Objectif d'examen visé : **3**, dans ses quatre sous-objectifs.
 
-Référence : [le programme du Terraform Authoring and Operations Professional](https://developer.hashicorp.com/terraform/tutorials/pro-cert/pro-review)
+Référence : [Exercices Professional](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/certifications/professional/exercices/)

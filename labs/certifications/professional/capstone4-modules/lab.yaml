@@ -15,7 +15,7 @@ skills:
 - refactoring
 distros:
 - debian13
-doc_url: https://developer.hashicorp.com/terraform/tutorials/pro-cert/pro-review
+doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/certifications/professional/exercices/
 certification_tags:
 - tf-professional
 runtime:

@@ -86,4 +86,4 @@ dsoxlab hint certifications-professional-mock-pro
 
 Objective targeted: all **six** of the Professional syllabus.
 
-Reference: [preparing for the Terraform Professional certification](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/certifications/professional/)
+Reference: [Professional exercises](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/certifications/professional/exercices/)

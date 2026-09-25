@@ -108,4 +108,4 @@ question that has you observe the sensitive value in clear text in state.
 
 Objectives targeted: all **eight** of the Associate 004 syllabus.
 
-Reference: [preparing the Terraform Associate certification](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/certifications/associate/)
+Reference: [Associate exercises](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/certifications/associate/exercices/)

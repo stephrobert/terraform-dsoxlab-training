@@ -13,7 +13,7 @@ skills:
 - exam
 distros:
 - debian13
-doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/certifications/associate/
+doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/certifications/associate/exercices/
 certification_tags:
 - tf-associate
 runtime:
