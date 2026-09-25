@@ -45,6 +45,7 @@ LABS = REPO / "labs"
 
 MARQUEUR_NETTOYAGE = "conteneurs EC2 orphelins"
 PORT_CANONIQUE = "14566:4566"
+NOM_CANONIQUE = "floci"
 
 
 def labs_floci() -> list[str]:
@@ -136,4 +137,30 @@ def test_les_labs_floci_publient_tous_le_meme_port(rel: str) -> None:
         f"{rel} publie Floci sur {ports}, attendu ['{PORT_CANONIQUE}'].\n\n"
         "Une seule convention dans le dépôt : sinon un scénario recopié d'un "
         "lab voisin annonce un port faux, et l'apprenant cherche longtemps."
+    )
+
+
+@pytest.mark.parametrize("rel", LABS_FLOCI)
+def test_les_labs_floci_nomment_tous_leur_service_pareil(rel: str) -> None:
+    """Un nom different vaut un conteneur different, sur le meme port.
+
+    dsoxlab nomme le conteneur d'apres le service : `dsoxlab-<projet>-<service>`.
+    Deux noms valent donc deux conteneurs, que rien n'empeche de coexister, sauf
+    le port qu'ils se disputent.
+
+    Mesure du 2026-09-24 : un lab nommait son service `cloud` la ou les six
+    autres disaient `floci`. Son conteneur tournait encore dix heures apres,
+    et le lab suivant echouait sur
+
+        Bind for 0.0.0.0:14566 failed: port is already allocated
+
+    Le message nomme le port, jamais le lab qui le retient, et le `clean` de
+    l'un ne touche pas le service de l'autre.
+    """
+    nom = service_floci(rel).get("name")
+    assert nom == NOM_CANONIQUE, (
+        f"{rel} nomme son service Floci `{nom}`, attendu `{NOM_CANONIQUE}`.\n\n"
+        "dsoxlab derive le nom du conteneur de celui du service : deux noms "
+        "valent deux conteneurs qui se disputent le meme port, et le `clean` de "
+        "l'un ne stoppe pas l'autre."
     )

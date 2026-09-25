@@ -36,7 +36,6 @@ COUTS_ATTENDUS = [10, 15, 20]
 # Un lab repris se retire d'ici, et le test le vérifie.
 DETTE = {
     "aws/sg-subnet-instance",
-    "certifications/professional/capstone3-collaborative-workflows",
     "certifications/professional/capstone4-modules",
     "certifications/professional/capstone5-providers",
     "certifications/professional/capstone6-hcp",

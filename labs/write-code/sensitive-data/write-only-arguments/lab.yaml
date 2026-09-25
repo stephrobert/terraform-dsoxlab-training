@@ -28,7 +28,7 @@ runtime:
   - providers.tf
   - terraform.tfvars
   services:
-  - name: cloud
+  - name: floci
     image: floci/floci:1.6.0
     ports:
     - 14566:4566
