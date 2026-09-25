@@ -1,5 +1,5 @@
 {
-  "genere_le": "2026-09-25 18:08:53",
+  "genere_le": "2026-09-25 18:39:22",
   "terraform": "Terraform v1.16.1",
   "dsoxlab": "dsoxlab 0.1.91",
   "labs": {
@@ -160,13 +160,13 @@
     "certifications-professional-mock-pro": {
       "id": "certifications-professional-mock-pro",
       "chemin": "certifications/professional/mock-pro",
-      "verdict": "ROUGE",
+      "verdict": "VALIDE",
       "score_avant": 0,
-      "score_apres": null,
-      "tests": null,
-      "duree_s": 1.4,
+      "score_apres": 100,
+      "tests": "16/16",
+      "duree_s": 10.7,
       "traces": [],
-      "pourquoi": "aucune solution de référence sous solution/certifications/professional/mock-pro"
+      "pourquoi": ""
     },
     "environments-monorepo-vs-repo-per-stack": {
       "id": "environments-monorepo-vs-repo-per-stack",

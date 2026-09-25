@@ -52,10 +52,7 @@ COUTS_ATTENDUS = [10, 15, 20]
 
 # Labs dont les indices sont encore ceux du générateur, mesurés le 2026-09-18.
 # Un lab repris se retire d'ici, et le test le vérifie.
-DETTE = {
-    "aws/sg-subnet-instance",
-    "certifications/professional/mock-pro",
-}
+DETTE: set[str] = set()
 
 
 def labs_avec_indices() -> list[str]:

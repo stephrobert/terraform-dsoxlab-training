@@ -305,7 +305,7 @@ est générée à partir des vrais `lab.yaml` : lancez
 | `certifications-professional-capstone4-modules` | Pro · Objectif 4 : créer, maintenir et utiliser des modules | l4 | TF-PROFESSIONAL | shell | [guide](https://developer.hashicorp.com/terraform/tutorials/pro-cert/pro-review) |
 | `certifications-professional-capstone5-providers` | Pro · Objectif 5 : configurer et utiliser les providers | l4 | TF-PROFESSIONAL | shell + floci | [guide](https://developer.hashicorp.com/terraform/tutorials/pro-cert/pro-review) |
 | `certifications-professional-capstone6-hcp` | Pro · Objectif 6 : HCP Terraform, là où les sous-objectifs se croisent | l4 | TF-PROFESSIONAL | shell | [guide](https://developer.hashicorp.com/terraform/tutorials/pro-cert/pro-review) |
-| `certifications-professional-mock-pro` | Pro · Mock intégratif 4h | l4 | TF-PROFESSIONAL | shell | [guide](https://developer.hashicorp.com/terraform/tutorials/pro-cert/pro-review) |
+| `certifications-professional-mock-pro` | Pro · Examen blanc intégratif : les six objectifs d'une traite | l4 | TF-PROFESSIONAL | shell | [guide](https://developer.hashicorp.com/terraform/tutorials/pro-cert/pro-review) |
 
 _88 labs, table générée par `scripts/gen_catalog.py`._
 <!-- LABS:END -->

@@ -46,11 +46,10 @@ SOLUTIONS = REPO / "solution"
 
 MARQUEUR_SQUELETTE = "tests non implémentés"
 
-# Labs dont le test reste à écrire, mesurés le 2026-09-23. Un lab écrit se
-# retire d'ici, et le test le vérifie.
-COQUILLES = {
-    "certifications/professional/mock-pro",
-}
+# Labs dont le test reste à écrire. Un lab écrit se retire d'ici, et le test le
+# vérifie. Vidée le 2026-09-25 : `mock-pro`, dernière coquille, a ses tests et
+# passe 0 puis 100.
+COQUILLES: set[str] = set()
 
 
 def tous_les_labs() -> list[str]:
