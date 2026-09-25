@@ -1,60 +1,76 @@
-# Scénario : une attribution d'accès trop large, à ramener au moindre privilège
+# Scénario : les permissions s'additionnent, elles ne s'écrasent pas
 
-**Sous-objectif d'examen visé : 6b (gestion des accès dans HCP Terraform).**
+**Sous-objectif d'examen visé : 6b, les workspaces et leurs options de configuration,
+gestion des accès comprise.**
 
-L'objectif 6 se passe en QCM et ce lab n'ouvre aucun compte HCP. Le piège tient
-en une phrase lue à l'envers : les permissions sont additives, le plus haut gagne.
+L'objectif 6 est évalué en QCM, et ne demande aucun compte. Ce lab fait donc **écrire la
+règle** plutôt que la réciter : une règle fausse se voit sur six cas, une phrase apprise par
+cœur ne se voit pas.
+
+Une organisation accorde des droits à trois niveaux, et deux équipes ne sont pas d'accord
+sur ce qu'elles peuvent faire du même workspace. L'une détient une permission à l'échelle de
+l'organisation et un rôle modeste sur le workspace ; l'autre l'inverse. Les deux croient que
+c'est le droit le plus proche qui gagne.
 
 ## Capacité visée
 
-Auditer une attribution d'accès livrée telle quelle, calculer la permission
-effective d'une équipe qui cumule plusieurs portées (organisation, project,
-workspace), et ramener chaque droit au bon niveau figé (`read`, `plan`, `write`,
-`admin` côté workspace, `read`, `write`, `maintain`, `admin` côté project) ou à
-un rôle personnalisé quand aucun niveau figé ne descend assez bas.
+Établir l'accès effectif d'une équipe sur un workspace à partir de ce qu'elle détient aux
+niveaux organisation, projet et workspace, et connaître les deux échelles de rôles, qui ne
+sont pas la même.
 
 ## D'où part l'apprenant
 
-`challenge/work` est initialisé, `local` et `null` verrouillés, et contient :
+`challenge/work` contient deux répertoires :
 
-- `attributions.auto.tfvars.json` : l'attribution livrée, cinq équipes avec
-  leurs clés `organisation`, `projets`, `workspaces` et `type_de_jeton`.
-- `besoins.json` : la fiche de besoin par équipe, en lecture seule, lue par un
-  `data "local_file"`. Elle dit ce que l'équipe fait, jamais quel rôle lui donner.
-- `main.tf` : les `locals` du calcul, troués en `???` sur la table de rang et
-  sur la règle de combinaison entre portées. Un `local_file` écrit le rapport.
-- `outputs.tf` : `permissions_effectives`, `ecarts_moindre_privilege`,
-  `attributions_finales` et `jetons`, déjà écrits, à ne pas modifier.
+1. `acces/`, six équipes décrites dans `equipes.auto.tfvars.json` par ce qu'elles détiennent
+   à chacun des trois niveaux, avec l'échelle et les équivalences fournies, et deux `???` à
+   compléter.
+2. `questionnaire/`, cinq réponses à poser dans `reponses.auto.tfvars`.
 
 ## L'état à atteindre
 
-1. `audit-conformite`, qui ne fait que lire, perd la permission d'organisation
-   `manage-all-workspaces` et garde le seul rôle project `read`.
-2. `ci-livraison`, dont les changements sont soumis à approbation, passe du rôle
-   workspace `write` à `plan`, et son `type_de_jeton` de `organization` à
-   `team` : un jeton d'organisation ne démarre aucun run.
-3. `dev-frontend`, qui crée et supprime ses propres workspaces, passe du rôle
-   project `admin` à `maintain` : plus de suppression du project, plus de
-   déplacement de workspaces, plus de distribution de droits.
-4. `observabilite`, qui ne lit que des sorties via `terraform_remote_state`,
-   troque le rôle figé `read` contre un rôle personnalisé dont l'accès au state
-   vaut `read-outputs-only`.
-5. `permissions_effectives` ne contient plus aucun `admin` hors
-   `plateforme-admins`, le calcul retenant le niveau le plus élevé reçu.
-6. `ecarts_moindre_privilege` est vide : chaque droit vaut ce qu'exige
-   `besoins.json`, ni au-dessus ni en dessous.
-7. `rapport-acces.json` est régénéré et rien n'est en attente d'application.
+1. `acces_effectif` associe à chaque équipe son accès réel, calculé par une règle qui ne
+   nomme aucune équipe : une septième serait traitée sans rien réécrire.
+2. Cette règle rend le **plus permissif** des trois niveaux, jamais le plus spécifique.
+3. `equipes_qui_peuvent_appliquer` liste les équipes qui peuvent lancer un apply, ce qui
+   demande au moins l'écriture : le rôle `plan` propose, il n'applique pas.
+4. Les cinq réponses établissent ce qui tranche entre deux niveaux, qui peut en pratique
+   faire partir un plan sur un workspace lié à un dépôt, combien de temps vit le jeton
+   d'accès d'une run task, et quel rôle se situe entre la lecture et l'écriture sur un
+   workspace, puis entre l'écriture et l'administration sur un projet.
+
+## Le piège, et d'où il vient
+
+Partout ailleurs, la permission posée au niveau le plus spécifique l'emporte. Ici, non :
+
+> Each permission is additive, granting a user the highest level of permissions possible,
+> regardless of which scope set that permission.
+
+Les deux exemples de la documentation encadrent exactement la règle, et le lab les reprend
+comme cas 1 et cas 2 : `Manage all workspaces` au niveau organisation l'emporte sur un
+`Read` de workspace, tandis que `View all workspaces` ne l'emporte **pas** sur un `Write` de
+workspace. Additif ne veut pas dire que l'organisation gagne ; cela veut dire que le droit
+le plus large gagne.
+
+## Deux échelles qui ne sont pas la même
+
+Lues à leur source le 2026-09-25 :
+
+| Portée | Rôles, du moins au plus permissif |
+| --- | --- |
+| workspace | `Read` < `Plan` < `Write` < `Admin` |
+| projet | `Read` < `Write` < `Maintain` < `Admin` |
+
+`Plan` n'existe qu'au niveau workspace, `Maintain` qu'au niveau projet, et les deux ne
+tombent pas au même endroit. C'est ce qui interdit de comparer deux niveaux au jugé.
 
 ## Comment on le prouve
 
-Les tests n'ouvrent ni les `.tf` ni le fichier de variables. `terraform output
--json` porte l'essentiel : `attributions_finales` pour les points 1 à 4,
-`permissions_effectives` pour le 5, `ecarts_moindre_privilege` pour le 6.
-`terraform show -json` garde la structure, `local_file.rapport` en
-`mode: managed` et `data.local_file.besoins` en `mode: data`. Le 7 est un
-`terraform plan -detailed-exitcode` attendu en code 0.
+Les tests ne lisent que `terraform output -json` : ce que la configuration calcule, jamais
+ce qu'elle contient. Chacun des six cas est asséré séparément, pour que le message dise
+lequel est faux, et le dernier test fait **décider** le classement au lieu de seulement
+classer : une équipe restée au `plan` doit être exclue de celles qui peuvent appliquer, et
+les trois qui écrivent ou mieux doivent y figurer.
 
-Un dernier test défait la triche par valeurs en dur : il copie le répertoire,
-remplace l'attribution par un témoin où une sixième équipe reçoit
-`manage-all-projects` en plus d'un `read` de workspace, applique, et attend la
-permission effective `admin` et l'écart signalé.
+Vérifié en dégradant la solution : l'intuition ordinaire, où le niveau le plus spécifique
+l'emporte, donne 10/13, et compter `plan` parmi ceux qui peuvent appliquer donne 12/13.

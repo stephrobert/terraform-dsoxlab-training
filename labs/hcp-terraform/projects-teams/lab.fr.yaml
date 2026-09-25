@@ -1,4 +1,8 @@
 ---
 id: hcp-terraform-projects-teams
-title: Projects Equipes (squelette)
-description: Squelette du lab « Projects Equipes ». Scénario et tests restent à écrire.
+title: "Les permissions s'additionnent, elles ne s'écrasent pas"
+description: |
+  Une permission posée au niveau organisation peut l'emporter sur celle du workspace, et
+  l'inverse est vrai aussi : c'est le plus permissif qui gagne, jamais le plus spécifique.
+  Écrire la règle qui calcule l'accès effectif de six équipes, et établir deux échelles qui
+  ne sont pas la même.
