@@ -16,7 +16,7 @@ provider** for the [`dsoxlab`](https://pypi.org/project/dsoxlab/) CLI.
 > English, `*.fr.md` for French.
 
 > **Status: scenarios written, tests being added.** `meta.yml` declares the order
-> of 10 sections / 87 labs. The first 8 sections follow the blog course (one lab
+> of 10 sections / 88 labs. The first 8 sections follow the blog course (one lab
 > per guide); the last two prepare the certifications, including **6 capstones
 > aligned with the 6 Professional exam objectives**.
 
@@ -33,11 +33,13 @@ Depending on the labs you play:
   through an `endpoints` block, so zero AWS account and zero bill. Labs that
   declare a `runtime.services` block start Floci automatically under
   `dsoxlab run/check`.
-- **An HCP Terraform token**: **no lab requires one.** The seven
-  `hcp-terraform` labs deliberately stop just short of authentication, which is
-  what makes them verifiable anywhere. A token is only needed to go further, and
-  [`docs/hcp-token.md`](./docs/hcp-token.md) covers creating it, where to put it,
-  and which location wins when several are filled.
+- **An HCP Terraform token**: **exactly one lab out of 88 requires one**,
+  `hcp-terraform/premier-run-distant`, which runs a real remote run and is
+  optional for that reason. The other seven `hcp-terraform` labs deliberately
+  stop just short of authentication, which is what makes them verifiable
+  anywhere. Without a token the optional lab **skips** instead of failing.
+  [`docs/hcp-token.md`](./docs/hcp-token.md) covers creating the token, where to
+  put it, and which location wins when several are filled.
 
 ```bash
 uv tool install dsoxlab          # the CLI that drives the labs
@@ -49,7 +51,7 @@ python3 scripts/diagnostic-jeton-hcp.py --verifier   # where your token is, if a
 
 ```bash
 cd terraform-training
-dsoxlab list-labs                # the 87-lab catalog
+dsoxlab list-labs                # the 88-lab catalog
 dsoxlab run <lab-id>             # play a lab (in challenge/work)
 dsoxlab check <lab-id>           # validate with pytest
 ```
@@ -66,7 +68,7 @@ scripts/render-readme.py         # regenerate the lab list below (EN + FR)
 
 <!-- LABS_LIST_START -->
 
-**87 labs** across **10 sections** (source of truth: [`meta.yml`](./meta.yml)).
+**88 labs** across **10 sections** (source of truth: [`meta.yml`](./meta.yml)).
 
 ### Discover Terraform
 
@@ -185,6 +187,7 @@ The HashiCorp platform (Professional objective 6, assessed by MCQ): run workflow
 - [`shared credentials`](./labs/hcp-terraform/shared-credentials/)
 - [`projects teams`](./labs/hcp-terraform/projects-teams/)
 - [`policy as code`](./labs/hcp-terraform/policy-as-code/)
+- [`premier run distant`](./labs/hcp-terraform/premier-run-distant/)
 
 ### Associate Certification (004)
 

@@ -1,0 +1,36 @@
+---
+id: hcp-terraform-premier-run-distant
+title: "The first remote run, for real (optional, needs an account)"
+description: |
+  The only lab in the catalog that needs an HCP Terraform account. Provision the platform
+  with the `tfe` provider — project, workspace, settings, a sensitive variable — attach a
+  configuration with a `cloud` block, and watch a run execute on HashiCorp's infrastructure.
+section: hcp-terraform
+level: l3
+difficulty: advanced
+lab_type: lab
+estimated_time: 45m
+skills:
+- terraform
+- hcp
+- workspaces-hcp
+- tfe-provider
+distros:
+- debian13
+doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/hcp-terraform/remote-runs/
+certification_tags:
+- tf-professional
+runtime:
+  type: shell
+  workdir: challenge/work
+  fixtures:
+  - plateforme/versions.tf
+  - plateforme/variables.tf
+  - plateforme/organisation.auto.tfvars
+  - plateforme/plateforme.tf
+  - application/versions.tf
+  - application/main.tf
+validation:
+  functional: true
+  security: false
+  persistence_after_reboot: false

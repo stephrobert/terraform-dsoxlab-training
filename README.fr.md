@@ -16,7 +16,7 @@ plus un challenge dont l'état final est prouvé par `pytest`. Ce dépôt est un
 > `challenge` en anglais, les `*.fr.md` pour le français.
 
 > **État : scénarios écrits, tests en cours d'écriture.** Le `meta.yml` déclare
-> l'ordre des 10 sections / 87 labs. Les 8 premières sections suivent le parcours
+> l'ordre des 10 sections / 88 labs. Les 8 premières sections suivent le parcours
 > du blog (un lab par guide) ; les deux dernières préparent les certifications,
 > dont **6 capstones alignés sur les 6 objectifs de l'examen Professional**.
 
@@ -33,12 +33,14 @@ Selon les labs joués :
   un bloc `endpoints`, donc zéro compte AWS et zéro facture. Les labs qui
   déclarent un bloc `runtime.services` démarrent Floci tout seuls sous
   `dsoxlab run/check`.
-- **Un jeton HCP Terraform** : **aucun lab n'en exige.** Les sept labs
-  `hcp-terraform` s'arrêtent volontairement juste avant l'authentification, et
-  c'est ce qui les rend vérifiables partout. Un jeton ne sert qu'à aller plus
-  loin, et [`docs/hcp-token.fr.md`](./docs/hcp-token.fr.md) explique comment le
-  créer, où le poser, et lequel l'emporte quand plusieurs emplacements sont
-  remplis.
+- **Un jeton HCP Terraform** : **un seul lab sur 88 en exige un**,
+  `hcp-terraform/premier-run-distant`, qui fait tourner un vrai run distant et
+  reste optionnel pour cette raison. Les sept autres labs `hcp-terraform`
+  s'arrêtent volontairement juste avant l'authentification, et c'est ce qui les
+  rend vérifiables partout. Sans jeton, le lab optionnel se **skippe** au lieu
+  d'échouer. [`docs/hcp-token.fr.md`](./docs/hcp-token.fr.md) explique comment
+  créer le jeton, où le poser, et lequel l'emporte quand plusieurs emplacements
+  sont remplis.
 
 ```bash
 uv tool install dsoxlab          # la CLI qui pilote les labs
@@ -50,7 +52,7 @@ python3 scripts/diagnostic-jeton-hcp.py --verifier   # où est votre jeton, s'il
 
 ```bash
 cd terraform-training
-dsoxlab list-labs                # catalogue des 87 labs
+dsoxlab list-labs                # catalogue des 88 labs
 dsoxlab run <lab-id>             # dérouler un lab (dans challenge/work)
 dsoxlab check <lab-id>           # valider par pytest
 ```
@@ -67,11 +69,11 @@ scripts/render-readme.py         # régénère la liste des labs ci-dessous (EN 
 
 <!-- LABS_LIST_START -->
 
-**87 labs** répartis en **10 sections** (source de vérité : [`meta.yml`](./meta.yml)).
+**88 labs** répartis en **10 sections** (source de vérité : [`meta.yml`](./meta.yml)).
 
-### Découvrir Terraform
+### Discover Terraform
 
-Premiers contacts : déclaratif vs impératif, OpenTofu, installation, CLI, workflow, providers/resources/data sources, structure d'un projet.
+First contact: declarative vs imperative, OpenTofu, installation, CLI, workflow, providers/resources/data sources, project structure.
 
 - [`terraform overview`](./labs/getting-started/terraform-overview/)
 - [`declarative vs imperative`](./labs/getting-started/declarative-vs-imperative/)
@@ -82,9 +84,9 @@ Premiers contacts : déclaratif vs impératif, OpenTofu, installation, CLI, work
 - [`providers resources data sources`](./labs/getting-started/providers-resources-data-sources/)
 - [`terraform project structure`](./labs/getting-started/terraform-project-structure/)
 
-### Premières infrastructures
+### First infrastructures
 
-Provisionner pour de vrai : première infra, variables/outputs, réseau virtuel, VM libvirt, appel Ansible, debug d'un apply, destroy propre.
+Provision for real: first infra, variables/outputs, virtual network, libvirt VM, calling Ansible, debugging an apply, clean destroy.
 
 - [`first infrastructure`](./labs/first-infra/first-infrastructure/)
 - [`variables outputs`](./labs/first-infra/variables-outputs/)
@@ -94,9 +96,9 @@ Provisionner pour de vrai : première infra, variables/outputs, réseau virtuel,
 - [`debug apply`](./labs/first-infra/debug-apply/)
 - [`clean destroy`](./labs/first-infra/clean-destroy/)
 
-### Écrire du code Terraform
+### Writing Terraform code
 
-Le langage HCL en profondeur : providers, ressources, variables, outputs, locals, data sources, expressions, fonctions, conditions, count, for_each, boucles for, blocs dynamiques, depends_on, lifecycle, tfvars, contraintes de version, style, données sensibles.
+The HCL language in depth: providers, resources, variables, outputs, locals, data sources, expressions, functions, conditionals, count, for_each, for loops, dynamic blocks, depends_on, lifecycle, tfvars, version constraints, style, sensitive data.
 
 - [`providers`](./labs/write-code/providers/)
 - [`declare resources`](./labs/write-code/declare-resources/)
@@ -123,9 +125,9 @@ Le langage HCL en profondeur : providers, ressources, variables, outputs, locals
 - [`write only arguments`](./labs/write-code/sensitive-data/write-only-arguments/)
 - [`vault secrets`](./labs/write-code/sensitive-data/vault-secrets/)
 
-### Le State Terraform
+### Terraform State
 
-Comprendre et manipuler le state : backends, verrouillage, terraform state list/show/mv/rm, sauvegarde/restauration, diagnostic.
+Understand and manipulate the state: backends, locking, terraform state list/show/mv/rm, backup/restore, diagnosis.
 
 - [`understand state`](./labs/state/understand-state/)
 - [`backends`](./labs/state/backends/)
@@ -138,9 +140,9 @@ Comprendre et manipuler le state : backends, verrouillage, terraform state list/
 - [`backup restore state`](./labs/state/backup-restore-state/)
 - [`diagnose state`](./labs/state/diagnose-state/)
 
-### Modules Terraform
+### Terraform Modules
 
-Factoriser avec des modules : création, structure, variables/outputs, module local, registry, versionnement, tests, bonnes pratiques et anti-patterns.
+Factor out with modules: creation, structure, variables/outputs, local module, registry, versioning, tests, best practices and anti-patterns.
 
 - [`create modules`](./labs/modules/create-modules/)
 - [`module structure`](./labs/modules/module-structure/)
@@ -152,9 +154,9 @@ Factoriser avec des modules : création, structure, variables/outputs, module lo
 - [`module best practices`](./labs/modules/module-best-practices/)
 - [`module anti patterns`](./labs/modules/module-anti-patterns/)
 
-### Environnements
+### Environments
 
-Organiser plusieurs environnements : structure du repo, séparation dev/staging/prod, variables par environnement, workspaces (et quand les utiliser), monorepo vs repo par stack.
+Organize several environments: repo structure, dev/staging/prod separation, per-environment variables, workspaces (and when to use them), monorepo vs repo per stack.
 
 - [`organize terraform repo`](./labs/environments/organize-terraform-repo/)
 - [`separate environments`](./labs/environments/separate-environments/)
@@ -164,9 +166,9 @@ Organiser plusieurs environnements : structure du repo, séparation dev/staging/
 - [`monorepo vs repo per stack`](./labs/environments/monorepo-vs-repo-per-stack/)
 - [`terraform in automation`](./labs/environments/terraform-in-automation/)
 
-### Terraform sur AWS (via Floci)
+### Terraform on AWS (via Floci)
 
-Appliquer Terraform à un vrai provider cloud émulé en local par Floci : première EC2, security group/subnet/instance, IAM, backend S3 remote state, launch template + autoscaling, import/moved/drift. Alimente les capstones du Professional (objectifs 1 et 5).
+Apply Terraform to a real cloud provider emulated locally by Floci: first EC2, security group/subnet/instance, IAM, S3 remote-state backend, launch template + autoscaling, import/moved/drift. Feeds the Professional capstones (objectives 1 and 5).
 
 - [`provider aws first ec2`](./labs/aws/provider-aws-first-ec2/)
 - [`sg subnet instance`](./labs/aws/sg-subnet-instance/)
@@ -177,7 +179,7 @@ Appliquer Terraform à un vrai provider cloud émulé en local par Floci : premi
 
 ### HCP Terraform
 
-La plateforme HashiCorp (objectif 6 du Pro, évalué en QCM) : run workflow, workspaces et access management, credentials et dynamic credentials, policy as code et gouvernance.
+The HashiCorp platform (Professional objective 6, assessed by MCQ): run workflow, workspaces and access management, credentials and dynamic credentials, policy as code and governance.
 
 - [`hcp terraform overview`](./labs/hcp-terraform/hcp-terraform-overview/)
 - [`hcp workspaces`](./labs/hcp-terraform/hcp-workspaces/)
@@ -186,17 +188,18 @@ La plateforme HashiCorp (objectif 6 du Pro, évalué en QCM) : run workflow, wor
 - [`shared credentials`](./labs/hcp-terraform/shared-credentials/)
 - [`projects teams`](./labs/hcp-terraform/projects-teams/)
 - [`policy as code`](./labs/hcp-terraform/policy-as-code/)
+- [`premier run distant`](./labs/hcp-terraform/premier-run-distant/)
 
-### Certification Associate (004)
+### Associate Certification (004)
 
-Préparer l'examen Associate 004 (QCM) : commandes essentielles et examen blanc.
+Prepare the Associate 004 exam (MCQ): essential commands and a mock exam.
 
 - [`essential commands`](./labs/certifications/associate/essential-commands/)
 - [`mock 004`](./labs/certifications/associate/mock-004/)
 
-### Certification Professional (capstones par objectif)
+### Professional Certification (capstones by objective)
 
-Un TP-capstone par objectif de l'examen Terraform Authoring and Operations Professional (le plus haut niveau, hands-on), plus un mock intégratif de 4h.
+One capstone lab per objective of the Terraform Authoring and Operations Professional exam (the highest, hands-on level), plus a 4h integrative mock.
 
 - [`capstone1 resource lifecycle`](./labs/certifications/professional/capstone1-resource-lifecycle/)
 - [`capstone2 dynamic config`](./labs/certifications/professional/capstone2-dynamic-config/)

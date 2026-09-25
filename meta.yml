@@ -189,6 +189,7 @@ sections:
       - hcp-terraform/shared-credentials
       - hcp-terraform/projects-teams
       - hcp-terraform/policy-as-code
+      - hcp-terraform/premier-run-distant
 
   # ─────────────────────────────────────────────────────────────────────────
   - id: certif-associate
