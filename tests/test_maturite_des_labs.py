@@ -51,7 +51,6 @@ MARQUEUR_SQUELETTE = "tests non implémentés"
 COQUILLES = {
     "certifications/professional/capstone6-hcp",
     "certifications/professional/mock-pro",
-    "hcp-terraform/hcp-terraform-overview",
     "hcp-terraform/projects-teams",
     "hcp-terraform/remote-runs",
     "hcp-terraform/shared-credentials",

@@ -1,13 +1,15 @@
 ---
 id: hcp-terraform-hcp-terraform-overview
-title: Presentation Hcp Terraform (skeleton)
-description: Skeleton for the « Presentation Hcp Terraform » lab. Scenario and tests
-  still to be written.
+title: "The run workflow: played in two steps, then qualified"
+description: |
+  A run is a plan, then an apply of THAT plan. Reproduce it locally with saved plans, see
+  what a stale plan and a frozen variable refuse, then qualify six described runs and put
+  the eleven stages back in the order the documentation gives.
 section: hcp-terraform
 level: l3
 difficulty: advanced
 lab_type: lab
-estimated_time: 30m
+estimated_time: 35m
 skills:
 - terraform
 - presentation-hcp
@@ -19,6 +21,15 @@ certification_tags:
 runtime:
   type: shell
   workdir: challenge/work
+  fixtures:
+  - run/versions.tf
+  - run/main.tf
+  - analyse/versions.tf
+  - analyse/variables.tf
+  - analyse/situations.auto.tfvars.json
+  - analyse/verdicts.tf
+  - analyse/etapes.tf
+  - analyse/faits.tf
 validation:
   functional: true
   security: false

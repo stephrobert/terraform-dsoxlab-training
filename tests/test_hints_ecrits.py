@@ -39,7 +39,6 @@ DETTE = {
     "certifications/professional/capstone6-hcp",
     "certifications/professional/mock-pro",
     "environments/when-to-use-workspaces",
-    "hcp-terraform/hcp-terraform-overview",
     "hcp-terraform/projects-teams",
     "hcp-terraform/remote-runs",
     "hcp-terraform/shared-credentials",

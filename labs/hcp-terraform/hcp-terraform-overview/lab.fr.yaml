@@ -1,5 +1,8 @@
 ---
 id: hcp-terraform-hcp-terraform-overview
-title: Presentation Hcp Terraform (squelette)
-description: Squelette du lab « Presentation Hcp Terraform ». Scénario et tests restent
-  à écrire.
+title: "Le workflow d'un run : joué en deux temps, puis qualifié"
+description: |
+  Un run est un plan, puis un apply de CE plan. Reproduire cette division en local avec les
+  plans enregistrés, constater ce que refusent un plan périmé et une variable figée, puis
+  qualifier six runs décrits et remettre les onze étapes dans l'ordre que la documentation
+  donne.
