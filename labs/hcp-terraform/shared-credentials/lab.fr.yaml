@@ -1,5 +1,7 @@
 ---
 id: hcp-terraform-shared-credentials
-title: Credentials Partage (squelette)
-description: Squelette du lab « Credentials Partage ». Scénario et tests restent à
-  écrire.
+title: "Les identifiants ne vivent ni dans le code, ni dans le state"
+description: |
+  `sensitive` masque une valeur à l'écran, et le state la porte quand même en clair. Sortir
+  les clés du provider de la configuration, remplacer un jeton posé en étiquette par son
+  empreinte, et établir comment fonctionnent les identifiants dynamiques.

@@ -1,63 +1,68 @@
-# Scénario : auditer des credentials HCP Terraform sans compte HCP
+# Scénario : les identifiants ne vivent ni dans le code, ni dans le state
 
-**Sous-objectif d'examen visé : 6c.**
+**Sous-objectif d'examen visé : 6c, gérer les identifiants de provider dans HCP Terraform.**
 
-L'objectif 6 est évalué en QCM : on ne vous demandera pas de cliquer dans HCP
-Terraform, on vous demandera de dire ce qui cloche dans une configuration. Deux
-pièges ici : croire qu'une clé statique rangée en variable d'environnement est
-« sécurisée », et croire que `tfe_outputs` se lit comme un data source ordinaire.
+L'objectif 6 est évalué en QCM, mais ce qu'il enseigne se mesure, et ce lab le mesure sur un
+vrai provider face à un émulateur local. Aucun compte, aucune carte bancaire.
+
+Une équipe livre une configuration qui fonctionne. Le provider porte ses clés dans le
+fichier, et un jeton de service est écrit dans une étiquette ; la variable est marquée
+`sensitive`, alors tout le monde la croit protégée. Le state, que tout le monde lit, dit le
+contraire.
 
 ## Capacité visée
 
-Diagnostiquer un workspace HCP Terraform authentifié par clés statiques, nommer
-chaque défaut, et produire la configuration corrigée en dynamic provider
-credentials OIDC : variables d'environnement exactes, audience, trust policy
-IAM cadrée.
+Écrire une configuration qui **reçoit** ses identifiants au lieu de les contenir, comme HCP
+Terraform les fournit dans l'environnement du run, et empêcher un secret d'atteindre le
+state, ce que `sensitive` n'empêche pas.
 
 ## D'où part l'apprenant
 
-`challenge/work` contient `dossier-audit/`, en lecture seule, trois extraits
-d'une plateforme existante :
+`challenge/work` contient deux répertoires :
 
-1. `variables-workspace.json`, l'export des variables du workspace `prod-app` :
-   `AWS_ACCESS_KEY_ID` et `AWS_SECRET_ACCESS_KEY` en variables d'environnement,
-   la seconde avec `"sensitive": false`, aucune variable `TFC_AWS_*`, et l'ARN
-   du rôle IAM déjà créé côté AWS.
-2. `trust-policy.json` : aucune condition sur le claim `aud`, et un `sub` en
-   `StringLike` sur `organization:*:project:*:workspace:*:run_phase:*`.
-3. `app.tf` : il lit `data.tfe_outputs.reseau` par l'attribut `values` et
-   republie la valeur dans un output racine sans `sensitive = true`.
-
-`main.tf` est fourni et **ne doit pas être modifié** : providers `local` et
-`null` uniquement, il consomme les réponses et fabrique les artefacts. Reste à
-remplir `reponses.auto.tfvars`, dont toutes les valeurs sont des `???` : liste
-des défauts (identifiants donnés en commentaire), map des variables
-d'environnement à poser, audience par défaut, attribut de `tfe_outputs` pour
-une valeur non sensible, valeurs possibles de `run_phase`, motif `sub` corrigé.
+1. `configuration/`, une configuration AWS pointée vers l'émulateur. Son provider porte
+   `access_key` et `secret_key` en clair, et son instance porte une étiquette `Jeton` qui
+   contient le jeton de service. `jeton.auto.tfvars` en fournit la valeur.
+2. `questionnaire/`, cinq réponses à poser dans `reponses.auto.tfvars`, sur les identifiants
+   dynamiques.
 
 ## L'état à atteindre
 
-1. Le state contient la ressource managée `local_file.trust_policy_corrigee`,
-   dont le contenu est un JSON valide.
-2. Ce JSON porte une condition `StringEquals` sur `app.terraform.io:aud` égale
-   à `aws.workload.identity`, absente de la policy d'origine, et un `sub` cadré
-   sur l'organisation et le projet réellement présents dans `dossier-audit/`.
-3. L'output `variables_dynamiques` vaut exactement `TFC_AWS_PROVIDER_AUTH` à
-   `"true"` et `TFC_AWS_RUN_ROLE_ARN` à l'ARN lu dans l'export, et l'output
-   `cles_statiques_restantes` est vide : plus aucune trace des deux clés AWS.
-4. L'output `attribut_tfe_outputs` vaut `nonsensitive_values` : `values` est
-   marqué sensible en entier et ne peut alimenter un output racine ordinaire.
-5. L'output `defauts_identifies` contient les cinq identifiants attendus, ni
-   plus ni moins, et la configuration est idempotente.
+1. Le provider ne déclare plus aucun identifiant. Il les trouve dans son environnement,
+   `AWS_ACCESS_KEY_ID` et `AWS_SECRET_ACCESS_KEY`, là où HCP Terraform les pose.
+2. L'instance ne porte plus le jeton. Une étiquette `Empreinte` porte son empreinte SHA-256
+   à la place, ce qui suffit à vérifier un jeton présenté sans le conserver.
+3. Le jeton n'apparaît nulle part dans le state.
+4. Les cinq réponses établissent ce que protège `sensitive`, ce que HCP Terraform envoie à
+   la plateforme cloud, ce qui le vérifie, combien de temps vivent les identifiants rendus,
+   et où se déclarent les identifiants d'un workspace.
+
+## La mesure au cœur du lab
+
+Le 2026-09-25, sur Terraform 1.16.1, sur cette configuration même :
+
+| Où | Le jeton |
+| --- | --- |
+| `terraform show` | `(sensitive value)` |
+| `terraform.tfstate` | `"Jeton": "svc-7f3a91c4e2b8-prod"`, **deux fois** |
+
+`sensitive` agit sur ce que Terraform affiche, pas sur ce qu'il enregistre. Il en va de même
+d'un plan enregistré, qui porte la valeur lui aussi.
 
 ## Comment on le prouve
 
-Les tests n'ouvrent jamais un `.tf` de l'apprenant. `terraform show -json`
-fournit `values.root_module.resources` : on y cherche une entrée
-`mode: managed` de type `local_file` nommée `trust_policy_corrigee`, on parse
-son attribut `content` comme du JSON et on vérifie les conditions `aud` et
-`sub` clé par clé. `terraform output -json` fournit le reste : ensembles triés
-pour `defauts_identifies` et `phases_run`, égalité stricte sur la map
-`variables_dynamiques`, liste vide pour `cles_statiques_restantes`, chaînes
-exactes pour `attribut_tfe_outputs` et `audience_par_defaut`. Enfin
-`terraform plan -detailed-exitcode` doit rendre 0.
+Les tests appliquent la configuration **dans un environnement de run qu'ils construisent
+eux-mêmes** : toutes les variables `AWS_*` du poste sont retirées, `HOME` pointe sur un
+répertoire vide pour qu'aucun `~/.aws` ne contribue, et les identifiants sont posés comme
+HCP Terraform les pose. Une configuration écrite pour recevoir ses identifiants y
+fonctionne ; une configuration qui les contient fonctionne aussi, et c'est justement
+pourquoi un second contrôle lit les fichiers.
+
+Ces deux moitiés sont assérées **ensemble**, dans un seul test, et le premier cycle dit
+pourquoi : quand elles étaient séparées, la moitié « une instance existe » était **verte
+avant tout travail**, puisque la configuration de départ s'authentifie parfaitement avec ses
+clés en dur. Mesuré le 2026-09-25 : 1/9 sans avoir rien fait. Réunies, elles ne sont
+atteignables qu'une fois les deux moitiés du travail faites.
+
+Vérifié en dégradant la solution : retirer les clés en laissant le jeton dans l'étiquette
+donne 6/8, et poser l'empreinte en laissant les clés dans le provider donne 7/8.

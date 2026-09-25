@@ -52,7 +52,6 @@ COQUILLES = {
     "certifications/professional/capstone6-hcp",
     "certifications/professional/mock-pro",
     "hcp-terraform/projects-teams",
-    "hcp-terraform/shared-credentials",
 }
 
 
