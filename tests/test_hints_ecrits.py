@@ -41,7 +41,6 @@ DETTE = {
     "environments/when-to-use-workspaces",
     "hcp-terraform/hcp-terraform-overview",
     "hcp-terraform/hcp-workspaces",
-    "hcp-terraform/policy-as-code",
     "hcp-terraform/projects-teams",
     "hcp-terraform/remote-runs",
     "hcp-terraform/shared-credentials",

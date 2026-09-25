@@ -1,8 +1,10 @@
 ---
 id: hcp-terraform-policy-as-code
-title: Policy As Code (skeleton)
-description: Skeleton for the « Policy As Code » lab. Scenario and tests still to
-  be written.
+title: "Policy as code: what blocks a run, and who can override it"
+description: |
+  A `hard-mandatory` is not unbypassable: the policy set setting decides, crossed with the
+  user's permission. Qualify seven runs, establish the levels of the three frameworks, and
+  write a rule that refuses a non-compliant plan and accepts the compliant one.
 section: hcp-terraform
 level: l3
 difficulty: advanced
