@@ -1,65 +1,74 @@
-# Scénario : le cycle de vie d'un run HCP Terraform
+# Scénario : le flux qu'un run renvoie, et les trois façons de le lancer
 
-**Sous-objectif d'examen visé : 6a.**
+**Sous-objectif d'examen visé : 6a, analyser le workflow d'un run HCP Terraform.**
 
-L'objectif 6 est évalué en QCM : aucun compte HCP Terraform, aucune exécution
-distante. Le lab traite le piège des questions d'examen sur les runs, où l'ordre
-des étapes, ce qu'un speculative plan traverse vraiment et l'incompatibilité
-entre apply CLI et workspace relié au VCS se jouent sur des affirmations très
-proches les unes des autres.
+L'objectif 6 est évalué en QCM, et ne demande aucun compte. Mais ce qu'une CLI reçoit d'un
+run distant, « Running plan in HCP Terraform. Output will stream here », est exactement le
+flux structuré que `terraform apply -json` produit en local. Ce lab en enregistre donc un
+vrai, et le lit.
+
+Un run est passé cette nuit. Deux ressources existent, une troisième non, et le résumé que
+porte le flux annonce trois ajouts. Quelqu'un doit établir ce qui s'est réellement passé.
 
 ## Capacité visée
 
-Ordonner sans hésitation les étapes d'un run HCP Terraform, séparer les étapes
-obligatoires des étapes conditionnelles, et trancher les affirmations courantes
-sur les speculative plans, la file d'attente d'un workspace et les saved plans.
-Le tout exprimé dans une structure typée que Terraform valide, puis restitue en
-JSON.
+Lire le flux d'un run plutôt que son dernier message : distinguer ce qui a été annoncé de
+ce qui a eu lieu, retrouver les ressources en échec, et savoir lequel des trois workflows
+autorise quoi.
 
 ## D'où part l'apprenant
 
-`challenge/work` contient trois fichiers. `versions.tf` fixe la contrainte
-`required_version` et ne déclare aucun provider : le lab tourne sans réseau et
-sans compte. `questionnaire.tf` est fourni et ne doit pas être modifié : il
-déclare une variable `reponses` d'un type objet strict, assortie de blocs
-`validation` qui refusent toute valeur hors de l'énuméré autorisé, puis les
-`output` qui republient les réponses normalisées (`ordre_du_run`,
-`etapes_optionnelles`, `declencheurs_speculatifs`, `contournement_file_attente`,
-`etat_terminal_sans_changement`, `version_min_saved_plan`, `affirmations`).
-Aucune bonne réponse n'y figure : il n'expose que la forme attendue.
-`reponses.auto.tfvars` est le seul fichier à remplir : chaque valeur y est
-remplacée par `???`, ce qui fait échouer le parsing HCL dès le premier
-`terraform plan`. L'énoncé du challenge liste les onze questions et le
-vocabulaire exact accepté, repris de la documentation officielle.
+`challenge/work` contient trois répertoires :
+
+1. `flux/`, une configuration fournie à trois ressources `local_file`. La troisième
+   **échoue volontairement** : elle écrit sous un chemin dont le parent est un fichier.
+   L'apply se termine donc sur un code non nul, et c'est le résultat attendu.
+2. `analyse/`, une configuration trouée de cinq `???`, qui doit lire le flux enregistré et
+   en tirer ses conclusions.
+3. `questionnaire/`, cinq réponses à poser dans `reponses.auto.tfvars`, sur les trois
+   workflows.
 
 ## L'état à atteindre
 
-1. `terraform init` puis `terraform apply` aboutissent : le fichier de variables
-   satisfait tous les blocs `validation`.
-2. `ordre_du_run` liste les onze étapes dans l'ordre officiel, de `pending` à
-   `completion`, `cost_estimation` étant intercalée entre le plan et le policy
-   check ; `etapes_optionnelles` retient exactement les étapes conditionnelles,
-   dont les quatre phases de run tasks, l'estimation de coût et le policy check.
-3. `declencheurs_speculatifs` retient les trois déclencheurs réels et écarte les
-   intrus ; `contournement_file_attente` distingue le plan-only run de la seule
-   phase de planification d'un saved plan, dont l'apply repasse par la file.
-4. `etat_terminal_sans_changement` porte l'état exact d'un plan sans changement,
-   sans estimation de coût ni policy check, et `version_min_saved_plan` la
-   version minimale de Terraform CLI.
-5. `affirmations` tranche chaque proposition : un apply CLI est refusé sur un
-   workspace relié au VCS, un speculative plan traverse le policy check mais
-   jamais l'apply, un apply interrompu laisse dans le state les objets déjà
-   modifiés, un run manuel lancé depuis l'interface ne récupère pas le dernier
-   commit, et le refresh-only ne corrige pas le drift.
+1. Le run est joué dans `flux/` en enregistrant son flux :
+   `terraform apply -auto-approve -json > run.jsonl`. Deux fichiers sont créés, le
+   troisième non.
+2. `par_type` compte les messages du flux par type, lus dans le flux et non écrits à la
+   main.
+3. `resume_annonce` donne l'objet `changes` du seul `change_summary` que le flux porte.
+4. `adresses_abouties` et `adresses_en_echec` séparent les ressources qui ont abouti de
+   celle qui a échoué.
+5. `ecart_entre_annonce_et_abouti` donne la différence entre les deux, et c'est tout
+   l'intérêt de l'exercice.
+6. Les cinq réponses établissent quel workflow interdit un remote apply, ce qu'un run CLI
+   envoie, d'où viennent ses valeurs de variables, quel workflow est recommandé en
+   non-interactif, et quel fichier exclut du contenu de l'envoi.
+
+## Pourquoi le run échoue, et pourquoi c'est le sujet
+
+Mesuré le 2026-09-25 sur Terraform 1.16.1, sur la même configuration selon qu'elle aboutit
+ou non :
+
+| Run | Messages `change_summary` |
+| --- | --- |
+| qui aboutit | deux, `plan` puis `apply` |
+| qui échoue en cours | **un**, celui du `plan` seul |
+
+Sur un run interrompu, le seul résumé que le flux porte est celui que le plan **annonçait**.
+Il dit `add: 3` là où deux ressources ont été posées, et rien dans ce message ne le
+signale. Ce qui a eu lieu ne se lit que dans les messages `apply_complete`.
+
+Un run qui réussit ne permettrait pas de le mesurer : tout ce qui est planifié aboutit, et
+les deux moitiés du flux racontent la même chose.
 
 ## Comment on le prouve
 
-Les tests lancent `terraform init -input=false` puis
-`terraform apply -auto-approve -input=false` dans `challenge/work` et lisent
-uniquement `terraform output -json` : égalité stricte de liste ordonnée pour
-`ordre_du_run`, égalité d'ensembles pour les listes non ordonnées, égalité de
-chaîne pour l'état terminal et la version, comparaison booléenne clé par clé
-pour `affirmations`. Un dernier test rejoue `terraform plan -detailed-exitcode`
-et exige le code 0. Aucun test ne lit `reponses.auto.tfvars` ni un fichier
-`.tf` : un `challenge/work` vide ou laissé avec ses `???` ne produit aucun
-output et échoue dès la première assertion.
+Les tests relisent `flux/run.jsonl` et recalculent ce que l'analyse aurait dû rendre : ce
+qui est comparé, c'est l'analyse de l'apprenant à la vérité de son propre flux, jamais à un
+chiffre gelé. Un flux écrit à la main ne passerait pas davantage : les tests exigent que
+l'état du système concorde, deux fichiers présents, l'impossible absent, et exactement deux
+ressources dans le state.
+
+Vérifié en dégradant la solution : filtrer sur `operation == "apply"`, qui est le réflexe
+juste sur un run qui aboutit, fait tomber le score à 8/12 ; lire les adresses dans
+`planned_change` au lieu d'`apply_complete` le fait tomber à 10/12.

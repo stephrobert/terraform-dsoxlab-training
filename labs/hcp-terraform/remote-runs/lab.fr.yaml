@@ -1,4 +1,7 @@
 ---
 id: hcp-terraform-remote-runs
-title: Remote Runs (squelette)
-description: Squelette du lab « Remote Runs ». Scénario et tests restent à écrire.
+title: "Le flux qu'un run renvoie, et les trois façons de le lancer"
+description: |
+  Ce qu'une CLI reçoit d'un run distant est le flux structuré que `terraform apply -json`
+  produit aussi en local. L'enregistrer, l'analyser en HCL, avec deux `change_summary` dont
+  un seul dit ce qui s'est passé, et établir ce que chacun des trois workflows autorise.
