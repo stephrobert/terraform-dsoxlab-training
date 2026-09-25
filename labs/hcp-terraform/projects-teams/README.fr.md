@@ -61,6 +61,26 @@ Deux cas où l'accès entre par un système que vous avez branché :
 granted. » Votre matrice de permissions ne vaut que ce que vaut ce que vous y
 avez branché.
 
+## Le jeton, et pourquoi vous n'en avez pas besoin
+
+Ce lab ne demande **aucun compte HCP Terraform**, et rien ne part en exécution
+distante. Si vous croisez
+
+```
+Error: Required token could not be found
+```
+
+c'est que votre configuration a été acceptée : Terraform en est à demander
+l'authentification, et le lab s'arrête là volontairement.
+
+Pour aller au-delà, un jeton se crée et se pose en trois minutes, et le guide
+[`docs/hcp-token.fr.md`](../../../docs/hcp-token.fr.md) dit où le mettre et
+lequel des emplacements l'emporte quand plusieurs sont remplis :
+
+```bash
+python3 scripts/diagnostic-jeton-hcp.py --verifier
+```
+
 ## À vous
 
 ```bash

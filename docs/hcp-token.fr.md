@@ -35,6 +35,22 @@ La commande ouvre votre navigateur, vous demande de confirmer, puis écrit
 description qui dise d'où il vient, par exemple `poste-formation-terraform`, et
 une expiration.
 
+> **La page « Tokens » affiche deux choses, et une seule est un jeton d'API.**
+>
+> Ce qui s'y voit en permanence, sous le titre *GitHub App OAuth token*, est un
+> jeton commençant par `ghaot-` et long d'une vingtaine de caractères : il sert à
+> autoriser l'application GitHub, et **il n'authentifie pas l'API**. Le poser
+> dans le fichier de credentials donne un `401 unauthorized` que rien ne
+> distingue d'une révocation.
+>
+> Le jeton d'API se crée avec le bouton **Create an API token**, fait environ
+> 90 caractères avec un `.atlasv1.` au milieu, et **ne s'affiche qu'une fois**.
+> Fermez la fenêtre sans l'avoir copié, il faut en créer un autre.
+>
+> Mesuré le 2026-09-25, sur ce poste : la confusion se fait en une seconde, et
+> rien sur la page ne la prévient. `scripts/diagnostic-jeton-hcp.py` la nomme
+> désormais.
+
 Trois portées existent, et elles ne se valent pas :
 
 | Portée | Ce qu'elle permet | Pour quoi |

@@ -120,6 +120,18 @@ pourquoi : une configuration portant à la fois un `backend` et un `cloud`
 l'affiche **aussi**, juste à côté de sa faute. Les tests exigent donc les deux,
 le message de jeton présent et aucun message de faute.
 
+## Et si vous vouliez franchir cette frontière
+
+Rien ne vous y oblige, et ce lab vaut 100 sans compte. Mais si vous voulez voir
+ce qu'il y a de l'autre côté, un jeton se crée et se pose en trois minutes, et le
+guide
+[`docs/hcp-token.fr.md`](../../../docs/hcp-token.fr.md) dit où le mettre et
+lequel des emplacements l'emporte quand plusieurs sont remplis :
+
+```bash
+python3 scripts/diagnostic-jeton-hcp.py --verifier
+```
+
 ## À vous
 
 ```bash

@@ -33,6 +33,21 @@ By hand, if you prefer: on `app.terraform.io`, your avatar → **User settings**
 **Tokens** → *Create an API token*. Give it a description that says where it
 lives, such as `training-workstation`, and an expiry.
 
+> **The "Tokens" page shows two things, and only one of them is an API token.**
+>
+> What sits there permanently, under *GitHub App OAuth token*, starts with
+> `ghaot-` and is about twenty characters long: it authorises the GitHub
+> application, and **it does not authenticate the API**. Putting it in the
+> credentials file gives a `401 unauthorized` that looks exactly like a
+> revocation.
+>
+> The API token is created with the **Create an API token** button, is around
+> 90 characters long with `.atlasv1.` in the middle, and **is shown only once**.
+> Close the dialog without copying it and you have to create another one.
+>
+> Measured on 2026-09-25, on this very machine: the mix-up takes a second, and
+> nothing on the page warns you. `scripts/diagnostic-jeton-hcp.py` now names it.
+
 Three scopes exist, and they are not interchangeable:
 
 | Scope | What it allows | For what |

@@ -118,6 +118,18 @@ measurement says why: a configuration holding both a `backend` and a `cloud`
 block prints it **as well**, right next to its fault. The tests therefore
 require both the token message and the absence of every fault message.
 
+## And if you wanted to cross that boundary
+
+Nothing requires you to, and this lab scores 100 without an account. But if you
+want to see what lies on the other side, a token takes three minutes to create
+and place, and
+[`docs/hcp-token.md`](../../../docs/hcp-token.md) says where to put it and which
+location wins when several are filled:
+
+```bash
+python3 scripts/diagnostic-jeton-hcp.py --verifier
+```
+
 ## Over to you
 
 ```bash

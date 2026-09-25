@@ -61,6 +61,59 @@ def empreinte(jeton: str) -> str:
     return hashlib.sha256(jeton.encode()).hexdigest()[:12]
 
 
+# Un jeton d'API HCP Terraform porte un `.atlasv1.` et avoisine 90 caractères.
+# Ce contrôle est né d'un cas réel, le 2026-09-25 : un jeton de 22 caractères
+# posé dans le fichier, refusé par l'API avec un 401 que rien ne distinguait
+# d'une révocation. C'était une copie tronquée, et l'API ne pouvait pas le dire.
+MARQUE_DE_FORME = ".atlasv1."
+LONGUEUR_PLAUSIBLE = 60
+
+# La page « Tokens » de HCP Terraform affiche DEUX choses, et une seule est un
+# jeton d'API. Celle qui est visible en permanence est le jeton OAuth de la
+# GitHub App, préfixé `ghaot-` ; le jeton d'API, lui, se crée par un bouton et
+# ne s'affiche qu'une fois. La confusion s'est produite le 2026-09-25, et rien
+# sur la page ne la prévient.
+PREFIXES_TROMPEURS = {
+    "ghaot-": (
+        "c'est le jeton OAuth de la GitHub App, affiché en permanence sur la "
+        "page « Tokens ». Le jeton d'API se crée avec le bouton « Create an "
+        "API token » et ne s'affiche qu'une fois"
+    ),
+    "ghp_": "c'est un jeton GitHub personnel, sans rapport avec HCP Terraform",
+    "hvs.": "c'est un jeton Vault, sans rapport avec HCP Terraform",
+}
+
+
+def defauts_de_forme(jeton: str) -> list[str]:
+    """Ce qui, dans la FORME du jeton, explique un refus sans appeler l'API.
+
+    Volontairement indicatif : la forme d'un jeton peut changer, et un jeton
+    valide qui ne ressemblerait plus à rien ne doit pas être déclaré faux. Ces
+    remarques s'affichent, elles ne décident pas.
+    """
+    remarques = []
+    for prefixe, explication in PREFIXES_TROMPEURS.items():
+        if jeton.startswith(prefixe):
+            remarques.append(f"il commence par `{prefixe}` : {explication}")
+
+    if jeton != jeton.strip():
+        remarques.append(
+            "il porte une espace ou un retour à la ligne en trop, ce qui suffit "
+            "à le faire refuser"
+        )
+    if MARQUE_DE_FORME not in jeton:
+        remarques.append(
+            f"il ne contient pas `{MARQUE_DE_FORME}`, que porte un jeton d'API "
+            "HCP Terraform"
+        )
+    if len(jeton.strip()) < LONGUEUR_PLAUSIBLE:
+        remarques.append(
+            f"il fait {len(jeton.strip())} caractères, là où un jeton d'API en "
+            "fait environ 90 : la copie est probablement incomplète"
+        )
+    return remarques
+
+
 def _lire_credentials_json(chemin: Path, hote: str) -> str | None:
     try:
         contenu = json.loads(chemin.read_text(encoding="utf-8"))
@@ -233,6 +286,19 @@ def principal() -> int:
         return 1
 
     print(f"Terraform emploiera : {gagnante['nom']}")
+
+    remarques = defauts_de_forme(gagnante["jeton"])
+    if remarques:
+        print("\nMais sa FORME est douteuse, avant même d'interroger l'API :")
+        for remarque in remarques:
+            print(f"    - {remarque}")
+        print(
+            "\nUn jeton d'API se présente comme `<identifiant>.atlasv1.<partie "
+            "secrète>`.\nReprenez-le en entier : la page ne le montre qu'une "
+            "fois, et une fois fermée\nil faut en créer un autre, ce qui prend "
+            "dix secondes."
+        )
+
     autres = [s for s in trouvees if s.get("jeton") and s is not gagnante]
     if autres:
         print(

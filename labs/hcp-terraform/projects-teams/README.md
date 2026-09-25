@@ -57,6 +57,26 @@ Two cases where access leaks in through a system you connected:
 "An integrated system is able to delegate any level of access that it has been
 granted." Your permission matrix is only as tight as what you connected to it.
 
+## The token, and why you do not need one
+
+This lab needs **no HCP Terraform account**, and nothing runs remotely. If you
+come across
+
+```
+Error: Required token could not be found
+```
+
+your configuration was accepted: Terraform has reached the authentication step,
+and the lab deliberately stops there.
+
+To go beyond it, a token takes three minutes to create and place, and
+[`docs/hcp-token.md`](../../../docs/hcp-token.md) says where to put it and which
+location wins when several are filled:
+
+```bash
+python3 scripts/diagnostic-jeton-hcp.py --verifier
+```
+
 ## Over to you
 
 ```bash

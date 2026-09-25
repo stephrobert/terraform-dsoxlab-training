@@ -73,6 +73,26 @@ Two details worth keeping. A CLI run takes its **code** from the local directory
 but its **variable values** from the workspace. And `.terraformignore`, supported
 since Terraform 0.12.11, excludes files from what gets uploaded.
 
+## The token, and why you do not need one
+
+This lab needs **no HCP Terraform account**, and nothing runs remotely. If you
+come across
+
+```
+Error: Required token could not be found
+```
+
+your configuration was accepted: Terraform has reached the authentication step,
+and the lab deliberately stops there.
+
+To go beyond it, a token takes three minutes to create and place, and
+[`docs/hcp-token.md`](../../../docs/hcp-token.md) says where to put it and which
+location wins when several are filled:
+
+```bash
+python3 scripts/diagnostic-jeton-hcp.py --verifier
+```
+
 ## Over to you
 
 ```bash

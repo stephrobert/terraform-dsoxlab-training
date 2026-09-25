@@ -80,6 +80,26 @@ confiance, des rôles et politiques sur la plateforme, et des variables
 d'environnement sur le workspace, et les agents auto-hébergés doivent être en
 **v1.7.0** ou plus récent.
 
+## Le jeton, et pourquoi vous n'en avez pas besoin
+
+Ce lab ne demande **aucun compte HCP Terraform**, et rien ne part en exécution
+distante. Si vous croisez
+
+```
+Error: Required token could not be found
+```
+
+c'est que votre configuration a été acceptée : Terraform en est à demander
+l'authentification, et le lab s'arrête là volontairement.
+
+Pour aller au-delà, un jeton se crée et se pose en trois minutes, et le guide
+[`docs/hcp-token.fr.md`](../../../docs/hcp-token.fr.md) dit où le mettre et
+lequel des emplacements l'emporte quand plusieurs sont remplis :
+
+```bash
+python3 scripts/diagnostic-jeton-hcp.py --verifier
+```
+
 ## À vous
 
 ```bash
