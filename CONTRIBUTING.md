@@ -1,4 +1,4 @@
-# Contributing to terraform-training
+# Contributing to terraform-dsoxlab-training
 
 **Language:** [English](./CONTRIBUTING.md) · [Français](./CONTRIBUTING.fr.md)
 
@@ -11,8 +11,8 @@ engine code here.
 
 ```bash
 uv tool install dsoxlab        # the CLI (external tool)
-git clone https://github.com/stephrobert/terraform-training.git
-cd terraform-training
+git clone https://github.com/stephrobert/terraform-dsoxlab-training.git
+cd terraform-dsoxlab-training
 dsoxlab validate-structure     # check the contract
 ```
 

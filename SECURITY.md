@@ -4,8 +4,8 @@
 
 ## Supported versions
 
-`terraform-training` is under active development. Security fixes are applied to
-the latest version of the `main` branch.
+`terraform-dsoxlab-training` is under active development. Security fixes
+are applied to the latest version of the `main` branch.
 
 | Version | Supported |
 | --- | --- |
@@ -19,7 +19,7 @@ the latest version of the `main` branch.
 If you believe you have found one, report it privately:
 
 - Preferred: open a
-  [private security advisory](https://github.com/stephrobert/terraform-training/security/advisories/new)
+  [private security advisory](https://github.com/stephrobert/terraform-dsoxlab-training/security/advisories/new)
   on GitHub.
 - Otherwise, use the contact details published on
   <https://blog.stephane-robert.info>.

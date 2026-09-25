@@ -1,5 +1,5 @@
 [project]
-name = "terraform-training"
+name = "terraform-dsoxlab-training"
 version = "0.1.0"
 description = "Lab pédagogique Terraform (Associate & Professional) — fournisseur de labs pour la CLI dsoxlab"
 requires-python = ">=3.11"

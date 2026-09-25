@@ -2,8 +2,8 @@
 
 **Language:** [English](./README.md) · [Français](./README.fr.md)
 
-[![OpenSSF Scorecard](https://img.shields.io/ossf-scorecard/github.com/stephrobert/terraform-training?label=OpenSSF%20Scorecard)](https://securityscorecards.dev/viewer/?uri=github.com/stephrobert/terraform-training)
-[![Plumber compliance](https://score.getplumber.io/github.com/stephrobert/terraform-training.svg)](https://score.getplumber.io/github.com/stephrobert/terraform-training)
+[![OpenSSF Scorecard](https://img.shields.io/ossf-scorecard/github.com/stephrobert/terraform-dsoxlab-training?label=OpenSSF%20Scorecard)](https://securityscorecards.dev/viewer/?uri=github.com/stephrobert/terraform-dsoxlab-training)
+[![Plumber compliance](https://score.getplumber.io/github.com/stephrobert/terraform-dsoxlab-training.svg)](https://score.getplumber.io/github.com/stephrobert/terraform-dsoxlab-training)
 [![License: CC BY 4.0](https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey.svg)](./LICENSE)
 
 Hands-on **Terraform** training, driven by the
@@ -15,7 +15,7 @@ Operations Professional** certifications.
 
 ## What it is
 
-`terraform-training` is a **content repository**, not an application. It
+`terraform-dsoxlab-training` is a **content repository**, not an application. It
 provides:
 
 - **guided labs** whose brief describes a situation, never a set of steps;
@@ -60,8 +60,8 @@ as a standalone tool:
 uv tool install dsoxlab        # or: pipx install dsoxlab
 
 # 2. Clone this lab catalog
-git clone https://github.com/stephrobert/terraform-training.git
-cd terraform-training
+git clone https://github.com/stephrobert/terraform-dsoxlab-training.git
+cd terraform-dsoxlab-training
 
 # 3. Check the contract is valid
 dsoxlab validate-structure

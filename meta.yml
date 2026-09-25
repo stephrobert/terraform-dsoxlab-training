@@ -12,7 +12,7 @@
 # Pour réordonner : déplacer la ligne. Pas de `mv` à faire.
 
 repo:
-  id: terraform-training
+  id: terraform-dsoxlab-training
   category: terraform           # 'ansible' | 'kubernetes' | 'linux' | 'terraform' | …
   title: "Terraform Training : Associate & Professional 2026"
   blog_url: "https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/parcours/"
@@ -22,7 +22,7 @@ repo:
   # marche ici mais suppose deux choses : un remote nommé `origin`, et un
   # hébergeur dont les issues vivent sous `<dépôt>/issues`. Le déclarer lève
   # la supposition.
-  issues_url: "https://github.com/stephrobert/terraform-training/issues"
+  issues_url: "https://github.com/stephrobert/terraform-dsoxlab-training/issues"
   description: |
     Public teaching labs for the Terraform course (the blog's learning path).
     Each lab stands alone: a guided tutorial plus a challenge checked by pytest.

@@ -559,7 +559,7 @@ wheels = [
 ]
 
 [[package]]
-name = "terraform-training"
+name = "terraform-dsoxlab-training"
 version = "0.1.0"
 source = { virtual = "." }
 
