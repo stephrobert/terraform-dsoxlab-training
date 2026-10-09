@@ -1,7 +1,7 @@
 {
-  "genere_le": "2026-10-09 12:09:40",
+  "genere_le": "2026-10-09 13:32:18",
   "terraform": "Terraform v1.16.1",
-  "dsoxlab": "dsoxlab 0.3.0",
+  "dsoxlab": "dsoxlab 0.3.1",
   "labs": {
     "aws-backend-s3-remote-state": {
       "id": "aws-backend-s3-remote-state",
@@ -527,7 +527,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "13/13",
-      "duree_s": 74.5,
+      "duree_s": 73.2,
       "traces": [],
       "pourquoi": ""
     },
