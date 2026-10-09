@@ -1,5 +1,5 @@
 {
-  "genere_le": "2026-10-09 12:01:50",
+  "genere_le": "2026-10-09 12:09:40",
   "terraform": "Terraform v1.16.1",
   "dsoxlab": "dsoxlab 0.3.0",
   "labs": {
@@ -505,7 +505,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "10/10",
-      "duree_s": 72.6,
+      "duree_s": 65.8,
       "traces": [],
       "pourquoi": ""
     },
@@ -516,7 +516,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "10/10",
-      "duree_s": 104.7,
+      "duree_s": 118.1,
       "traces": [],
       "pourquoi": ""
     },
@@ -527,7 +527,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "13/13",
-      "duree_s": 67.0,
+      "duree_s": 74.5,
       "traces": [],
       "pourquoi": ""
     },
