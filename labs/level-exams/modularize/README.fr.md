@@ -13,4 +13,9 @@ Prérequis du poste : Terraform 1.16, Git et libvirt (`qemu:///system`), comme
 pour les labs de Premières infras. La préparation télécharge l'image cloud la
 première fois, empreinte vérifiée.
 
+Cette épreuve exige en outre une version de `dsoxlab` qui joue le
+`setup.yaml` d'un lab `shell` : c'est lui qui monte le terrain (issue
+dsoxlab #298). Avec une version antérieure, `dsoxlab run` rend un
+répertoire de travail vide, et rien ne dit pourquoi.
+
 La mission est dans `dsoxlab challenge`.
