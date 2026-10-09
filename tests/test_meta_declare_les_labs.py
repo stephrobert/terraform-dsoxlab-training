@@ -103,10 +103,25 @@ def test_aucun_lab_n_est_declare_deux_fois() -> None:
     assert not doublons, f"Lab(s) déclaré(s) plusieurs fois : {', '.join(doublons)}."
 
 
+#: Les labs qui n'offrent AUCUN indice, à dessein : ce sont des épreuves, elles
+#: le disent dans leur énoncé (« aucun indice n'est proposé »), et elles notent
+#: une compétence acquise au lieu de l'enseigner.
+#:
+#: Un `hints.yaml` vide ne serait pas une réponse : `test_hints_ecrits.py` le
+#: refuserait à son tour, et il a raison de le faire — un fichier d'indices sans
+#: indice est le symptôme habituel d'un lab livré à moitié. La liste est donc
+#: explicite, et le test ci-dessous vérifie qu'on n'y range pas n'importe quoi.
+SANS_INDICE = {
+    "level-exams/modularize",
+    "level-exams/operate-state",
+    "level-exams/write-provision",
+}
+
 #: Ce qu'un lab de CE dépôt porte forcément. Pas de `setup.yaml` ni de
-#: `cleanup.yaml`, contrairement aux catalogues Ansible, Linux et Kubernetes :
-#: tous les labs sont en `runtime: shell`, l'état de départ vient de
-#: `runtime.fixtures` et `dsoxlab clean` retire le répertoire de travail.
+#: `cleanup.yaml` pour la plupart : les labs sont en `runtime: shell` et leur
+#: état de départ vient de `runtime.fixtures`. Les épreuves de niveau, elles,
+#: montent un terrain réel et portent ces deux playbooks, joués sur localhost
+#: depuis dsoxlab #298 — ils restent optionnels, donc hors de cette liste.
 ATTENDUS = (
     "lab.yaml",
     "lab.fr.yaml",
@@ -134,7 +149,11 @@ def test_aucun_repertoire_de_lab_n_est_ampute() -> None:
         dossier = LABS / rel
         if not dossier.is_dir():
             continue  # déjà signalé par le test des fantômes
-        manquants = [f for f in ATTENDUS if not (dossier / f).exists()]
+        attendus = [
+            f for f in ATTENDUS
+            if not (f == "challenge/hints.yaml" and rel in SANS_INDICE)
+        ]
+        manquants = [f for f in attendus if not (dossier / f).exists()]
         if manquants:
             amputes[rel] = manquants
 
@@ -143,4 +162,41 @@ def test_aucun_repertoire_de_lab_n_est_ampute() -> None:
         + "\n".join(f"  {rel} : {', '.join(m)}" for rel, m in sorted(amputes.items()))
         + "\n\nUn lab amputé de son lab.yaml disparaît de tous les contrôles qui "
         "énumèrent les labs par ce fichier, sans que rien ne le signale."
+    )
+
+
+def test_la_liste_sans_indice_ne_couvre_que_de_vraies_epreuves() -> None:
+    """Une exemption sans garde-fou devient une poubelle.
+
+    Trois conditions, et chacune est ce qui empêche la liste de servir à cacher
+    un lab bâclé : le lab existe, il se déclare `capstone`, et son énoncé annonce
+    dans les deux langues qu'il n'offre aucun indice. La quatrième moitié du
+    contrôle est symétrique : un lab qui a FINI par recevoir des indices doit
+    sortir de la liste, sinon elle ne décroît jamais.
+    """
+    fautifs: dict[str, str] = {}
+    for rel in sorted(SANS_INDICE):
+        dossier = LABS / rel
+        if not (dossier / "lab.yaml").is_file():
+            fautifs[rel] = "ce lab n'existe pas"
+            continue
+        if (dossier / "challenge" / "hints.yaml").is_file():
+            fautifs[rel] = "porte des indices : à retirer de SANS_INDICE"
+            continue
+        if (lire_yaml(dossier / "lab.yaml") or {}).get("lab_type") != "capstone":
+            fautifs[rel] = "n'est pas une épreuve (`lab_type: capstone`)"
+            continue
+        annonces = {
+            "challenge/README.md": "no hint",
+            "challenge/README.fr.md": "aucun indice",
+        }
+        for fichier, annonce in annonces.items():
+            texte = (dossier / fichier).read_text(encoding="utf-8").lower()
+            if annonce not in texte:
+                fautifs[rel] = f"{fichier} n'annonce pas « {annonce} »"
+
+    assert not fautifs, (
+        "SANS_INDICE ne doit porter que des épreuves qui annoncent n'offrir "
+        "aucun indice :\n"
+        + "\n".join(f"  {rel} : {pourquoi}" for rel, pourquoi in fautifs.items())
     )
