@@ -153,6 +153,25 @@ def materialiser(lab_rel: str, cible: Path) -> None:
     jouer_script_de_solution(cible)
 
 
+def s_orchestre_lui_meme(lab_rel: str) -> bool:
+    """Le lab se note-t-il par ``dsoxlab run``, et non dans un dossier jetable ?
+
+    Les épreuves de niveau sont marquées ``no_replay`` : leur préparation monte
+    un terrain réel (machines, stockage d'état, dépôt Git) et écrit dans
+    ``$LAB_STATE_DIR`` ce que le harnais doit savoir. Ce script, lui, matérialise
+    la solution dans un répertoire temporaire et lance pytest à la main : il n'y
+    a ni terrain ni mémoire de harnais, donc **rien à mesurer**.
+
+    Les écarter est juste ; les écarter en SILENCE ne le serait pas. Un lab
+    rendu « hors portée » est nommé dans la sortie comme dans le relevé, avec
+    l'outil qui sait le rejouer : ``scripts/valider-labs.py``.
+    """
+    suite = LABS / lab_rel / "challenge" / "tests" / "test_functional.py"
+    if not suite.is_file():
+        return False
+    return "pytest.mark.no_replay" in suite.read_text(encoding="utf-8")
+
+
 def rejouer(lab_rel: str, garder: bool = False) -> tuple[bool, str]:
     """Joue la suite de tests du lab contre la solution. Rend (succes, detail)."""
     suite = LABS / lab_rel / "challenge" / "tests" / "test_functional.py"
@@ -208,6 +227,13 @@ def main() -> int:
     echecs = 0
     for lab_rel in labs:
         print(f"  {lab_rel} ... ", end="", flush=True)
+        if s_orchestre_lui_meme(lab_rel):
+            detail = ("lab marqué `no_replay` : sa solution se rejoue par "
+                      "scripts/valider-labs.py, qui passe par `dsoxlab run`")
+            print("HORS PORTÉE")
+            print(f"    {detail}")
+            resultats[lab_rel] = {"statut": "hors-portee", "detail": detail}
+            continue
         ok, detail = rejouer(lab_rel, garder=args.keep)
         print("OK" if ok else "ÉCHEC")
         if not ok:
@@ -222,7 +248,12 @@ def main() -> int:
         "solutions": resultats,
     }, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
-    print(f"\n{len(labs) - echecs}/{len(labs)} solution(s) valide(s) avec Terraform {tf}.")
+    hors_portee = sum(1 for v in resultats.values() if v["statut"] == "hors-portee")
+    joues = len(labs) - hors_portee
+    print(f"\n{joues - echecs}/{joues} solution(s) valide(s) avec Terraform {tf}"
+          + (f", {hors_portee} hors portée de ce script.\n"
+             "Ces dernières se rejouent par : python3 scripts/valider-labs.py --lab <id>"
+             if hors_portee else "."))
     print(f"Résultat enregistré dans {RECORD.relative_to(REPO)}.")
 
     if echecs and args.check:
