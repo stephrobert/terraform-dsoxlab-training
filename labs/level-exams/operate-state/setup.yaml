@@ -1,0 +1,283 @@
+---
+# Épreuve B : prépare le terrain sur la machine de l'apprenant (dsoxlab #298).
+#
+# Joué par `dsoxlab run` sur localhost. Ce playbook :
+#   1. monte le stockage S3 partagé (SeaweedFS) dans une instance Incus ;
+#   2. tire une variante : préfixe, tailles, incident ;
+#   3. applique la plateforme « prod » pour de vrai sur libvirt ;
+#   4. prend la sauvegarde de la veille du state ;
+#   5. injecte l'incident tiré.
+# Ce que le harnais doit savoir (incident, UUID de référence) va dans
+# `lab_state_dir`, hors du répertoire de travail.
+#
+# Faits mesurés avant d'écrire ce fichier (cahier des charges, §9 et §10) :
+#   - Garage 2.4.1 n'honore pas `If-None-Match` : le verrou de Terraform n'y
+#     existe pas. SeaweedFS 4.48 répond 412 et le verrou tient ;
+#   - avec libvirt 0.9.9, une ressource importée ne converge jamais (« Storage
+#     volumes cannot be updated ») : aucun incident n'exige d'import ;
+#   - une mémoire changée par `virsh setmem --config` est invisible au provider :
+#     la dérive retenue est la machine arrêtée à la main.
+#
+# Pour rejouer une variante précise (validation de l'épreuve) :
+#   TFEXAM_INCIDENT=state-retire|machine-arretee|ressource-renommee
+
+- name: Préparer le terrain de l'épreuve B
+  hosts: localhost
+  gather_facts: false
+  vars:
+    instance: tfexam-s3
+    seaweed_version: "4.48"
+    seaweed_sha256: 4a7d108384d044d95212d1342cdda9533fa55842c1c9b41f606ca3c8a9561124
+    cache: /var/tmp/dsoxlab-images
+    image_de_base: "{{ cache }}/noble-server-cloudimg-amd64.img"
+    image_url: https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img
+    image_sums: https://cloud-images.ubuntu.com/noble/current/SHA256SUMS
+    incidents: [state-retire, machine-arretee, ressource-renommee]
+    plateforme: "{{ lab_workdir }}/plateforme"
+    virsh: virsh -c qemu:///system
+
+  tasks:
+    # ── 1. La variante ───────────────────────────────────────────────────
+    - name: Tirer la variante
+      ansible.builtin.set_fact:
+        prefixe: "tfx{{ 89999 | random(start=10000) }}"
+        incident: "{{ lookup('ansible.builtin.env', 'TFEXAM_INCIDENT') | default(incidents | random, true) }}"
+        memoire_web: "{{ [512, 576, 640] | random }}"
+        memoire_db: "{{ [640, 768, 896] | random }}"
+        cle_acces: "TFX{{ lookup('ansible.builtin.password', '/dev/null', chars=['ascii_uppercase', 'digits'], length=17) }}"
+        cle_secrete: "{{ lookup('ansible.builtin.password', '/dev/null', chars=['ascii_lowercase', 'digits'], length=40) }}"
+
+    - name: Refuser un incident inconnu
+      ansible.builtin.assert:
+        that: incident in incidents
+        fail_msg: "TFEXAM_INCIDENT={{ incident }} : attendu l'un de {{ incidents | join(', ') }}"
+
+    - name: Choisir la machine que l'incident vise
+      ansible.builtin.set_fact:
+        cible: "{{ ['web', 'db'] | random }}"
+
+    # ── 2. L'image de base, téléchargée une fois et vérifiée ─────────────
+    - name: Créer le cache d'images
+      ansible.builtin.file:
+        path: "{{ cache }}"
+        state: directory
+        mode: "0775"
+
+    - name: Regarder si l'image de base est déjà là
+      ansible.builtin.stat:
+        path: "{{ image_de_base }}"
+      register: image
+
+    - name: Télécharger l'image de base, empreinte vérifiée
+      ansible.builtin.get_url:
+        url: "{{ image_url }}"
+        dest: "{{ image_de_base }}"
+        checksum: "sha256:{{ image_sums }}"
+        mode: "0644"
+      when: not image.stat.exists
+
+    # ── 3. Le stockage S3 partagé, dans une instance Incus ───────────────
+    - name: Télécharger SeaweedFS, empreinte vérifiée
+      ansible.builtin.get_url:
+        url: "https://github.com/seaweedfs/seaweedfs/releases/download/{{ seaweed_version }}/linux_amd64.tar.gz"
+        dest: "{{ cache }}/seaweedfs-{{ seaweed_version }}.tar.gz"
+        checksum: "sha256:{{ seaweed_sha256 }}"
+        mode: "0644"
+
+    - name: Extraire le binaire weed
+      ansible.builtin.unarchive:
+        src: "{{ cache }}/seaweedfs-{{ seaweed_version }}.tar.gz"
+        dest: "{{ lab_state_dir }}"
+        include: [weed]
+        creates: "{{ lab_state_dir }}/weed"
+
+    - name: Repartir d'une instance neuve
+      ansible.builtin.command: incus delete --force {{ instance }}
+      register: suppression
+      failed_when: false
+      changed_when: suppression.rc == 0
+
+    - name: Lancer l'instance Debian 13
+      ansible.builtin.command: incus launch images:debian/13 {{ instance }}
+      changed_when: true
+
+    # Le profil par défaut d'un poste n'a pas toujours de carte réseau : on en
+    # donne une à l'instance seule, sans toucher au profil partagé.
+    - name: Donner une carte réseau à l'instance
+      ansible.builtin.command: incus config device add {{ instance }} eth0 nic network=incusbr0 name=eth0
+      register: carte
+      failed_when: carte.rc != 0 and 'already exists' not in carte.stderr
+      changed_when: carte.rc == 0
+
+    - name: Redémarrer l'instance avec sa carte
+      ansible.builtin.command: incus restart {{ instance }}
+      changed_when: true
+
+    - name: Attendre son adresse IPv4
+      ansible.builtin.shell: set -o pipefail && incus list {{ instance }} -f csv -c 4 | cut -d' ' -f1
+      args:
+        executable: /bin/bash
+      register: adresse
+      until: adresse.stdout is match('^[0-9]+(\\.[0-9]+){3}$')
+      retries: 30
+      delay: 2
+      changed_when: false
+
+    - name: Retenir le point d'accès S3
+      ansible.builtin.set_fact:
+        ip_s3: "{{ adresse.stdout }}"
+        endpoint: "http://{{ adresse.stdout }}:8333"
+
+    - name: Installer weed dans l'instance
+      ansible.builtin.command: incus file push --mode 0755 {{ lab_state_dir }}/weed {{ instance }}/usr/local/bin/weed
+      changed_when: true
+
+    - name: Écrire l'identité S3 et le service
+      ansible.builtin.command:
+        cmd: incus exec {{ instance }} -- sh -c 'mkdir -p /etc/seaweedfs /var/lib/seaweedfs && cat > {{ item.dest }}'
+        stdin: "{{ item.contenu }}"
+      loop:
+        - dest: /etc/seaweedfs/s3.json
+          contenu: '{"identities":[{"name":"exploitation","credentials":[{"accessKey":"{{ cle_acces }}","secretKey":"{{ cle_secrete }}"}],"actions":["Admin","Read","Write","List","Tagging"]}]}'
+        - dest: /etc/systemd/system/seaweedfs.service
+          contenu: |
+            [Unit]
+            Description=SeaweedFS
+            After=network-online.target
+            [Service]
+            ExecStart=/usr/local/bin/weed server -dir=/var/lib/seaweedfs -ip={{ ip_s3 }} -s3 -s3.port=8333 -s3.config=/etc/seaweedfs/s3.json
+            Restart=on-failure
+            [Install]
+            WantedBy=multi-user.target
+      loop_control:
+        label: "{{ item.dest }}"
+      changed_when: true
+
+    - name: Démarrer SeaweedFS
+      ansible.builtin.command: incus exec {{ instance }} -- systemctl enable --now seaweedfs
+      changed_when: true
+
+    - name: Attendre l'API S3
+      ansible.builtin.uri:
+        url: "{{ endpoint }}"
+        status_code: [200, 403]
+      register: s3
+      until: s3.status in [200, 403]
+      retries: 30
+      delay: 2
+
+    - name: Créer le bucket du state
+      ansible.builtin.command:
+        cmd: incus exec {{ instance }} -- weed shell -master={{ ip_s3 }}:9333
+        stdin: s3.bucket.create -name tfstate
+      register: bucket
+      until: "'created bucket tfstate' in bucket.stdout or 'already exists' in bucket.stdout"
+      retries: 10
+      delay: 3
+      changed_when: true
+
+    # ── 4. La plateforme, appliquée pour de vrai ─────────────────────────
+    - name: Écrire la configuration du banc dans le répertoire de travail
+      ansible.builtin.copy:
+        dest: "{{ item.dest }}"
+        content: "{{ item.contenu }}"
+        mode: "{{ item.mode }}"
+      loop:
+        - dest: "{{ lab_workdir }}/exam.env"
+          mode: "0600"
+          contenu: |
+            # Identité de l'équipe d'exploitation sur le stockage S3 partagé.
+            export AWS_ACCESS_KEY_ID={{ cle_acces }}
+            export AWS_SECRET_ACCESS_KEY={{ cle_secrete }}
+        - dest: "{{ plateforme }}/backend.hcl"
+          mode: "0644"
+          contenu: |
+            bucket                      = "tfstate"
+            key                         = "plateforme/terraform.tfstate"
+            region                      = "us-east-1"
+            endpoints                   = { s3 = "{{ endpoint }}" }
+            use_path_style              = true
+            skip_credentials_validation = true
+            skip_region_validation      = true
+            skip_requesting_account_id  = true
+            skip_metadata_api_check     = true
+            use_lockfile                = true
+        - dest: "{{ plateforme }}/terraform.tfvars"
+          mode: "0644"
+          contenu: |
+            prefixe = "{{ prefixe }}-prod"
+            machines = {
+              web = { memoire_mib = {{ memoire_web }}, vcpu = 1 }
+              db  = { memoire_mib = {{ memoire_db }}, vcpu = 1 }
+            }
+      loop_control:
+        label: "{{ item.dest | basename }}"
+
+    - name: Initialiser et appliquer la plateforme
+      ansible.builtin.shell: |
+        set -euo pipefail
+        . ../exam.env
+        terraform init -input=false -no-color -backend-config=backend.hcl > /dev/null
+        terraform apply -input=false -no-color -auto-approve > /dev/null
+        terraform output -json machines
+      args:
+        chdir: "{{ plateforme }}"
+        executable: /bin/bash
+      register: application
+      changed_when: true
+
+    - name: Prendre la sauvegarde de la veille
+      ansible.builtin.shell: |
+        set -euo pipefail
+        . ../exam.env
+        mkdir -p ../sauvegardes
+        terraform state pull > ../sauvegardes/prod-veille.tfstate
+      args:
+        chdir: "{{ plateforme }}"
+        executable: /bin/bash
+      changed_when: true
+
+    - name: Retenir ce que le harnais doit connaître
+      ansible.builtin.copy:
+        dest: "{{ lab_state_dir }}/epreuve.json"
+        mode: "0600"
+        content: "{{ {
+          'prefixe': prefixe,
+          'incident': incident,
+          'cible': cible,
+          'endpoint': endpoint,
+          'bucket': 'tfstate',
+          'instance': instance,
+          'uuid_prod': application.stdout | from_json,
+          'memoire': {'web': memoire_web | int, 'db': memoire_db | int}
+          } | to_nice_json }}"
+
+    # ── 5. L'incident ────────────────────────────────────────────────────
+    - name: "Incident : la machine sort du state"
+      ansible.builtin.shell: |
+        set -euo pipefail
+        . ../exam.env
+        terraform state rm -no-color 'libvirt_domain.machine["{{ cible }}"]' 'libvirt_volume.disque["{{ cible }}"]' > /dev/null
+      args:
+        chdir: "{{ plateforme }}"
+        executable: /bin/bash
+      when: incident == 'state-retire'
+      changed_when: true
+
+    - name: "Incident : la machine est arrêtée à la main"
+      ansible.builtin.command: "{{ virsh }} destroy {{ prefixe }}-prod-{{ cible }}"
+      when: incident == 'machine-arretee'
+      changed_when: true
+
+    - name: "Incident : la ressource est renommée dans le code"
+      ansible.builtin.replace:
+        path: "{{ plateforme }}/{{ item }}"
+        regexp: 'libvirt_domain(["\.\s]+)machine\b'
+        replace: 'libvirt_domain\1serveur'
+      loop: [main.tf, outputs.tf]
+      when: incident == 'ressource-renommee'
+
+    - name: Laisser un répertoire de travail sans initialisation ni journal du banc
+      ansible.builtin.file:
+        path: "{{ plateforme }}/.terraform"
+        state: absent

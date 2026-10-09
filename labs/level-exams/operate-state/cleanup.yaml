@@ -1,0 +1,68 @@
+---
+# Épreuve B : défait le terrain (`dsoxlab clean`, et `reset` avant de rejouer setup.yaml).
+#
+# Tout ce qui porte le préfixe tiré disparaît : les machines de prod, celles
+# de dev que l'apprenant a créées, leurs disques. Puis l'instance Incus du
+# stockage S3, avec les states qu'elle portait. On passe par libvirt et non
+# par `terraform destroy` : l'organisation des states de l'apprenant est libre,
+# le nettoyage ne peut pas la deviner.
+
+- name: Défaire le terrain de l'épreuve B
+  hosts: localhost
+  gather_facts: false
+  vars:
+    virsh: virsh -c qemu:///system
+
+  tasks:
+    - name: Lire ce que la préparation a retenu
+      ansible.builtin.slurp:
+        src: "{{ lab_state_dir }}/epreuve.json"
+      register: brut
+      failed_when: false
+
+    - name: Rien à défaire sans préparation connue
+      ansible.builtin.meta: end_play
+      when: brut.content is not defined
+
+    - name: Retenir le préfixe et l'instance
+      ansible.builtin.set_fact:
+        epreuve: "{{ brut.content | b64decode | from_json }}"
+
+    - name: Lister les machines de l'épreuve
+      ansible.builtin.shell: >-
+        set -o pipefail && {{ virsh }} list --all --name | grep '^{{ epreuve.prefixe }}-' || true
+      args:
+        executable: /bin/bash
+      register: machines
+      changed_when: false
+
+    - name: Arrêter et retirer chaque machine
+      ansible.builtin.shell: |
+        {{ virsh }} destroy {{ item }} >/dev/null 2>&1 || true
+        {{ virsh }} undefine {{ item }} --nvram >/dev/null 2>&1 || {{ virsh }} undefine {{ item }}
+      loop: "{{ machines.stdout_lines }}"
+      changed_when: true
+
+    - name: Lister les disques de l'épreuve
+      ansible.builtin.shell: >-
+        set -o pipefail && {{ virsh }} vol-list default | awk '$1 ~ /^{{ epreuve.prefixe }}-/ {print $1}'
+      args:
+        executable: /bin/bash
+      register: disques
+      changed_when: false
+
+    - name: Retirer chaque disque
+      ansible.builtin.command: "{{ virsh }} vol-delete {{ item }} --pool default"
+      loop: "{{ disques.stdout_lines }}"
+      changed_when: true
+
+    - name: Retirer l'instance du stockage S3
+      ansible.builtin.command: incus delete --force {{ epreuve.instance }}
+      register: suppression
+      failed_when: false
+      changed_when: suppression.rc == 0
+
+    - name: Oublier la préparation
+      ansible.builtin.file:
+        path: "{{ lab_state_dir }}/epreuve.json"
+        state: absent
