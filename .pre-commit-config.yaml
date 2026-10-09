@@ -102,6 +102,16 @@ repos:
         pass_filenames: false
         always_run: true
 
+      # `dsoxlab validate-structure` tient déjà cette règle depuis la 0.1.76.
+      # La doubler ici la met DANS le catalogue, donc en CI, sans dépendre de la
+      # version de l'outil installée sur le poste de qui écrit un lab.
+      - id: fixtures-declarees
+        name: fixtures/ et runtime.fixtures disent la même chose
+        entry: uv run --no-project --with pytest --with pyyaml pytest tests/test_fixtures_declarees.py -q
+        language: system
+        pass_filenames: false
+        always_run: true
+
       # LES HUIT VÉRIFICATEURS QUI NE PROTÉGEAIENT RIEN
       #
       # Mesuré le 2026-09-25 : le dépôt portait neuf vérificateurs dans `tests/`
