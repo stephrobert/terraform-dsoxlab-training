@@ -1,0 +1,23 @@
+---
+id: level-exams-modularize
+title: 'Level C exam: turn copy-pasted code into a versioned module'
+description: Two teams copy-pasted the same machine configuration. Turn it into a tested module published in a local Git repository, release a minor then a major version, and have both teams consume it, one pinned to content, the other following releases, without recreating the machines already in service. Graded on the real state.
+section: level-exams
+level: l3
+difficulty: advanced
+lab_type: capstone
+estimated_time: 2h
+skills:
+- terraform
+- modularize
+- reuse
+distros:
+- debian13
+doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/parcours/
+runtime:
+  type: shell
+  workdir: challenge/work
+validation:
+  functional: true
+  security: false
+  persistence_after_reboot: false

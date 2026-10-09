@@ -1,0 +1,70 @@
+# Équipe web : deux machines en service, écrites par copier-coller.
+terraform {
+  required_version = "~> 1.16.0"
+  required_providers {
+    libvirt = {
+      source  = "dmacvicar/libvirt"
+      version = "0.9.9"
+    }
+  }
+}
+
+provider "libvirt" {
+  uri = "qemu:///system"
+}
+
+resource "libvirt_volume" "web_a" {
+  name          = "{{ prefixe }}-web-a.qcow2"
+  pool          = "default"
+  capacity      = 6
+  capacity_unit = "GiB"
+  target        = { format = { type = "qcow2" } }
+  backing_store = { path = "{{ image_de_base }}", format = { type = "qcow2" } }
+}
+
+resource "libvirt_domain" "web_a" {
+  name        = "{{ prefixe }}-web-a"
+  type        = "kvm"
+  memory      = {{ 512 if tailles_web[0] == 'petite' else 768 }}
+  memory_unit = "MiB"
+  vcpu        = 1
+  running     = true
+  os          = { type = "hvm" }
+  devices = {
+    disks = [{
+      device = "disk"
+      source = { file = { file = libvirt_volume.web_a.path } }
+      target = { dev = "vda", bus = "virtio" }
+      driver = { name = "qemu", type = "qcow2" }
+    }]
+    interfaces = [{ source = { network = { network = "default" } } }]
+  }
+}
+
+resource "libvirt_volume" "web_b" {
+  name          = "{{ prefixe }}-web-b.qcow2"
+  pool          = "default"
+  capacity      = 6
+  capacity_unit = "GiB"
+  target        = { format = { type = "qcow2" } }
+  backing_store = { path = "{{ image_de_base }}", format = { type = "qcow2" } }
+}
+
+resource "libvirt_domain" "web_b" {
+  name        = "{{ prefixe }}-web-b"
+  type        = "kvm"
+  memory      = {{ 512 if tailles_web[1] == 'petite' else 768 }}
+  memory_unit = "MiB"
+  vcpu        = 1
+  running     = true
+  os          = { type = "hvm" }
+  devices = {
+    disks = [{
+      device = "disk"
+      source = { file = { file = libvirt_volume.web_b.path } }
+      target = { dev = "vda", bus = "virtio" }
+      driver = { name = "qemu", type = "qcow2" }
+    }]
+    interfaces = [{ source = { network = { network = "default" } } }]
+  }
+}

@@ -228,3 +228,4 @@ sections:
     labs:
       - level-exams/write-provision
       - level-exams/operate-state
+      - level-exams/modularize

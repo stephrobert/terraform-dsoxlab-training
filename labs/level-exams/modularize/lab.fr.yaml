@@ -1,0 +1,3 @@
+---
+title: 'Épreuve de niveau C : faire d''un copier-coller un module versionné'
+description: Deux équipes ont copié-collé la même configuration de machine. En faire un module testé, publié dans un dépôt Git local, publier une version mineure puis majeure, et le faire consommer par les deux équipes, l'une figée au contenu, l'autre suivant les versions, sans recréer les machines déjà en service. Noté sur l'état réel.

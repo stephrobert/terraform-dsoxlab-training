@@ -1,0 +1,68 @@
+# Équipe data : la même machine, copiée depuis l'équipe web il y a six mois,
+# avec ses écarts. Rien n'est déployé.
+terraform {
+  required_providers {
+    libvirt = {
+      source = "dmacvicar/libvirt"
+    }
+  }
+}
+
+provider "libvirt" {
+  uri = "qemu:///system"
+}
+
+resource "libvirt_volume" "data_a" {
+  name          = "{{ prefixe }}-data-a.qcow2"
+  pool          = "default"
+  capacity      = 8
+  capacity_unit = "GiB"
+  target        = { format = { type = "qcow2" } }
+  backing_store = { path = "{{ image_de_base }}", format = { type = "qcow2" } }
+}
+
+resource "libvirt_domain" "data_a" {
+  name        = "{{ prefixe }}-data-a"
+  type        = "kvm"
+  memory      = {{ 524288 if tailles_data[0] == 'petite' else 786432 }}
+  memory_unit = "KiB"
+  vcpu        = 2
+  os          = { type = "hvm" }
+  devices = {
+    disks = [{
+      device = "disk"
+      source = { file = { file = libvirt_volume.data_a.path } }
+      target = { dev = "vda", bus = "virtio" }
+      driver = { name = "qemu", type = "qcow2" }
+    }]
+    interfaces = [{ source = { network = { network = "default" } } }]
+  }
+}
+
+resource "libvirt_volume" "data_b" {
+  name          = "{{ prefixe }}-data-b.qcow2"
+  pool          = "default"
+  capacity      = 6
+  capacity_unit = "GiB"
+  target        = { format = { type = "qcow2" } }
+  backing_store = { path = "{{ image_de_base }}", format = { type = "qcow2" } }
+}
+
+resource "libvirt_domain" "data_b" {
+  name        = "{{ prefixe }}-data-b"
+  type        = "kvm"
+  memory      = {{ 512 if tailles_data[1] == 'petite' else 768 }}
+  memory_unit = "MiB"
+  vcpu        = 1
+  running     = true
+  os          = { type = "hvm" }
+  devices = {
+    disks = [{
+      device = "disk"
+      source = { file = { file = libvirt_volume.data_b.path } }
+      target = { dev = "vda", bus = "virtio" }
+      driver = { name = "qemu", type = "qcow2" }
+    }]
+    interfaces = [{ source = { network = { network = "default" } } }]
+  }
+}
