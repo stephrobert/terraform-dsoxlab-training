@@ -1,7 +1,7 @@
 {
-  "genere_le": "2026-09-25 18:39:22",
+  "genere_le": "2026-10-09 12:01:50",
   "terraform": "Terraform v1.16.1",
-  "dsoxlab": "dsoxlab 0.1.91",
+  "dsoxlab": "dsoxlab 0.3.0",
   "labs": {
     "aws-backend-s3-remote-state": {
       "id": "aws-backend-s3-remote-state",
@@ -495,6 +495,39 @@
       "score_apres": 100,
       "tests": "12/12",
       "duree_s": 4.3,
+      "traces": [],
+      "pourquoi": ""
+    },
+    "level-exams-modularize": {
+      "id": "level-exams-modularize",
+      "chemin": "level-exams/modularize",
+      "verdict": "VALIDE",
+      "score_avant": 0,
+      "score_apres": 100,
+      "tests": "10/10",
+      "duree_s": 72.6,
+      "traces": [],
+      "pourquoi": ""
+    },
+    "level-exams-operate-state": {
+      "id": "level-exams-operate-state",
+      "chemin": "level-exams/operate-state",
+      "verdict": "VALIDE",
+      "score_avant": 0,
+      "score_apres": 100,
+      "tests": "10/10",
+      "duree_s": 104.7,
+      "traces": [],
+      "pourquoi": ""
+    },
+    "level-exams-write-provision": {
+      "id": "level-exams-write-provision",
+      "chemin": "level-exams/write-provision",
+      "verdict": "VALIDE",
+      "score_avant": 0,
+      "score_apres": 100,
+      "tests": "13/13",
+      "duree_s": 67.0,
       "traces": [],
       "pourquoi": ""
     },
