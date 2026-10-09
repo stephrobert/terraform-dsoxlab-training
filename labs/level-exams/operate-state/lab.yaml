@@ -1,0 +1,30 @@
+---
+id: level-exams-operate-state
+title: 'Level B exam: take over the operation of a platform'
+description: A platform in service has suffered an incident overnight. Put production back on its feet without recreating any machine, separate dev from prod, and ship a delivery chain that runs without a human. Graded on the real state.
+section: level-exams
+level: l3
+difficulty: advanced
+lab_type: capstone
+estimated_time: 1h30
+skills:
+- terraform
+- state
+- refactor
+- environment
+- automate
+distros:
+- debian13
+doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/parcours/
+runtime:
+  type: shell
+  workdir: challenge/work
+  fixtures:
+  - plateforme/versions.tf
+  - plateforme/variables.tf
+  - plateforme/main.tf
+  - plateforme/outputs.tf
+validation:
+  functional: true
+  security: false
+  persistence_after_reboot: false

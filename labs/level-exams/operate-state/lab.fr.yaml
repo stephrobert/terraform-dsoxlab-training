@@ -1,0 +1,3 @@
+---
+title: 'Épreuve de niveau B : reprendre l''exploitation d''une plateforme'
+description: Une plateforme en service a subi un incident cette nuit. Remettre la production d'aplomb sans recréer aucune machine, séparer dev et prod, et livrer une chaîne qui tourne sans humain. Noté sur l'état réel.

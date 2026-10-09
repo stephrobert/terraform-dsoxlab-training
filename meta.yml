@@ -218,3 +218,12 @@ sections:
       - certifications/professional/capstone5-providers
       - certifications/professional/capstone6-hcp
       - certifications/professional/mock-pro
+  # ─────────────────────────────────────────────────────────────────────────
+  # Épreuves de niveau : des MESURES, pas des cours, indépendantes des
+  # certifications (cahier des charges des épreuves, blog, todo/). Aucune
+  # n'est citée par le parcours tant qu'elle n'est pas VALIDE.
+  - id: level-exams
+    title: "Level exams"
+    description: "One exam per level of the course, on a new scenario, graded on the real state, without hints and without certification tags."
+    labs:
+      - level-exams/operate-state
