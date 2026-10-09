@@ -1,0 +1,27 @@
+---
+id: level-exams-write-provision
+title: 'Level A exam: write and provision a demo environment'
+description: A product team needs a demo environment described by a machine catalog. Write the Terraform that builds it on libvirt, lets it evolve without breakage, protects the critical machine and delivers an application secret that never lands in the state. Graded on the real state.
+section: level-exams
+level: l2
+difficulty: intermediate
+lab_type: capstone
+estimated_time: 45m
+skills:
+- terraform
+- workflow
+- resource
+- parameterize
+- expression
+- guard
+- sensitive
+distros:
+- debian13
+doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/parcours/
+runtime:
+  type: shell
+  workdir: challenge/work
+validation:
+  functional: true
+  security: false
+  persistence_after_reboot: false

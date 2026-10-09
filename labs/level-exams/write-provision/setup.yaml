@@ -1,0 +1,111 @@
+---
+# Épreuve A : prépare le terrain sur la machine de l'apprenant (dsoxlab #298).
+#
+# Joué par `dsoxlab run` sur localhost. Contrairement à l'épreuve B, rien
+# n'est déployé d'avance : l'apprenant écrit tout. Ce playbook :
+#   1. tire une variante : préfixe, réseau, catalogue de machines ;
+#   2. fournit l'image de base, téléchargée une fois et vérifiée ;
+#   3. donne la clé d'accès de l'exploitation, par laquelle le harnais vérifie ;
+#   4. écrit les entrées de l'apprenant dans le répertoire de travail, et ce que
+#      le harnais doit savoir dans `lab_state_dir`, hors de sa portée.
+#
+# Faits mesurés avant d'écrire ce fichier (cahier des charges, §12 et §13) :
+#   - libvirt 0.9.9 n'a aucun argument write-only ; une ressource éphémère
+#     posée par provisioner ne laisse aucune trace dans le state ni le plan ;
+#   - `prevent_destroy` refuse aussi un remplacement ; `create_before_destroy`
+#     n'aboutit qu'avec un nom unique par génération. D'où le champ
+#     `generation` du catalogue : il change, la machine doit être remplacée.
+
+- name: Préparer le terrain de l'épreuve A
+  hosts: localhost
+  gather_facts: false
+  vars:
+    cache: /var/tmp/dsoxlab-images
+    image_de_base: "{{ cache }}/noble-server-cloudimg-amd64.img"
+    image_url: https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img
+    image_sums: https://cloud-images.ubuntu.com/noble/current/SHA256SUMS
+    noms_front: [vitrine, portail, accueil, catalogue, guichet]
+    noms_app: [api, moteur, metier]
+    noms_db: [base, registre, archive]
+    tailles: [petite, moyenne]
+
+  tasks:
+    # ── 1. La variante ───────────────────────────────────────────────────
+    - name: Tirer la variante
+      ansible.builtin.set_fact:
+        prefixe: "tfa{{ 89999 | random(start=10000) }}"
+        octet: "{{ 249 | random(start=60) }}"
+        fronts: "{{ (noms_front | shuffle)[:2] }}"
+        app: "{{ noms_app | random }}"
+        db: "{{ noms_db | random }}"
+
+    - name: Composer le catalogue
+      ansible.builtin.set_fact:
+        machines: >-
+          {{ {fronts[0]: {'role': 'front', 'taille': tailles | random, 'generation': 1},
+              fronts[1]: {'role': 'front', 'taille': tailles | random, 'generation': 1},
+              app: {'role': 'app', 'taille': 'moyenne', 'generation': 1},
+              db: {'role': 'db', 'taille': 'moyenne', 'generation': 1}} }}
+
+    # ── 2. L'image de base, téléchargée une fois et vérifiée ─────────────
+    - name: Créer le cache d'images
+      ansible.builtin.file:
+        path: "{{ cache }}"
+        state: directory
+        mode: "0775"
+
+    - name: Regarder si l'image de base est déjà là
+      ansible.builtin.stat:
+        path: "{{ image_de_base }}"
+      register: image
+
+    - name: Télécharger l'image de base, empreinte vérifiée
+      ansible.builtin.get_url:
+        url: "{{ image_url }}"
+        dest: "{{ image_de_base }}"
+        checksum: "sha256:{{ image_sums }}"
+        mode: "0644"
+      when: not image.stat.exists
+
+    # ── 3. La clé d'accès de l'exploitation ──────────────────────────────
+    - name: Repartir d'un répertoire de travail propre
+      ansible.builtin.file:
+        path: "{{ lab_workdir }}/acces"
+        state: absent
+
+    - name: Créer le dossier de la clé
+      ansible.builtin.file:
+        path: "{{ lab_workdir }}/acces"
+        state: directory
+        mode: "0700"
+
+    - name: Générer la clé d'accès
+      ansible.builtin.command: >-
+        ssh-keygen -q -t ed25519 -N '' -C "exploit@{{ prefixe }}" -f {{ lab_workdir }}/acces/id_ed25519
+      args:
+        creates: "{{ lab_workdir }}/acces/id_ed25519"
+
+    # ── 4. Les entrées de l'apprenant et la mémoire du harnais ───────────
+    - name: Écrire les entrées de l'apprenant
+      ansible.builtin.copy:
+        dest: "{{ item.dest }}"
+        content: "{{ item.contenu | to_nice_json }}\n"
+        mode: "0644"
+      loop:
+        - dest: "{{ lab_workdir }}/entrees.auto.tfvars.json"
+          contenu:
+            prefixe: "{{ prefixe }}"
+            reseau: "10.89.{{ octet }}.0/24"
+            image_de_base: "{{ image_de_base }}"
+            cle_publique: acces/id_ed25519.pub
+        - dest: "{{ lab_workdir }}/catalogue.auto.tfvars.json"
+          contenu:
+            machines: "{{ machines }}"
+
+    - name: Retenir la variante pour le harnais
+      ansible.builtin.copy:
+        dest: "{{ lab_state_dir }}/epreuve.json"
+        content: >-
+          {{ {'prefixe': prefixe, 'reseau': '10.89.' ~ octet ~ '.0/24', 'machines': machines,
+              'critique': db, 'app': app, 'fronts': fronts} | to_nice_json }}
+        mode: "0600"
