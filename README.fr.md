@@ -256,7 +256,7 @@ est générée à partir des vrais `lab.yaml` : lancez
 
 | Lab (id) | Titre | Niveau | Certif | Runtime | Guide compagnon |
 |---|---|---|---|---|---|
-| `environments-organize-terraform-repo` | Decouper une configuration monolithique, et prouver que le plan n'a pas bouge | l3 | TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/organiser-repo-terraform/) |
+| `environments-organize-terraform-repo` | Découper une configuration monolithique, et prouver que le plan n'a pas bougé | l3 | TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/organiser-repo-terraform/) |
 | `environments-separate-environments` | Deux racines, deux états, un seul module partagé | l3 | TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/separer-environnements/) |
 | `environments-per-environment-variables` | Quelle valeur gagne, et comment le prouver | l3 | TF-ASSOCIATE | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/variables-par-environnement/) |
 | `environments-workspace` | Un seul répertoire, trois états qui ne se voient pas | l3 | TF-ASSOCIATE | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/workspace/) |
@@ -307,7 +307,15 @@ est générée à partir des vrais `lab.yaml` : lancez
 | `certifications-professional-capstone6-hcp` | Pro · Objectif 6 : HCP Terraform, là où les sous-objectifs se croisent | l4 | TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/certifications/professional/exercices/) |
 | `certifications-professional-mock-pro` | Pro · Examen blanc intégratif : les six objectifs d'une traite | l4 | TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/certifications/professional/exercices/) |
 
-_88 labs, table générée par `scripts/gen_catalog.py`._
+### Level exams
+
+| Lab (id) | Titre | Niveau | Certif | Runtime | Guide compagnon |
+|---|---|---|---|---|---|
+| `level-exams-write-provision` | Épreuve de niveau A : écrire et provisionner un environnement de démonstration | l2 | - | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/parcours/) |
+| `level-exams-operate-state` | Épreuve de niveau B : reprendre l'exploitation d'une plateforme | l3 | - | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/parcours/) |
+| `level-exams-modularize` | Épreuve de niveau C : faire d'un copier-coller un module versionné | l3 | - | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/parcours/) |
+
+_91 labs, table générée par `scripts/gen_catalog.py`._
 <!-- LABS:END -->
 
 ## Contribuer et licence
