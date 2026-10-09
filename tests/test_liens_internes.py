@@ -40,10 +40,18 @@ DOCS = RACINE / "docs"
 LIEN_RELATIF = re.compile(r"\[[^\]]*\]\((\.\.?/[^)]+)\)")
 
 
+#: `challenge/work` est le brouillon de l'apprenant : `dsoxlab run` l'écrit,
+#: `dsoxlab clean` l'efface, et `.gitignore` l'exclut. Ce qu'on y trouve n'est
+#: pas du catalogue — y compris le README que le provider libvirt installe dans
+#: `.terraform/`, qui a rendu cette suite rouge sur tout poste ayant joué un lab
+#: tout en restant verte en CI, où le répertoire n'existe pas.
+def _hors_du_brouillon(fichier: Path) -> bool:
+    return "work" not in fichier.parts or "challenge" not in fichier.parts
+
 def _fichiers_markdown() -> list[Path]:
     """Les Markdown des labs, de `docs/`, et ceux de la racine."""
     return (
-        sorted(LABS.rglob("*.md"))
+        sorted(f for f in LABS.rglob("*.md") if _hors_du_brouillon(f))
         + sorted(DOCS.rglob("*.md") if DOCS.is_dir() else [])
         + sorted(RACINE.glob("*.md"))
     )

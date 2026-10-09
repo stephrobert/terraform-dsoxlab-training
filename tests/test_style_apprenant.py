@@ -97,9 +97,17 @@ DETTE_CADRATIN = {
 }
 
 
+#: `challenge/work` est le brouillon de l'apprenant : `dsoxlab run` l'écrit,
+#: `dsoxlab clean` l'efface, et `.gitignore` l'exclut. Ce qu'on y trouve n'est
+#: pas du catalogue — y compris le README que le provider libvirt installe dans
+#: `.terraform/`, qui a rendu cette suite rouge sur tout poste ayant joué un lab
+#: tout en restant verte en CI, où le répertoire n'existe pas.
+def _hors_du_brouillon(fichier: Path) -> bool:
+    return "work" not in fichier.parts or "challenge" not in fichier.parts
+
 def _fichiers_lus() -> list[Path]:
     """Tout ce que l'apprenant lit : scénarios, README, briefs, fixtures textuelles."""
-    return sorted(LABS.rglob("*.md"))
+    return sorted(f for f in LABS.rglob("*.md") if _hors_du_brouillon(f))
 
 
 def test_il_y_a_des_textes_a_lire() -> None:
