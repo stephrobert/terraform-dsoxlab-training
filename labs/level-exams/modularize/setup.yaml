@@ -83,8 +83,8 @@
         dest: "{{ lab_workdir }}/{{ item.equipe }}/main.tf"
         mode: "0644"
       loop:
-        - {equipe: equipe-web, modele: fixtures/equipe-web.tf.j2}
-        - {equipe: equipe-data, modele: fixtures/equipe-data.tf.j2}
+        - {equipe: equipe-web, modele: templates/equipe-web.tf.j2}
+        - {equipe: equipe-data, modele: templates/equipe-data.tf.j2}
 
     - name: Mettre en service le projet de l'équipe web
       ansible.builtin.shell: |
