@@ -60,7 +60,8 @@ def _epreuve() -> dict:
 # ── Lecture de l'état réel ───────────────────────────────────────────────────
 
 def _virsh(*args: str) -> subprocess.CompletedProcess[str]:
-    return subprocess.run([*VIRSH, *args], capture_output=True, text=True, timeout=60)
+    return subprocess.run([*VIRSH, *args], capture_output=True, text=True, timeout=60,
+                          check=False)
 
 
 def _domaines(e: dict, nom: str) -> list[str]:
@@ -101,7 +102,7 @@ def _ssh(ip: str, commande: str) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
         ["ssh", "-i", str(CLE), "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null",
          "-o", "BatchMode=yes", "-o", "ConnectTimeout=10", "-o", "LogLevel=ERROR", f"exploit@{ip}", commande],
-        capture_output=True, text=True, timeout=60,
+        capture_output=True, text=True, timeout=60, check=False,
     )
 
 
@@ -111,7 +112,7 @@ def _terraform(*args: str, timeout: int = 900) -> subprocess.CompletedProcess[st
     env = os.environ.copy()
     env["TF_IN_AUTOMATION"] = "1"
     return subprocess.run(["terraform", *args, "-no-color"], cwd=WORKDIR, capture_output=True,
-                          text=True, timeout=timeout, env=env)
+                          text=True, timeout=timeout, env=env, check=False)
 
 
 def _catalogue_modifie(e: dict, modifier) -> Path:

@@ -30,7 +30,7 @@ class S3:
 
     def _requete(self, methode: str, cle: str = "", requete: dict[str, str] | None = None,
                  corps: bytes = b"") -> tuple[int, bytes]:
-        maintenant = datetime.datetime.now(datetime.timezone.utc)
+        maintenant = datetime.datetime.now(datetime.UTC)
         amz = maintenant.strftime("%Y%m%dT%H%M%SZ")
         jour = maintenant.strftime("%Y%m%d")
         chemin = "/" + self.bucket + ("/" + quote(cle, safe="/") if cle else "")

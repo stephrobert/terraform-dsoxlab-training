@@ -25,20 +25,19 @@ import json
 import os
 import re
 import subprocess
+import sys
 import threading
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
-
-import sys
 
 from conftest import exiger_workdir, workdir_lab
 
 # Le dossier des tests n'est pas sur le chemin d'import dans le mode de ce dépôt.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _s3 import S3  # noqa: E402
+from _s3 import S3
 
 pytestmark = pytest.mark.no_replay
 
@@ -77,7 +76,8 @@ def _s3() -> S3:
 # ── Lecture de l'état réel ───────────────────────────────────────────────────
 
 def _virsh(*args: str) -> subprocess.CompletedProcess[str]:
-    return subprocess.run([*VIRSH, *args], capture_output=True, text=True, timeout=60)
+    return subprocess.run([*VIRSH, *args], capture_output=True, text=True, timeout=60,
+                          check=False)
 
 
 def _uuid(nom: str) -> str | None:
@@ -132,6 +132,7 @@ def _chaine(env_cible: str, action: str, timeout: int = 600) -> subprocess.Compl
     return subprocess.run(
         [str(CHAINE), env_cible, action], cwd=WORKDIR, env=_env(),
         stdin=subprocess.DEVNULL, capture_output=True, text=True, timeout=timeout,
+        check=False,
     )
 
 
@@ -192,7 +193,7 @@ def test_state_le_verrou_tenu_par_une_autre_execution_est_attendu() -> None:
     verrou = json.dumps({
         "ID": "00000000-0000-0000-0000-00000000harn", "Operation": "OperationTypeApply",
         "Info": "", "Who": "harnais@epreuve-b", "Version": "1.16.1",
-        "Created": datetime.now(timezone.utc).isoformat(), "Path": prod[0],
+        "Created": datetime.now(UTC).isoformat(), "Path": prod[0],
     }).encode()
     assert s3.ecrire(cle_verrou, verrou) == 200, "le harnais n'a pas pu poser son verrou"
     liberer = threading.Timer(VERROU_TENU, lambda: s3.supprimer(cle_verrou))
