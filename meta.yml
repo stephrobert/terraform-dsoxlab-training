@@ -226,4 +226,5 @@ sections:
     title: "Level exams"
     description: "One exam per level of the course, on a new scenario, graded on the real state, without hints and without certification tags."
     labs:
+      - level-exams/write-provision
       - level-exams/operate-state

@@ -1,0 +1,82 @@
+---
+# Épreuve A : défait le terrain (`dsoxlab clean`, et `reset` avant de rejouer setup.yaml).
+#
+# Tout ce qui porte le préfixe tiré disparaît : machines, disques, réseaux.
+# On passe par libvirt et non par `terraform destroy` : la machine critique
+# porte `prevent_destroy`, et l'organisation du code de l'apprenant est libre,
+# le nettoyage ne peut pas la deviner.
+
+- name: Défaire le terrain de l'épreuve A
+  hosts: localhost
+  gather_facts: false
+  vars:
+    virsh: virsh -c qemu:///system
+
+  tasks:
+    - name: Lire ce que la préparation a retenu
+      ansible.builtin.slurp:
+        src: "{{ lab_state_dir }}/epreuve.json"
+      register: brut
+      failed_when: false
+
+    - name: Rien à défaire sans préparation connue
+      ansible.builtin.meta: end_play
+      when: brut.content is not defined
+
+    - name: Retenir le préfixe
+      ansible.builtin.set_fact:
+        epreuve: "{{ brut.content | b64decode | from_json }}"
+
+    - name: Lister les machines de l'épreuve
+      ansible.builtin.shell: >-
+        set -o pipefail && {{ virsh }} list --all --name | grep '^{{ epreuve.prefixe }}' || true
+      args:
+        executable: /bin/bash
+      register: machines
+      changed_when: false
+
+    - name: Arrêter et retirer chaque machine
+      ansible.builtin.shell: |
+        {{ virsh }} destroy {{ item }} >/dev/null 2>&1 || true
+        {{ virsh }} undefine {{ item }} --nvram >/dev/null 2>&1 || {{ virsh }} undefine {{ item }}
+      loop: "{{ machines.stdout_lines }}"
+      changed_when: true
+
+    - name: Lister les disques de l'épreuve
+      ansible.builtin.shell: >-
+        set -o pipefail && {{ virsh }} vol-list default | awk '$1 ~ /^{{ epreuve.prefixe }}/ {print $1}'
+      args:
+        executable: /bin/bash
+      register: disques
+      changed_when: false
+
+    - name: Retirer chaque disque
+      ansible.builtin.command: "{{ virsh }} vol-delete {{ item }} --pool default"
+      loop: "{{ disques.stdout_lines }}"
+      changed_when: true
+
+    - name: Lister les réseaux de l'épreuve
+      ansible.builtin.shell: >-
+        set -o pipefail && {{ virsh }} net-list --all --name | grep '^{{ epreuve.prefixe }}' || true
+      args:
+        executable: /bin/bash
+      register: reseaux
+      changed_when: false
+
+    - name: Retirer chaque réseau
+      ansible.builtin.shell: |
+        {{ virsh }} net-destroy {{ item }} >/dev/null 2>&1 || true
+        {{ virsh }} net-undefine {{ item }}
+      loop: "{{ reseaux.stdout_lines }}"
+      changed_when: true
+
+    - name: Oublier le state local de l'apprenant, qui ne décrit plus rien
+      ansible.builtin.file:
+        path: "{{ lab_workdir }}/{{ item }}"
+        state: absent
+      loop: [terraform.tfstate, terraform.tfstate.backup]
+
+    - name: Oublier la préparation
+      ansible.builtin.file:
+        path: "{{ lab_state_dir }}/epreuve.json"
+        state: absent

@@ -1,0 +1,3 @@
+---
+title: 'Épreuve de niveau A : écrire et provisionner un environnement de démonstration'
+description: Une équipe produit demande un environnement de démonstration décrit par un catalogue de machines. Écrire le Terraform qui le construit sur libvirt, le fait évoluer sans casse, protège la machine critique et livre un secret d'application qui n'arrive jamais dans le state. Noté sur l'état réel.
