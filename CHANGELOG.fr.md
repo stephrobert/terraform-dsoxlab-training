@@ -9,7 +9,7 @@ Ce dépôt est un **catalogue de contenu**, pas une bibliothèque : il n'est pas
 versionné et ne publie pas de release. Les entrées ci-dessous datent les
 changements du catalogue, et l'unité qui compte est le lab.
 
-## [Non publié]
+## [0.1.0] - 2026-10-09
 
 ### Ajouté
 
@@ -74,3 +74,6 @@ changements du catalogue, et l'unité qui compte est le lab.
 ### Ajouté
 
 - Premier commit : 87 labs, leurs scénarios et leur ordre dans `meta.yml`.
+
+[Non publié]: https://github.com/stephrobert/terraform-dsoxlab-training/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/stephrobert/terraform-dsoxlab-training/releases/tag/v0.1.0

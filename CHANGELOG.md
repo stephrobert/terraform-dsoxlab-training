@@ -9,7 +9,7 @@ This repository is a **content catalog**, not a library: it is not versioned and
 publishes no releases. The entries below date changes to the catalog, and the
 unit that matters is the lab.
 
-## [Unreleased]
+## [0.1.0] - 2026-10-09
 
 ### Added
 
@@ -74,3 +74,6 @@ unit that matters is the lab.
 ### Added
 
 - First commit: 87 labs, their scenarios and their order in `meta.yml`.
+
+[Unreleased]: https://github.com/stephrobert/terraform-dsoxlab-training/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/stephrobert/terraform-dsoxlab-training/releases/tag/v0.1.0
