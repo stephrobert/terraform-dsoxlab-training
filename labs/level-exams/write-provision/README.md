@@ -17,4 +17,9 @@ Workstation prerequisites: Terraform 1.16 and libvirt (`qemu:///system`), as
 for the First infrastructures labs. The setup downloads the cloud image the
 first time, with its checksum verified.
 
+This exam also requires a `dsoxlab` that plays the `setup.yaml` of a
+`shell` lab: that is what builds the ground (dsoxlab issue #298). With an
+earlier version, `dsoxlab run` leaves an empty working directory, and
+nothing says why.
+
 The mission is in `dsoxlab challenge`.
