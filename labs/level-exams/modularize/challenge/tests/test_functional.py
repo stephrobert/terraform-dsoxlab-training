@@ -60,7 +60,8 @@ def _epreuve() -> dict:
 def _run(cmd: list[str], cwd: Path | None = None, timeout: int = 600) -> subprocess.CompletedProcess[str]:
     env = os.environ.copy()
     env["TF_IN_AUTOMATION"] = "1"
-    return subprocess.run(cmd, cwd=cwd, capture_output=True, text=True, timeout=timeout, env=env)
+    return subprocess.run(cmd, cwd=cwd, capture_output=True, text=True, timeout=timeout,
+                          env=env, check=False)
 
 
 def _terraform(cwd: Path, *args: str, timeout: int = 600) -> subprocess.CompletedProcess[str]:
@@ -190,7 +191,6 @@ def test_modularize_le_depot_publie_les_trois_versions() -> None:
 
 
 def test_modularize_le_module_n_embarque_pas_son_provider() -> None:
-    e = _epreuve()
     appelant = _appelant(_source("v1.1.0"), '  taille        = "petite"')
     init = _terraform(appelant, "init", "-input=false")
     assert init.returncode == 0, (
@@ -262,7 +262,7 @@ def test_reuse_l_equipe_data_est_figee_au_contenu() -> None:
 def test_reuse_l_equipe_web_suit_les_versions_publiees() -> None:
     e = _epreuve()
     m = _module("equipe-web")
-    assert m["ref"], f"equipe-web tire le module sans ref : elle suivrait la branche, pas les versions publiées."
+    assert m["ref"], "equipe-web tire le module sans ref : elle suivrait la branche, pas les versions publiées."
     assert m["ref"] not in VERSIONS and not re.fullmatch(r"[0-9a-f]{7,40}", m["ref"]), (
         f"equipe-web pointe « {m['ref']} » : figée, elle ne suit pas les versions publiées.")
     assert _commit(e["depot"], f"refs/tags/{m['ref']}"), f"« {m['ref']} » n'est pas un tag du dépôt."
@@ -271,7 +271,6 @@ def test_reuse_l_equipe_web_suit_les_versions_publiees() -> None:
 
 
 def test_reuse_la_majeure_exige_d_adapter_le_consommateur() -> None:
-    e = _epreuve()
     source = _source("v2.0.0")
     ancien = _appelant(source, '  taille        = "petite"', for_each=False)
     _terraform(ancien, "init", "-input=false")
