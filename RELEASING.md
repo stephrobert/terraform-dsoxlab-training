@@ -59,8 +59,30 @@ Hence `.github/workflows/attester.yml`, called as a reusable workflow:
    `CHANGELOG.fr.md`, and add the two link definitions.
 2. Check the catalogue locally: `dsoxlab validate-structure`, `pytest tests/ -q`,
    and `python3 scripts/valider-labs.py --check` (no lab must be ROUGE).
-3. Open a pull request for that change, and let the CI go green.
-4. Once merged, tag the **merged commit** and push the tag, which triggers
+3. **Re-attest the labs that changed since their verdict.** A lab whose tests,
+   files, shared `conftest.py` or descriptors changed after the commit that
+   recorded its verdict is no longer attested by `validation-labs.json`. From
+   the site repository (`test-astro-5`, cloned next to this one), run:
+
+   ```bash
+   python3 scripts/reattester-labs.py --depot terraform-dsoxlab-training           # plan and safeguards
+   python3 scripts/reattester-labs.py --depot terraform-dsoxlab-training --apply   # replay and commit
+   ```
+
+   The script replays each lab marked "to re-attest" through
+   `scripts/valider-labs.py`, one at a time (modified tests and labs first,
+   then shared `conftest.py`, then descriptors), checks that the
+   `validation-labs.json` diff only touches those labs, reruns `--check` and
+   `pytest tests/`, and makes a **local** commit of the record alone. It
+   refuses a dirty repository and an active lab. A RED verdict is not
+   committed: fix the lab, then run it again.
+
+   Before tagging, run the dry-run again: it must print
+   **"0 lab(s) à réattester"**. Then push the record commit with the rest of
+   the release.
+
+4. Open a pull request for that change, and let the CI go green.
+5. Once merged, tag the **merged commit** and push the tag, which triggers
    `release.yml`:
 
    ```bash
@@ -69,7 +91,7 @@ Hence `.github/workflows/attester.yml`, called as a reusable workflow:
    git push origin vX.Y.Z
    ```
 
-5. Watch the run. The three jobs must all be green: a failed `provenance` job
+6. Watch the run. The three jobs must all be green: a failed `provenance` job
    leaves the release unpublished rather than publishing it unattested.
 
 ## Verifying a release

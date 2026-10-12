@@ -61,8 +61,30 @@ D'où `.github/workflows/attester.yml`, appelé comme workflow réutilisable :
 2. Contrôler le catalogue en local : `dsoxlab validate-structure`,
    `pytest tests/ -q`, et `python3 scripts/valider-labs.py --check` (aucun lab
    ne doit être ROUGE).
-3. Ouvrir une pull request pour ce changement, et laisser la CI passer au vert.
-4. Une fois fusionnée, taguer le **commit fusionné** et pousser le tag, ce qui
+3. **Réattester les labs qui ont changé depuis leur verdict.** Un lab dont les
+   tests, les fichiers, un `conftest.py` commun ou les descripteurs ont été
+   modifiés après le commit qui a inscrit son verdict n'est plus attesté par
+   `validation-labs.json`. Depuis le dépôt du site (`test-astro-5`, cloné à
+   côté de ce dépôt), lancer :
+
+   ```bash
+   python3 scripts/reattester-labs.py --depot terraform-dsoxlab-training           # plan et garde-fous
+   python3 scripts/reattester-labs.py --depot terraform-dsoxlab-training --apply   # rejoue et commite
+   ```
+
+   Le script rejoue chaque lab « à réattester » par `scripts/valider-labs.py`,
+   un par un (tests et lab modifiés d'abord, puis `conftest.py` commun, puis
+   descripteurs), vérifie que le diff de `validation-labs.json` ne touche que
+   ces labs, relance `--check` et `pytest tests/`, puis fait un commit **local**
+   du seul relevé. Il refuse un dépôt non propre et un lab actif. Un verdict
+   ROUGE n'est pas commité : corriger le lab, puis relancer.
+
+   Avant de taguer, relancer le dry-run : il doit afficher
+   **« 0 lab(s) à réattester »**. Pousser ensuite le commit du relevé avec le
+   reste de la version.
+
+4. Ouvrir une pull request pour ce changement, et laisser la CI passer au vert.
+5. Une fois fusionnée, taguer le **commit fusionné** et pousser le tag, ce qui
    déclenche `release.yml` :
 
    ```bash
@@ -71,7 +93,7 @@ D'où `.github/workflows/attester.yml`, appelé comme workflow réutilisable :
    git push origin vX.Y.Z
    ```
 
-5. Surveiller l'exécution. Les trois jobs doivent être verts : un job
+6. Surveiller l'exécution. Les trois jobs doivent être verts : un job
    `provenance` en échec laisse la release non publiée, plutôt que de la publier
    sans attestation.
 
