@@ -1,7 +1,7 @@
 {
-  "genere_le": "2026-10-09 13:32:18",
+  "genere_le": "2026-10-12 20:36:23",
   "terraform": "Terraform v1.16.1",
-  "dsoxlab": "dsoxlab 0.3.1",
+  "dsoxlab": "dsoxlab 0.3.5",
   "labs": {
     "aws-backend-s3-remote-state": {
       "id": "aws-backend-s3-remote-state",
@@ -10,7 +10,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "9/9",
-      "duree_s": 25.5,
+      "duree_s": 38.1,
       "traces": [],
       "pourquoi": ""
     },
@@ -65,7 +65,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "12/12",
-      "duree_s": 76.9,
+      "duree_s": 90.0,
       "traces": [],
       "pourquoi": ""
     },
@@ -76,7 +76,7 @@
       "score_avant": 0,
       "score_apres": 90,
       "tests": "8/8",
-      "duree_s": 10.8,
+      "duree_s": 12.9,
       "traces": [],
       "pourquoi": ""
     },
@@ -87,7 +87,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "10/10",
-      "duree_s": 5.8,
+      "duree_s": 10.0,
       "traces": [],
       "pourquoi": ""
     },
@@ -98,7 +98,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "5/5",
-      "duree_s": 61.4,
+      "duree_s": 71.8,
       "traces": [],
       "pourquoi": ""
     },
@@ -109,7 +109,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "9/9",
-      "duree_s": 6.9,
+      "duree_s": 9.3,
       "traces": [],
       "pourquoi": ""
     },
@@ -120,7 +120,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "8/8",
-      "duree_s": 8.7,
+      "duree_s": 9.8,
       "traces": [],
       "pourquoi": ""
     },
@@ -131,7 +131,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "6/6",
-      "duree_s": 6.2,
+      "duree_s": 7.6,
       "traces": [],
       "pourquoi": ""
     },
@@ -142,7 +142,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "6/6",
-      "duree_s": 58.6,
+      "duree_s": 68.3,
       "traces": [],
       "pourquoi": ""
     },
@@ -153,7 +153,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "16/16",
-      "duree_s": 4.1,
+      "duree_s": 4.7,
       "traces": [],
       "pourquoi": ""
     },
@@ -164,7 +164,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "16/16",
-      "duree_s": 10.7,
+      "duree_s": 14.0,
       "traces": [],
       "pourquoi": ""
     },
@@ -186,7 +186,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "8/8",
-      "duree_s": 6.9,
+      "duree_s": 11.3,
       "traces": [],
       "pourquoi": ""
     },
@@ -208,7 +208,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "6/6",
-      "duree_s": 7.6,
+      "duree_s": 10.0,
       "traces": [],
       "pourquoi": ""
     },
@@ -241,7 +241,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "8/8",
-      "duree_s": 6.0,
+      "duree_s": 8.1,
       "traces": [],
       "pourquoi": ""
     },
@@ -549,7 +549,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "8/8",
-      "duree_s": 7.6,
+      "duree_s": 8.9,
       "traces": [],
       "pourquoi": ""
     },
@@ -725,7 +725,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "12/12",
-      "duree_s": 5.7,
+      "duree_s": 7.5,
       "traces": [],
       "pourquoi": ""
     },
@@ -758,7 +758,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "8/8",
-      "duree_s": 6.5,
+      "duree_s": 9.6,
       "traces": [],
       "pourquoi": ""
     },
@@ -824,7 +824,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "9/9",
-      "duree_s": 8.3,
+      "duree_s": 12.6,
       "traces": [],
       "pourquoi": ""
     },
