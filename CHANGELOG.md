@@ -9,6 +9,17 @@ This repository is a **content catalog**, not a library: it is not versioned and
 publishes no releases. The entries below date changes to the catalog, and the
 unit that matters is the lab.
 
+## [0.1.1] - 2026-10-14
+
+### Changed
+
+- Eighteen verdicts replayed with dsoxlab 0.3.5.
+- The release procedure re-attests labs modified since their verdict.
+
+### Fixed
+
+- Five GitHub actions brought up to date.
+
 ## [0.1.0] - 2026-10-09
 
 ### Added
@@ -75,5 +86,6 @@ unit that matters is the lab.
 
 - First commit: 87 labs, their scenarios and their order in `meta.yml`.
 
-[Unreleased]: https://github.com/stephrobert/terraform-dsoxlab-training/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/stephrobert/terraform-dsoxlab-training/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/stephrobert/terraform-dsoxlab-training/releases/tag/v0.1.1
 [0.1.0]: https://github.com/stephrobert/terraform-dsoxlab-training/releases/tag/v0.1.0
