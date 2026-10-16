@@ -27,7 +27,7 @@ from pathlib import Path
 
 import pytest
 
-from conftest import exiger_workdir, show_json, terraform, workdir_lab
+from conftest import exiger_workdir, message, show_json, terraform, workdir_lab
 
 WORKDIR = workdir_lab(__file__)
 LAB_ID = "state-diagnose-state"
@@ -54,14 +54,23 @@ def _plan_json(cwd: Path, fichier: str) -> dict:
         document = json.loads(chemin.read_text(encoding="utf-8"))
     except json.JSONDecodeError as erreur:
         pytest.fail(
-            f"{fichier} n'est pas un JSON valide ({erreur}). Il s'obtient par "
-            "`terraform show -json derive.tfplan > " + fichier + "`."
+            message(
+            en=f"{fichier} is not valid JSON ({erreur}). It is obtained with "
+            "`terraform show -json derive.tfplan > " + fichier + "`.",
+            fr=f"{fichier} n'est pas un JSON valide ({erreur}). Il s'obtient par "
+            "`terraform show -json derive.tfplan > " + fichier + "`.",
+        )
         )
     if "format_version" not in document:
         pytest.fail(
-            f"{fichier} ne ressemble pas a un document de plan : le champ "
+            message(
+            en=f"{fichier} does not look like a plan document: the "
+            "`format_version` field is missing. The output of "
+            "`terraform show -json <saved plan>` is what is expected.",
+            fr=f"{fichier} ne ressemble pas à un document de plan : le champ "
             "`format_version` manque. C'est la sortie de "
-            "`terraform show -json <plan enregistre>` qui est attendue."
+            "`terraform show -json <plan enregistré>` qui est attendue.",
+        )
         )
     return document
 
@@ -72,14 +81,23 @@ def projet() -> Iterator[Path]:
     init = terraform("init", "-input=false", "-no-color", cwd=WORKDIR)
     if init.returncode != 0:
         pytest.fail(
-            "`terraform init` a echoue. Un `???` restant dans adoption.tf ?"
-            f"\n{init.stderr[-1200:]}"
+            message(
+            en="`terraform init` failed. A leftover `???` in adoption.tf?"
+            f"\n{init.stderr[-1200:]}",
+            fr="`terraform init` a échoué. Un `???` restant dans adoption.tf ?"
+            f"\n{init.stderr[-1200:]}",
+        )
         )
     if "values" not in show_json(WORKDIR):
         pytest.fail(
-            "Le state est vide : le projet n'a jamais ete applique. Lancez "
-            "`terraform apply` pour construire l'etat de reference, puis "
-            "simulez la derive avant de la diagnostiquer."
+            message(
+            en="The state is empty: the project was never applied. Run "
+            "`terraform apply` to build the reference state, then "
+            "simulate the drift before diagnosing it.",
+            fr="Le state est vide : le projet n'a jamais été appliqué. Lancez "
+            "`terraform apply` pour construire l'état de référence, puis "
+            "simulez la dérive avant de la diagnostiquer.",
+        )
         )
     yield WORKDIR
 
@@ -90,18 +108,24 @@ def projet() -> Iterator[Path]:
 
 def test_un_plan_refresh_only_a_ete_enregistre(projet: Path) -> None:
     chemin = projet / PLAN_DERIVE
-    assert chemin.is_file(), (
-        f"{PLAN_DERIVE} est absent. La derive se prouve par un plan ENREGISTRE, "
+    assert chemin.is_file(), message(
+        en=f"{PLAN_DERIVE} is missing. The drift is proven by a SAVED plan, "
+        "then converted: `terraform plan -refresh-only -out=derive.tfplan` followed "
+        f"by `terraform show -json derive.tfplan > {PLAN_DERIVE}`.",
+        fr=f"{PLAN_DERIVE} est absent. La dérive se prouve par un plan ENREGISTRÉ, "
         "puis converti : `terraform plan -refresh-only -out=derive.tfplan` suivi "
-        f"de `terraform show -json derive.tfplan > {PLAN_DERIVE}`."
+        f"de `terraform show -json derive.tfplan > {PLAN_DERIVE}`.",
     )
     plan = _plan_json(projet, PLAN_DERIVE)
 
     derives = {c["address"] for c in plan.get("resource_drift", [])}
-    assert "local_file.note" in derives, (
-        f"Le plan ne signale aucune derive sur `local_file.note`. Releve : "
+    assert "local_file.note" in derives, message(
+        en=f"The plan reports no drift on `local_file.note`. Recorded: "
+        f"{sorted(derives) or 'none'}. A plan taken BEFORE the file was "
+        "modified, or AFTER it was reconciled, shows nothing.",
+        fr=f"Le plan ne signale aucune dérive sur `local_file.note`. Relevé : "
         f"{sorted(derives) or 'aucune'}. Un plan pris AVANT la modification du "
-        "fichier, ou APRES sa reconciliation, ne montre rien."
+        "fichier, ou APRÈS sa réconciliation, ne montre rien.",
     )
 
     changements = [
@@ -109,11 +133,15 @@ def test_un_plan_refresh_only_a_ete_enregistre(projet: Path) -> None:
         for c in plan.get("resource_changes", [])
         if c["change"]["actions"] != ["no-op"]
     ]
-    assert not changements, (
-        f"`resource_changes` porte {changements}, il devrait etre vide. C'est la "
-        "signature d'un plan ORDINAIRE : il range la meme derive dans "
-        "`resource_changes`, la ou `-refresh-only` ne decrit que le rattrapage "
-        "du state."
+    assert not changements, message(
+        en=f"`resource_changes` carries {changements}, it should be empty. That is the "
+        "signature of an ORDINARY plan: it puts the same drift into "
+        "`resource_changes`, where `-refresh-only` only describes the state's "
+        "catch-up.",
+        fr=f"`resource_changes` porte {changements}, il devrait être vide. C'est la "
+        "signature d'un plan ORDINAIRE : il range la même dérive dans "
+        "`resource_changes`, là où `-refresh-only` ne décrit que le rattrapage "
+        "du state.",
     )
 
 
@@ -124,25 +152,33 @@ def test_un_plan_refresh_only_a_ete_enregistre(projet: Path) -> None:
 def test_le_state_colle_au_reel(projet: Path) -> None:
     plan = terraform("plan", "-refresh-only", "-input=false",
                      "-detailed-exitcode", "-no-color", cwd=projet)
-    assert plan.returncode == 0, (
-        f"`plan -refresh-only -detailed-exitcode` rend {plan.returncode}, "
-        "attendu 0. Le state decrit encore autre chose que la realite : il "
-        "reste une derive a reconcilier par `terraform apply -refresh-only`."
+    assert plan.returncode == 0, message(
+        en=f"`plan -refresh-only -detailed-exitcode` returns {plan.returncode}, "
+        "expected 0. The state still describes something other than reality: a "
+        "drift remains to be reconciled with `terraform apply -refresh-only`.",
+        fr=f"`plan -refresh-only -detailed-exitcode` rend {plan.returncode}, "
+        "attendu 0. Le state décrit encore autre chose que la réalité : il "
+        "reste une dérive à réconcilier par `terraform apply -refresh-only`.",
     )
 
 
 def test_la_note_a_retrouve_le_contenu_declare(projet: Path) -> None:
     ressources = _ressources(projet)
-    assert "local_file.note" in ressources, (
-        f"`local_file.note` a disparu du state. Adresses gerees : "
-        f"{sorted(ressources)}"
+    assert "local_file.note" in ressources, message(
+        en=f"`local_file.note` has disappeared from the state. Managed addresses: "
+        f"{sorted(ressources)}",
+        fr=f"`local_file.note` a disparu du state. Adresses gérées : "
+        f"{sorted(ressources)}",
     )
     attendu = ressources["local_file.note"]["values"]["content"]
     reel = (projet / NOTE).read_text(encoding="utf-8")
-    assert reel == attendu, (
-        f"{NOTE} contient {reel!r}, alors que le state lui prete {attendu!r}. "
-        "Reconcilier le state ne suffit pas : il faut ensuite remettre l'objet "
-        "reel en conformite avec le code."
+    assert reel == attendu, message(
+        en=f"{NOTE} contains {reel!r}, while the state attributes {attendu!r} to it. "
+        "Reconciling the state is not enough: the real object must then be brought "
+        "back into line with the code.",
+        fr=f"{NOTE} contient {reel!r}, alors que le state lui prête {attendu!r}. "
+        "Réconcilier le state ne suffit pas : il faut ensuite remettre l'objet "
+        "réel en conformité avec le code.",
     )
 
 
@@ -152,26 +188,35 @@ def test_la_note_a_retrouve_le_contenu_declare(projet: Path) -> None:
 
 def test_le_jeton_herite_a_ete_adopte_tel_quel(projet: Path) -> None:
     ressources = _ressources(projet)
-    assert "random_string.legacy" in ressources, (
-        "`random_string.legacy` n'est pas dans le state. Le bloc `import` "
-        "a-t-il ete decommente et complete, puis applique ? Adresses gerees : "
-        f"{sorted(ressources)}"
+    assert "random_string.legacy" in ressources, message(
+        en="`random_string.legacy` is not in the state. Was the `import` block "
+        "uncommented and completed, then applied? Managed addresses: "
+        f"{sorted(ressources)}",
+        fr="`random_string.legacy` n'est pas dans le state. Le bloc `import` "
+        "a-t-il été décommenté et complété, puis appliqué ? Adresses gérées : "
+        f"{sorted(ressources)}",
     )
     attendu = (projet / JETON).read_text(encoding="utf-8").strip()
     obtenu = ressources["random_string.legacy"]["values"]["result"]
-    assert obtenu == attendu, (
-        f"Le jeton du state vaut {obtenu!r}, attendu {attendu!r}. Terraform l'a "
-        "REGENERE au lieu de l'adopter : quand les attributs declares divergent "
-        "de l'objet importe, le plan annonce `must be replaced` avec "
-        "`Warning: this will destroy the imported resource`. Le jeton herite "
-        "est connu d'un service tiers, il ne se regenere pas."
+    assert obtenu == attendu, message(
+        en=f"The state's token is {obtenu!r}, expected {attendu!r}. Terraform "
+        "REGENERATED it instead of adopting it: when the declared attributes diverge "
+        "from the imported object, the plan announces `must be replaced` with "
+        "`Warning: this will destroy the imported resource`. The inherited token "
+        "is known to a third-party service, it is not regenerated.",
+        fr=f"Le jeton du state vaut {obtenu!r}, attendu {attendu!r}. Terraform l'a "
+        "RÉGÉNÉRÉ au lieu de l'adopter : quand les attributs déclarés divergent "
+        "de l'objet importé, le plan annonce `must be replaced` avec "
+        "`Warning: this will destroy the imported resource`. Le jeton hérité "
+        "est connu d'un service tiers, il ne se régénère pas.",
     )
 
 
 def test_le_state_porte_exactement_les_deux_adresses(projet: Path) -> None:
     presentes = set(_ressources(projet))
-    assert presentes == ADRESSES, (
-        f"Le state porte {sorted(presentes)}, attendu {sorted(ADRESSES)}."
+    assert presentes == ADRESSES, message(
+        en=f"The state carries {sorted(presentes)}, expected {sorted(ADRESSES)}.",
+        fr=f"Le state porte {sorted(presentes)}, attendu {sorted(ADRESSES)}.",
     )
 
 
@@ -182,9 +227,13 @@ def test_le_state_porte_exactement_les_deux_adresses(projet: Path) -> None:
 def test_plus_aucun_changement_en_attente(projet: Path) -> None:
     plan = terraform("plan", "-input=false", "-detailed-exitcode", "-no-color",
                      cwd=projet)
-    assert plan.returncode == 0, (
-        f"`plan -detailed-exitcode` rend {plan.returncode}, attendu 0. Un code 2 "
-        "signale un changement en attente : soit l'objet reel diverge encore du "
-        "code, soit l'adoption laisse un remplacement a jouer, ce que le bloc "
-        f"`lifecycle` doit empecher.\n{plan.stdout[-900:]}"
+    assert plan.returncode == 0, message(
+        en=f"`plan -detailed-exitcode` returns {plan.returncode}, expected 0. A code 2 "
+        "signals a pending change: either the real object still diverges from the "
+        "code, or the adoption leaves a replacement to play, which the "
+        f"`lifecycle` block must prevent.\n{plan.stdout[-900:]}",
+        fr=f"`plan -detailed-exitcode` rend {plan.returncode}, attendu 0. Un code 2 "
+        "signale un changement en attente : soit l'objet réel diverge encore du "
+        "code, soit l'adoption laisse un remplacement à jouer, ce que le bloc "
+        f"`lifecycle` doit empêcher.\n{plan.stdout[-900:]}",
     )

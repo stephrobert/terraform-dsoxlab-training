@@ -26,7 +26,7 @@ from pathlib import Path
 
 import pytest
 
-from conftest import exiger_workdir, show_json, terraform, workdir_lab
+from conftest import exiger_workdir, message, show_json, terraform, workdir_lab
 
 WORKDIR = workdir_lab(__file__)
 LAB_ID = "modules-module-variables-outputs"
@@ -56,13 +56,21 @@ def applique() -> Iterator[Path]:
     init = terraform("init", "-input=false", "-no-color", cwd=WORKDIR)
     if init.returncode != 0:
         pytest.fail(
-            "`terraform init` a echoue. Des `???` restent-ils dans les fichiers "
-            f"a completer ?\n{init.stderr[-1200:]}"
+            message(
+            en="`terraform init` failed. Are there leftover `???` in the files "
+            f"to complete?\n{init.stderr[-1200:]}",
+            fr="`terraform init` a échoué. Des `???` restent-ils dans les fichiers "
+            f"à compléter ?\n{init.stderr[-1200:]}",
+        )
         )
     if "values" not in show_json(WORKDIR):
         pytest.fail(
-            "Le state est vide : la configuration n'a jamais ete appliquee. "
-            "Lancez `terraform apply` une fois l'interface ecrite."
+            message(
+            en="The state is empty: the configuration was never applied. "
+            "Run `terraform apply` once the interface is written.",
+            fr="Le state est vide : la configuration n'a jamais été appliquée. "
+            "Lancez `terraform apply` une fois l'interface écrite.",
+        )
         )
     yield WORKDIR
 
@@ -74,9 +82,11 @@ def applique() -> Iterator[Path]:
 def test_le_module_est_appele_deux_fois(applique: Path) -> None:
     enfants = show_json(applique)["values"]["root_module"].get("child_modules", [])
     adresses = {e["address"] for e in enfants}
-    assert adresses == {"module.complet", "module.minimal"}, (
-        f"Le state porte {sorted(adresses)}, attendu `module.complet` et "
-        "`module.minimal`. Une configuration a plat, sans module, echoue ici."
+    assert adresses == {"module.complet", "module.minimal"}, message(
+        en=f"The state carries {sorted(adresses)}, expected `module.complet` and "
+        "`module.minimal`. A flat configuration, with no module, fails here.",
+        fr=f"Le state porte {sorted(adresses)}, attendu `module.complet` et "
+        "`module.minimal`. Une configuration à plat, sans module, échoue ici.",
     )
 
 
@@ -86,16 +96,22 @@ def test_le_module_est_appele_deux_fois(applique: Path) -> None:
 
 def test_les_attributs_facultatifs_sont_combles(applique: Path) -> None:
     outputs = _outputs(applique)
-    assert "resume_minimal" in outputs, (
-        f"L'output `resume_minimal` manque. Presents : {sorted(outputs)}"
+    assert "resume_minimal" in outputs, message(
+        en=f"The `resume_minimal` output is missing. Present: {sorted(outputs)}",
+        fr=f"L'output `resume_minimal` manque. Présents : {sorted(outputs)}",
     )
     resume = outputs["resume_minimal"]["value"]
-    assert resume == RESUME_MINIMAL, (
-        f"`resume_minimal` vaut {resume!r},\nattendu {RESUME_MINIMAL!r}. L'appel "
+    assert resume == RESUME_MINIMAL, message(
+        en=f"`resume_minimal` is {resume!r},\nexpected {RESUME_MINIMAL!r}. The call "
+        "only provides `nom`: only `optional(type, default)` produces that "
+        "result. Without it the plan would fail on an incomplete object, and with "
+        "an `optional()` without a second argument both fields would come out as "
+        "`null`.",
+        fr=f"`resume_minimal` vaut {resume!r},\nattendu {RESUME_MINIMAL!r}. L'appel "
         "ne fournit que `nom` : seul `optional(type, defaut)` produit ce "
-        "resultat. Sans lui le plan echouerait sur un objet incomplet, et avec "
-        "un `optional()` sans second argument les deux champs sortiraient a "
-        "`null`."
+        "résultat. Sans lui le plan échouerait sur un objet incomplet, et avec "
+        "un `optional()` sans second argument les deux champs sortiraient à "
+        "`null`.",
     )
 
 
@@ -117,15 +133,23 @@ def test_un_null_explicite_rend_le_defaut(applique: Path, tmp_path: Path) -> Non
                               "-no-color", cwd=copie)
     if applique_copie.returncode != 0:
         pytest.fail(
-            "L'apply a echoue alors que l'appelant passe `etiquette = null`.\n"
-            f"{applique_copie.stderr[-900:]}"
+            message(
+            en="The apply failed although the caller passes `etiquette = null`.\n"
+            f"{applique_copie.stderr[-900:]}",
+            fr="L'apply a échoué alors que l'appelant passe `etiquette = null`.\n"
+            f"{applique_copie.stderr[-900:]}",
+        )
         )
     resume = _outputs(copie)["resume_minimal"]["value"]
-    assert resume["etiquette"] == "artefact", (
-        f"Avec `etiquette = null`, le resume porte {resume['etiquette']!r}, "
-        "attendu `artefact`. Un `default` ne protege pas d'un null explicite : "
-        "`nullable` vaut `true` par defaut et laisse passer la valeur nulle. "
-        "C'est `nullable = false` qui substitue le defaut."
+    assert resume["etiquette"] == "artefact", message(
+        en=f"With `etiquette = null`, the summary carries {resume['etiquette']!r}, "
+        "expected `artefact`. A `default` does not protect from an explicit null: "
+        "`nullable` defaults to `true` and lets the null value through. "
+        "It is `nullable = false` that substitutes the default.",
+        fr=f"Avec `etiquette = null`, le résumé porte {resume['etiquette']!r}, "
+        "attendu `artefact`. Un `default` ne protège pas d'un null explicite : "
+        "`nullable` vaut `true` par défaut et laisse passer la valeur nulle. "
+        "C'est `nullable = false` qui substitue le défaut.",
     )
 
 
@@ -144,17 +168,21 @@ def test_une_longueur_hors_bornes_est_refusee(applique: Path, tmp_path: Path) ->
     )
     valide = terraform("validate", "-json", cwd=copie)
     document = json.loads(valide.stdout)
-    assert document.get("valid") is False, (
-        "`terraform validate` accepte `longueur_secret = 8`. La variable doit "
-        "porter un bloc `validation` qui refuse les valeurs hors de 12 a 64."
+    assert document.get("valid") is False, message(
+        en="`terraform validate` accepts `longueur_secret = 8`. The variable must "
+        "carry a `validation` block refusing values outside 12 to 64.",
+        fr="`terraform validate` accepte `longueur_secret = 8`. La variable doit "
+        "porter un bloc `validation` qui refuse les valeurs hors de 12 à 64.",
     )
     resumes = {
         d.get("summary") for d in document.get("diagnostics", [])
         if d.get("severity") == "error"
     }
-    assert "Invalid value for variable" in resumes, (
-        f"Diagnostics releves : {sorted(resumes)}. Attendu une erreur "
-        "`Invalid value for variable`."
+    assert "Invalid value for variable" in resumes, message(
+        en=f"Diagnostics recorded: {sorted(resumes)}. An `Invalid value for variable` "
+        "error was expected.",
+        fr=f"Diagnostics relevés : {sorted(resumes)}. Attendu une erreur "
+        "`Invalid value for variable`.",
     )
 
 
@@ -164,17 +192,23 @@ def test_une_longueur_hors_bornes_est_refusee(applique: Path, tmp_path: Path) ->
 
 def test_le_secret_est_marque_sensible(applique: Path) -> None:
     outputs = _outputs(applique)
-    assert "secret_partage" in outputs, (
-        f"L'output `secret_partage` manque. Presents : {sorted(outputs)}"
+    assert "secret_partage" in outputs, message(
+        en=f"The `secret_partage` output is missing. Present: {sorted(outputs)}",
+        fr=f"L'output `secret_partage` manque. Présents : {sorted(outputs)}",
     )
-    assert outputs["secret_partage"]["sensitive"] is True, (
-        "`secret_partage` n'est pas marque sensible. Terraform exige qu'une "
-        "sortie racine portant une donnee sensible le declare : sans cela, le "
-        "plan echoue sur `Output refers to sensitive values`."
+    assert outputs["secret_partage"]["sensitive"] is True, message(
+        en="`secret_partage` is not marked sensitive. Terraform requires a "
+        "root output carrying sensitive data to declare it: without that, the "
+        "plan fails on `Output refers to sensitive values`.",
+        fr="`secret_partage` n'est pas marqué sensible. Terraform exige qu'une "
+        "sortie racine portant une donnée sensible le déclare : sans cela, le "
+        "plan échoue sur `Output refers to sensitive values`.",
     )
-    assert len(outputs["secret_partage"]["value"]) == 24, (
-        "Le secret ne fait pas la longueur demandee par l'appel complet "
-        f"({len(outputs['secret_partage']['value'])} au lieu de 24)."
+    assert len(outputs["secret_partage"]["value"]) == 24, message(
+        en="The secret is not the length asked for by the complete call "
+        f"({len(outputs['secret_partage']['value'])} instead of 24).",
+        fr="Le secret ne fait pas la longueur demandée par l'appel complet "
+        f"({len(outputs['secret_partage']['value'])} au lieu de 24).",
     )
 
 
@@ -188,14 +222,19 @@ def test_sans_marquage_le_plan_est_refuse(applique: Path, tmp_path: Path) -> Non
         encoding="utf-8",
     )
     plan = terraform("plan", "-input=false", "-no-color", cwd=copie)
-    assert plan.returncode != 0, (
-        "Un output racine republiant un secret sans `sensitive = true` devrait "
-        "faire echouer le plan. Si ce test passe, le secret n'est pas marque "
-        "dans le module enfant non plus, et rien ne protege la valeur."
+    assert plan.returncode != 0, message(
+        en="A root output republishing a secret without `sensitive = true` should "
+        "make the plan fail. If this test passes, the secret is not marked "
+        "in the child module either, and nothing protects the value.",
+        fr="Un output racine republiant un secret sans `sensitive = true` devrait "
+        "faire échouer le plan. Si ce test passe, le secret n'est pas marqué "
+        "dans le module enfant non plus, et rien ne protège la valeur.",
     )
-    assert "sensitive" in plan.stderr.lower(), (
-        f"Le refus attendu mentionne les valeurs sensibles. Releve :\n"
-        f"{plan.stderr[-600:]}"
+    assert "sensitive" in plan.stderr.lower(), message(
+        en=f"The expected refusal mentions sensitive values. Recorded:\n"
+        f"{plan.stderr[-600:]}",
+        fr=f"Le refus attendu mentionne les valeurs sensibles. Relevé :\n"
+        f"{plan.stderr[-600:]}",
     )
 
 
@@ -219,13 +258,17 @@ def test_la_sortie_chemin_refuse_un_depot_non_chiffre(
         encoding="utf-8",
     )
     plan = terraform("plan", "-input=false", "-no-color", cwd=copie)
-    assert plan.returncode != 0, (
-        "Le plan devrait echouer quand le depot n'est pas chiffre : la sortie "
-        "`chemin` doit porter une `precondition` qui l'en empeche."
+    assert plan.returncode != 0, message(
+        en="The plan should fail when the store is not encrypted: the `chemin` "
+        "output must carry a `precondition` preventing it.",
+        fr="Le plan devrait échouer quand le dépôt n'est pas chiffré : la sortie "
+        "`chemin` doit porter une `precondition` qui l'en empêche.",
     )
-    assert "precondition" in plan.stderr.lower(), (
-        "Le refus attendu vient d'une precondition d'output. Releve :\n"
-        f"{plan.stderr[-700:]}"
+    assert "precondition" in plan.stderr.lower(), message(
+        en="The expected refusal comes from an output precondition. Recorded:\n"
+        f"{plan.stderr[-700:]}",
+        fr="Le refus attendu vient d'une precondition d'output. Relevé :\n"
+        f"{plan.stderr[-700:]}",
     )
 
 
@@ -236,7 +279,9 @@ def test_la_sortie_chemin_refuse_un_depot_non_chiffre(
 def test_plus_aucun_changement_en_attente(applique: Path) -> None:
     plan = terraform("plan", "-input=false", "-detailed-exitcode", "-no-color",
                      cwd=applique)
-    assert plan.returncode == 0, (
-        f"plan -detailed-exitcode rend {plan.returncode}, attendu 0.\n"
-        f"{plan.stdout[-900:]}"
+    assert plan.returncode == 0, message(
+        en=f"plan -detailed-exitcode returns {plan.returncode}, expected 0.\n"
+        f"{plan.stdout[-900:]}",
+        fr=f"plan -detailed-exitcode rend {plan.returncode}, attendu 0.\n"
+        f"{plan.stdout[-900:]}",
     )

@@ -35,7 +35,7 @@ from pathlib import Path
 
 import pytest
 
-from conftest import exiger_workdir, workdir_lab
+from conftest import exiger_workdir, message, workdir_lab
 
 WORKDIR = workdir_lab(__file__)
 LAB_ID = "certifications-professional-capstone2-dynamic-config"
@@ -73,20 +73,29 @@ def joue() -> Path:
     exiger_workdir(WORKDIR, LAB_ID)
 
     init = _tf("init", "-input=false", "-no-color")
-    assert init.returncode == 0, (
-        "`terraform init` a echoue.\n\n`init` PARSE la configuration : il "
-        "refuse notamment qu'une ressource porte a la fois `count` et "
-        "`for_each`. Tant qu'il echoue, aucun provider n'est installe, et "
-        "`validate` repondra « Missing required provider », ce qui envoie "
-        f"chercher au mauvais endroit.\n\n{init.stderr[-1200:]}"
+    assert init.returncode == 0, message(
+        en="`terraform init` failed.\n\n`init` PARSES the configuration: it "
+        "refuses in particular that a resource carries both `count` and "
+        "`for_each`. As long as it fails, no provider is installed, and "
+        "`validate` will answer \"Missing required provider\", which sends you "
+        f"looking in the wrong place.\n\n{init.stderr[-1200:]}",
+        fr="`terraform init` a échoué.\n\n`init` PARSE la configuration : il "
+        "refuse notamment qu'une ressource porte à la fois `count` et "
+        "`for_each`. Tant qu'il échoue, aucun provider n'est installé, et "
+        "`validate` répondra « Missing required provider », ce qui envoie "
+        f"chercher au mauvais endroit.\n\n{init.stderr[-1200:]}",
     )
 
     applique = _tf("apply", "-auto-approve", "-input=false", "-no-color")
-    assert applique.returncode == 0, (
-        "`terraform apply` a echoue.\n\nDeux causes frequentes : une erreur "
+    assert applique.returncode == 0, message(
+        en="`terraform apply` failed.\n\nTwo frequent causes: an error "
+        "that `validate` still reports, or an output exposing a sensitive "
+        "value without declaring it, which Terraform refuses to plan.\n\n"
+        f"{applique.stderr[-1200:]}",
+        fr="`terraform apply` a échoué.\n\nDeux causes fréquentes : une erreur "
         "que `validate` signale encore, ou une sortie qui expose une valeur "
-        "sensible sans le declarer, ce que Terraform refuse de planifier.\n\n"
-        f"{applique.stderr[-1200:]}"
+        "sensible sans le déclarer, ce que Terraform refuse de planifier.\n\n"
+        f"{applique.stderr[-1200:]}",
     )
     return WORKDIR
 
@@ -94,9 +103,11 @@ def joue() -> Path:
 @pytest.fixture(scope="module")
 def etat(joue: Path) -> dict:
     proc = _tf("show", "-json")
-    assert proc.returncode == 0, (
-        f"`terraform show -json` a echoue.\n\nLa configuration n'a pas ete "
-        f"appliquee, ou elle ne valide pas.\n{proc.stderr[-800:]}"
+    assert proc.returncode == 0, message(
+        en=f"`terraform show -json` failed.\n\nThe configuration was not "
+        f"applied, or it does not validate.\n{proc.stderr[-800:]}",
+        fr=f"`terraform show -json` a échoué.\n\nLa configuration n'a pas été "
+        f"appliquée, ou elle ne valide pas.\n{proc.stderr[-800:]}",
     )
     return json.loads(proc.stdout)
 
@@ -104,7 +115,10 @@ def etat(joue: Path) -> dict:
 @pytest.fixture(scope="module")
 def sorties(joue: Path) -> dict:
     proc = _tf("output", "-json")
-    assert proc.returncode == 0, f"`terraform output -json` a echoue.\n{proc.stderr[-800:]}"
+    assert proc.returncode == 0, message(
+        en=f"`terraform output -json` failed.\n{proc.stderr[-800:]}",
+        fr=f"`terraform output -json` a échoué.\n{proc.stderr[-800:]}",
+    )
     return json.loads(proc.stdout or "{}")
 
 
@@ -124,17 +138,27 @@ def test_la_configuration_valide(joue: Path) -> None:
     proc = _tf("validate", "-json")
     rapport = json.loads(proc.stdout or "{}")
 
-    assert rapport.get("valid") is True, (
-        f"`terraform validate` compte {rapport.get('error_count')} erreur(s).\n\n"
+    assert rapport.get("valid") is True, message(
+        en=f"`terraform validate` counts {rapport.get('error_count')} error(s).\n\n"
+        + "\n".join(
+            f"  {d.get('summary')} - {d.get('range', {}).get('filename')} "
+            f"line {d.get('range', {}).get('start', {}).get('line')}"
+            for d in rapport.get("diagnostics", [])
+            if d.get("severity") == "error"
+        )
+        + "\n\nReminder: `init` fails on the `count` + `for_each` combination, "
+        "and as long as it fails, `validate` answers \"Missing required provider\", "
+        "which is unrelated. Fix what `init` refuses first.",
+        fr=f"`terraform validate` compte {rapport.get('error_count')} erreur(s).\n\n"
         + "\n".join(
             f"  {d.get('summary')} — {d.get('range', {}).get('filename')} "
             f"ligne {d.get('range', {}).get('start', {}).get('line')}"
             for d in rapport.get("diagnostics", [])
             if d.get("severity") == "error"
         )
-        + "\n\nRappel : `init` echoue sur la combinaison `count` + `for_each`, "
-        "et tant qu'il echoue, `validate` repond « Missing required provider », "
-        "ce qui n'a rien a voir. Corrigez d'abord ce que `init` refuse."
+        + "\n\nRappel : `init` échoue sur la combinaison `count` + `for_each`, "
+        "et tant qu'il échoue, `validate` répond « Missing required provider », "
+        "ce qui n'a rien à voir. Corrigez d'abord ce que `init` refuse.",
     )
 
 
@@ -143,17 +167,25 @@ def test_la_configuration_valide(joue: Path) -> None:
 # --------------------------------------------------------------------------
 def test_chaque_environnement_produit_son_jeu_de_ressources(etat: dict) -> None:
     ressources = _ressources(etat)
-    assert ressources, "Le state est vide : rien n'a ete applique."
+    assert ressources, message(
+        en="The state is empty: nothing was applied.",
+        fr="Le state est vide : rien n'a été appliqué.",
+    )
 
     for type_ in TYPES_PAR_ENVIRONNEMENT:
         instances = [r for r in ressources if r["type"] == type_ and r["mode"] == "managed"]
         cles = sorted(str(r.get("index")) for r in instances)
-        assert cles == sorted(NOMS_ATTENDUS), (
-            f"`{type_}` compte {len(instances)} instance(s), indexees par "
+        assert cles == sorted(NOMS_ATTENDUS), message(
+            en=f"`{type_}` counts {len(instances)} instance(s), indexed by "
+            f"{cles}.\nOne per environment expected: {sorted(NOMS_ATTENDUS)}.\n\n"
+            "The indexes must be the map's KEYS, not integers: a "
+            "`count` would give 0, 1, 2, and removing an entry in the middle "
+            "would shift all the following ones.",
+            fr=f"`{type_}` compte {len(instances)} instance(s), indexées par "
             f"{cles}.\nAttendu une par environnement : {sorted(NOMS_ATTENDUS)}.\n\n"
-            "Les index doivent etre les CLES de la map, pas des entiers : un "
-            "`count` donnerait 0, 1, 2, et une entree retiree au milieu "
-            "decalerait toutes les suivantes."
+            "Les index doivent être les CLÉS de la map, pas des entiers : un "
+            "`count` donnerait 0, 1, 2, et une entrée retirée au milieu "
+            "décalerait toutes les suivantes.",
         )
 
 
@@ -172,11 +204,15 @@ def test_les_noms_sont_normalises_par_une_fonction(etat: dict) -> None:
 
     for cle, attendu in NOMS_ATTENDUS.items():
         chemin = fichiers.get(cle, "")
-        assert chemin.endswith(f"/{attendu}.json"), (
-            f"Le manifeste de `{cle}` s'appelle {Path(chemin).name!r}, attendu "
+        assert chemin.endswith(f"/{attendu}.json"), message(
+            en=f"The manifest of `{cle}` is named {Path(chemin).name!r}, expected "
+            f"{attendu + '.json'!r}.\n\nThe name is computed: lower case, "
+            "underscores turned into hyphens, prefix in front, truncated to "
+            "`var.longueur_nom`.",
+            fr=f"Le manifeste de `{cle}` s'appelle {Path(chemin).name!r}, attendu "
             f"{attendu + '.json'!r}.\n\nLe nom se calcule : minuscules, "
-            "soulignes changes en tirets, prefixe devant, tronque a "
-            "`var.longueur_nom`."
+            "soulignés changés en tirets, préfixe devant, tronqué à "
+            "`var.longueur_nom`.",
         )
 
 
@@ -203,19 +239,29 @@ def test_le_manifeste_est_du_json_serialise_par_une_fonction(etat: dict) -> None
             document = json.loads(brut)
         except json.JSONDecodeError as erreur:
             pytest.fail(
-                f"Le manifeste de `{cle}` n'est pas du JSON valide : {erreur}\n\n"
+                message(
+                en=f"The manifest of `{cle}` is not valid JSON: {erreur}\n\n"
+                f"Contents: {brut[:200]!r}\n\nUse `jsonencode`, never a "
+                "concatenation.",
+                fr=f"Le manifeste de `{cle}` n'est pas du JSON valide : {erreur}\n\n"
                 f"Contenu : {brut[:200]!r}\n\nUtilisez `jsonencode`, jamais une "
-                "concatenation."
+                "concaténation.",
+            )
             )
 
-        assert document.get("nom") == attendu, (
-            f"Le manifeste de `{cle}` porte le nom {document.get('nom')!r}, "
-            f"attendu {attendu!r}."
+        assert document.get("nom") == attendu, message(
+            en=f"The manifest of `{cle}` carries the name {document.get('nom')!r}, "
+            f"expected {attendu!r}.",
+            fr=f"Le manifeste de `{cle}` porte le nom {document.get('nom')!r}, "
+            f"attendu {attendu!r}.",
         )
-        assert document.get("etiquette") == etiquettes.get(cle), (
-            f"L'etiquette du manifeste de `{cle}` ne correspond pas a "
+        assert document.get("etiquette") == etiquettes.get(cle), message(
+            en=f"The label of the manifest of `{cle}` does not match "
+            f"the identifier of that environment's `random_pet`.\n\nIt must "
+            "be REFERENCED, not copied: otherwise it does not follow.",
+            fr=f"L'étiquette du manifeste de `{cle}` ne correspond pas à "
             f"l'identifiant du `random_pet` de cet environnement.\n\nElle doit "
-            "etre REFERENCEE, pas recopiee : sinon elle ne suit pas."
+            "être RÉFÉRENCÉE, pas recopiée : sinon elle ne suit pas.",
         )
 
 
@@ -234,18 +280,23 @@ def test_le_dynamic_genere_un_bloc_par_option(etat: dict) -> None:
         for r in _ressources(etat)
         if r["type"] == "archive_file" and r["mode"] == "data"
     }
-    assert archives, (
-        "Aucune `archive_file` en `mode: data` dans le state. Cette data source "
-        "est celle qui porte le bloc `dynamic`."
+    assert archives, message(
+        en="No `archive_file` in `mode: data` in the state. That data source "
+        "is the one carrying the `dynamic` block.",
+        fr="Aucune `archive_file` en `mode: data` dans le state. Cette data source "
+        "est celle qui porte le bloc `dynamic`.",
     )
 
     for cle, attendu in SOURCES_ATTENDUES.items():
         blocs = archives.get(cle, [])
         noms = [b.get("filename") for b in blocs]
-        assert len(blocs) == attendu, (
-            f"L'archive de `{cle}` porte {len(blocs)} bloc(s) `source`, "
-            f"{attendu} attendu(s).\nPresents : {noms}\n\nLe compte est le bloc "
-            "fixe, plus un par option de cet environnement."
+        assert len(blocs) == attendu, message(
+            en=f"The archive of `{cle}` carries {len(blocs)} `source` block(s), "
+            f"{attendu} expected.\nPresent: {noms}\n\nThe count is the fixed "
+            "block, plus one per option of that environment.",
+            fr=f"L'archive de `{cle}` porte {len(blocs)} bloc(s) `source`, "
+            f"{attendu} attendu(s).\nPrésents : {noms}\n\nLe compte est le bloc "
+            "fixe, plus un par option de cet environnement.",
         )
 
 
@@ -254,27 +305,35 @@ def test_le_dynamic_genere_un_bloc_par_option(etat: dict) -> None:
 # --------------------------------------------------------------------------
 def test_les_sorties_exposent_une_structure_agregee(sorties: dict) -> None:
     environnements = sorties.get("environnements", {}).get("value")
-    assert isinstance(environnements, dict), (
-        f"`environnements` rend {type(environnements).__name__}, une map "
-        "attendue.\n\nUne liste de valeurs brutes ne s'interroge pas par cle."
+    assert isinstance(environnements, dict), message(
+        en=f"`environnements` returns {type(environnements).__name__}, a map "
+        "was expected.\n\nA list of raw values cannot be queried by key.",
+        fr=f"`environnements` rend {type(environnements).__name__}, une map "
+        "attendue.\n\nUne liste de valeurs brutes ne s'interroge pas par clé.",
     )
-    assert set(environnements) == set(NOMS_ATTENDUS.values()), (
-        f"`environnements` est indexe par {sorted(environnements)}.\nAttendu les "
-        f"noms normalises : {sorted(NOMS_ATTENDUS.values())}."
+    assert set(environnements) == set(NOMS_ATTENDUS.values()), message(
+        en=f"`environnements` is indexed by {sorted(environnements)}.\nThe "
+        f"normalised names were expected: {sorted(NOMS_ATTENDUS.values())}.",
+        fr=f"`environnements` est indexé par {sorted(environnements)}.\nAttendu les "
+        f"noms normalisés : {sorted(NOMS_ATTENDUS.values())}.",
     )
 
     attendu_options = {
         NOMS_ATTENDUS[cle]: nombre - 1 for cle, nombre in SOURCES_ATTENDUES.items()
     }
     for nom, valeur in environnements.items():
-        assert valeur.get("nombre_d_options") == attendu_options[nom], (
-            f"`{nom}` annonce {valeur.get('nombre_d_options')} option(s), "
-            f"{attendu_options[nom]} attendue(s)."
+        assert valeur.get("nombre_d_options") == attendu_options[nom], message(
+            en=f"`{nom}` announces {valeur.get('nombre_d_options')} option(s), "
+            f"{attendu_options[nom]} expected.",
+            fr=f"`{nom}` annonce {valeur.get('nombre_d_options')} option(s), "
+            f"{attendu_options[nom]} attendue(s).",
         )
 
-    assert sorties.get("nombre_archives", {}).get("value") == len(NOMS_ATTENDUS), (
-        f"`nombre_archives` vaut {sorties.get('nombre_archives', {}).get('value')}, "
-        f"{len(NOMS_ATTENDUS)} attendu."
+    assert sorties.get("nombre_archives", {}).get("value") == len(NOMS_ATTENDUS), message(
+        en=f"`nombre_archives` is {sorties.get('nombre_archives', {}).get('value')}, "
+        f"{len(NOMS_ATTENDUS)} expected.",
+        fr=f"`nombre_archives` vaut {sorties.get('nombre_archives', {}).get('value')}, "
+        f"{len(NOMS_ATTENDUS)} attendu.",
     )
 
 
@@ -286,14 +345,21 @@ def test_la_sortie_des_secrets_est_declaree_sensible(sorties: dict, joue: Path) 
     c'est la moitie que l'on oublie.
     """
     secrets = sorties.get("secrets")
-    assert secrets is not None, "La sortie `secrets` est absente."
-    assert secrets.get("sensitive") is True, (
-        "`secrets` n'est pas marquee sensible. Terraform aurait refuse de "
-        "planifier : la configuration appliquee n'est donc pas celle-la."
+    assert secrets is not None, message(
+        en="The `secrets` output is missing.",
+        fr="La sortie `secrets` est absente.",
     )
-    assert set(secrets["value"]) == set(NOMS_ATTENDUS.values()), (
-        f"`secrets` est indexe par {sorted(secrets['value'])}, attendu les noms "
-        f"normalises."
+    assert secrets.get("sensitive") is True, message(
+        en="`secrets` is not marked sensitive. Terraform would have refused to "
+        "plan: the configuration applied is therefore not this one.",
+        fr="`secrets` n'est pas marquée sensible. Terraform aurait refusé de "
+        "planifier : la configuration appliquée n'est donc pas celle-là.",
+    )
+    assert set(secrets["value"]) == set(NOMS_ATTENDUS.values()), message(
+        en=f"`secrets` is indexed by {sorted(secrets['value'])}, the normalised "
+        f"names were expected.",
+        fr=f"`secrets` est indexé par {sorted(secrets['value'])}, attendu les noms "
+        f"normalisés.",
     )
 
     humaine = _tf("output", "-no-color")
@@ -301,8 +367,9 @@ def test_la_sortie_des_secrets_est_declaree_sensible(sorties: dict, joue: Path) 
         (sortie for sortie in humaine.stdout.splitlines() if sortie.startswith("secrets")),
         "",
     )
-    assert "<sensitive>" in ligne, (
-        f"L'affichage rend {ligne!r} : rien n'est masque a l'ecran."
+    assert "<sensitive>" in ligne, message(
+        en=f"The display returns {ligne!r}: nothing is hidden on screen.",
+        fr=f"L'affichage rend {ligne!r} : rien n'est masqué à l'écran.",
     )
 
 
@@ -332,9 +399,11 @@ def test_une_entree_de_plus_produit_un_jeu_de_plus(joue: Path, tmp_path: Path) -
     (copie / "variante.auto.tfvars").write_text(ajout, encoding="utf-8")
 
     applique = _tf("apply", "-auto-approve", "-input=false", "-no-color", cwd=copie)
-    assert applique.returncode == 0, (
-        f"La configuration ne s'applique pas avec une entree de plus.\n"
-        f"{applique.stderr[-1000:]}"
+    assert applique.returncode == 0, message(
+        en=f"The configuration does not apply with one more entry.\n"
+        f"{applique.stderr[-1000:]}",
+        fr=f"La configuration ne s'applique pas avec une entrée de plus.\n"
+        f"{applique.stderr[-1000:]}",
     )
 
     montre = _tf("show", "-json", cwd=copie)
@@ -344,23 +413,31 @@ def test_une_entree_de_plus_produit_un_jeu_de_plus(joue: Path, tmp_path: Path) -
     manifestes = [
         r for r in ressources if r["type"] == "local_file" and r["mode"] == "managed"
     ]
-    assert len(manifestes) == 4, (
-        f"Avec quatre environnements, la configuration produit {len(manifestes)} "
+    assert len(manifestes) == 4, message(
+        en=f"With four environments, the configuration produces {len(manifestes)} "
+        "manifest(s).\n\nIt therefore does not follow the variable: some blocks are "
+        "written by hand.",
+        fr=f"Avec quatre environnements, la configuration produit {len(manifestes)} "
         "manifeste(s).\n\nElle ne suit donc pas la variable : des blocs sont "
-        "ecrits a la main."
+        "écrits à la main.",
     )
 
     nouveau = next(
         (r for r in manifestes if str(r.get("index")) == "Bac_A_Sable"), None
     )
-    assert nouveau is not None, (
-        "Le nouvel environnement n'a produit aucun manifeste."
+    assert nouveau is not None, message(
+        en="The new environment produced no manifest.",
+        fr="Le nouvel environnement n'a produit aucun manifeste.",
     )
-    assert nouveau["values"]["filename"].endswith("/lab-bac-a-sable.json"), (
-        f"Le manifeste du nouvel environnement s'appelle "
+    assert nouveau["values"]["filename"].endswith("/lab-bac-a-sable.json"), message(
+        en=f"The new environment's manifest is named "
+        f"{Path(nouveau['values']['filename']).name!r}, expected "
+        "'lab-bac-a-sable.json'.\n\nThe normalisation must hold for a key "
+        "you have never seen.",
+        fr=f"Le manifeste du nouvel environnement s'appelle "
         f"{Path(nouveau['values']['filename']).name!r}, attendu "
-        "'lab-bac-a-sable.json'.\n\nLa normalisation doit valoir pour une cle "
-        "que vous n'avez jamais vue."
+        "'lab-bac-a-sable.json'.\n\nLa normalisation doit valoir pour une clé "
+        "que vous n'avez jamais vue.",
     )
 
     archives = {
@@ -368,16 +445,21 @@ def test_une_entree_de_plus_produit_un_jeu_de_plus(joue: Path, tmp_path: Path) -
         for r in ressources
         if r["type"] == "archive_file" and r["mode"] == "data"
     }
-    assert len(archives.get("Bac_A_Sable", [])) == 4, (
-        f"L'archive du nouvel environnement porte "
+    assert len(archives.get("Bac_A_Sable", [])) == 4, message(
+        en=f"The new environment's archive carries "
+        f"{len(archives.get('Bac_A_Sable', []))} block(s), 4 expected: the fixed "
+        "block and its three options.",
+        fr=f"L'archive du nouvel environnement porte "
         f"{len(archives.get('Bac_A_Sable', []))} bloc(s), 4 attendus : le bloc "
-        "fixe et ses trois options."
+        "fixe et ses trois options.",
     )
 
 
 def test_la_configuration_converge(joue: Path) -> None:
     plan = _tf("plan", "-detailed-exitcode", "-input=false", "-no-color")
-    assert plan.returncode == 0, (
-        f"`plan -detailed-exitcode` rend {plan.returncode}, attendu 0.\n"
-        + plan.stdout[-800:]
+    assert plan.returncode == 0, message(
+        en=f"`plan -detailed-exitcode` returns {plan.returncode}, expected 0.\n"
+        + plan.stdout[-800:],
+        fr=f"`plan -detailed-exitcode` rend {plan.returncode}, attendu 0.\n"
+        + plan.stdout[-800:],
     )

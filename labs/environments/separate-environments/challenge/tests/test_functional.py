@@ -22,7 +22,7 @@ from pathlib import Path
 
 import pytest
 
-from conftest import exiger_workdir, terraform, workdir_lab
+from conftest import exiger_workdir, message, terraform, workdir_lab
 
 WORKDIR = workdir_lab(__file__)
 LAB_ID = "environments-separate-environments"
@@ -34,7 +34,10 @@ MODULE = "modules/plaque"
 def _racine(travail: Path, env: str) -> Path:
     chemin = travail / "envs" / env
     if not chemin.is_dir():
-        pytest.fail(f"Le repertoire envs/{env}/ est absent de challenge/work.")
+        pytest.fail(message(
+            en=f"The envs/{env}/ directory is missing from challenge/work.",
+            fr=f"Le répertoire envs/{env}/ est absent de challenge/work.",
+        ))
     return chemin
 
 
@@ -57,8 +60,12 @@ def _backend_declare(travail: Path, env: str) -> dict:
     chemin = _racine(travail, env) / ".terraform" / "terraform.tfstate"
     if not chemin.is_file():
         pytest.fail(
-            f"envs/{env}/.terraform/terraform.tfstate est absent : "
-            "`terraform init` n'a jamais abouti dans cette racine."
+            message(
+            en=f"envs/{env}/.terraform/terraform.tfstate is missing: "
+            "`terraform init` never succeeded in that root module.",
+            fr=f"envs/{env}/.terraform/terraform.tfstate est absent : "
+            "`terraform init` n'a jamais abouti dans cette racine.",
+        )
         )
     return json.loads(chemin.read_text(encoding="utf-8")).get("backend", {})
 
@@ -75,9 +82,14 @@ def racines() -> Iterator[Path]:
             init = terraform("init", "-input=false", "-no-color", cwd=racine)
             if init.returncode != 0:
                 pytest.fail(
-                    f"envs/{env} : `terraform init` echoue. La configuration de "
-                    "backend a-t-elle ete fournie par `-backend-config` ?"
-                    f"\n{init.stderr[-900:]}"
+                    message(
+                    en=f"envs/{env}: `terraform init` fails. Was the backend "
+                    "configuration provided through `-backend-config`?"
+                    f"\n{init.stderr[-900:]}",
+                    fr=f"envs/{env} : `terraform init` échoue. La configuration de "
+                    "backend a-t-elle été fournie par `-backend-config` ?"
+                    f"\n{init.stderr[-900:]}",
+                )
                 )
     yield WORKDIR
 
@@ -90,22 +102,29 @@ def test_chaque_racine_pilote_son_propre_etat(racines: Path) -> None:
     chemins = {}
     for env in ENVIRONNEMENTS:
         backend = _backend_declare(racines, env)
-        assert backend.get("type") == "local", (
-            f"envs/{env} : backend `{backend.get('type')}`, attendu `local`."
+        assert backend.get("type") == "local", message(
+            en=f"envs/{env}: backend `{backend.get('type')}`, expected `local`.",
+            fr=f"envs/{env} : backend `{backend.get('type')}`, attendu `local`.",
         )
         chemin = (backend.get("config") or {}).get("path")
-        assert chemin, (
-            f"envs/{env} : aucun `path` dans la configuration de backend "
-            "enregistree. Le bloc est PARTIEL : le chemin se fournit a l'init, "
-            "par `-backend-config`."
+        assert chemin, message(
+            en=f"envs/{env}: no `path` in the recorded backend configuration. "
+            "The block is PARTIAL: the path is provided at init time, "
+            "through `-backend-config`.",
+            fr=f"envs/{env} : aucun `path` dans la configuration de backend "
+            "enregistrée. Le bloc est PARTIEL : le chemin se fournit à l'init, "
+            "par `-backend-config`.",
         )
         chemins[env] = chemin
-        assert env in chemin, (
-            f"envs/{env} pilote {chemin!r}, qui ne porte pas son nom."
+        assert env in chemin, message(
+            en=f"envs/{env} drives {chemin!r}, which does not carry its name.",
+            fr=f"envs/{env} pilote {chemin!r}, qui ne porte pas son nom.",
         )
-    assert len(set(chemins.values())) == len(chemins), (
-        f"Les deux racines pointent le meme etat : {chemins}. Deux repertoires "
-        "qui partagent un etat ne separent rien."
+    assert len(set(chemins.values())) == len(chemins), message(
+        en=f"Both root modules point at the same state: {chemins}. Two directories "
+        "sharing a state separate nothing.",
+        fr=f"Les deux racines pointent le même état : {chemins}. Deux répertoires "
+        "qui partagent un état ne séparent rien.",
     )
 
 
@@ -114,13 +133,17 @@ def test_les_deux_fichiers_d_etat_existent(racines: Path) -> None:
         chemin = (_backend_declare(racines, env)["config"])["path"]
         racine = _racine(racines, env)
         fichier = (racine / chemin).resolve()
-        assert fichier.is_file(), (
-            f"envs/{env} : l'etat {fichier} n'existe pas. La racine a-t-elle ete "
-            "appliquee ?"
+        assert fichier.is_file(), message(
+            en=f"envs/{env}: the state {fichier} does not exist. Was the root module "
+            "applied?",
+            fr=f"envs/{env} : l'état {fichier} n'existe pas. La racine a-t-elle été "
+            "appliquée ?",
         )
-        assert not fichier.is_relative_to(racine.resolve()), (
-            f"L'etat de {env} vit dans la racine elle-meme : le lab demande un "
-            "repertoire d'etats commun, hors des racines."
+        assert not fichier.is_relative_to(racine.resolve()), message(
+            en=f"The state of {env} lives inside the root module itself: the lab asks for a "
+            "common state directory, outside the root modules.",
+            fr=f"L'état de {env} vit dans la racine elle-même : le lab demande un "
+            "répertoire d'états commun, hors des racines.",
         )
 
 
@@ -132,19 +155,25 @@ def test_chaque_environnement_produit_son_compte(racines: Path) -> None:
     for env, attendu in ENVIRONNEMENTS.items():
         etat = _etat(racines, env)
         ressources = _ressources(etat)
-        assert len(ressources) == attendu, (
-            f"envs/{env} : {len(ressources)} ressource(s) dans l'etat, attendu "
-            f"{attendu}."
+        assert len(ressources) == attendu, message(
+            en=f"envs/{env}: {len(ressources)} resource(s) in the state, expected "
+            f"{attendu}.",
+            fr=f"envs/{env} : {len(ressources)} ressource(s) dans l'état, attendu "
+            f"{attendu}.",
         )
         sorties = etat["values"]["outputs"]
-        assert sorties["environnement"]["value"] == env, (
-            f"envs/{env} expose environnement = "
-            f"{sorties['environnement']['value']!r}."
+        assert sorties["environnement"]["value"] == env, message(
+            en=f"envs/{env} exposes environnement = "
+            f"{sorties['environnement']['value']!r}.",
+            fr=f"envs/{env} expose environnement = "
+            f"{sorties['environnement']['value']!r}.",
         )
         for chemin in sorties["plaques"]["value"]:
-            assert f"/{env}-" in chemin, (
-                f"envs/{env} produit {chemin!r}, qui ne porte pas son "
-                "environnement."
+            assert f"/{env}-" in chemin, message(
+                en=f"envs/{env} produces {chemin!r}, which does not carry its "
+                "environment.",
+                fr=f"envs/{env} produit {chemin!r}, qui ne porte pas son "
+                "environnement.",
             )
 
 
@@ -152,21 +181,31 @@ def test_les_deux_racines_partagent_le_meme_module(racines: Path) -> None:
     dossiers = set()
     for env in ENVIRONNEMENTS:
         registre = _racine(racines, env) / ".terraform" / "modules" / "modules.json"
-        assert registre.is_file(), f"envs/{env} : modules.json absent."
+        assert registre.is_file(), message(
+            en=f"envs/{env}: modules.json missing.",
+            fr=f"envs/{env} : modules.json absent.",
+        )
         entrees = [
             m for m in json.loads(registre.read_text(encoding="utf-8"))["Modules"]
             if m["Key"]
         ]
-        assert entrees, f"envs/{env} n'appelle aucun module."
+        assert entrees, message(
+            en=f"envs/{env} calls no module.",
+            fr=f"envs/{env} n'appelle aucun module.",
+        )
         for entree in entrees:
-            assert entree["Source"].startswith("../"), (
-                f"envs/{env} : `Source` vaut {entree['Source']!r}, attendu un "
-                "chemin relatif remontant vers le module partage."
+            assert entree["Source"].startswith("../"), message(
+                en=f"envs/{env}: `Source` is {entree['Source']!r}, a relative path "
+                "going up to the shared module was expected.",
+                fr=f"envs/{env} : `Source` vaut {entree['Source']!r}, attendu un "
+                "chemin relatif remontant vers le module partagé.",
             )
             dossiers.add(Path(entree["Dir"]).name)
-    assert dossiers == {Path(MODULE).name}, (
-        f"Les racines lisent {sorted(dossiers)} : elles doivent partager le MEME "
-        f"module, {MODULE}, et non une copie chacune."
+    assert dossiers == {Path(MODULE).name}, message(
+        en=f"The root modules read {sorted(dossiers)}: they must share the SAME "
+        f"module, {MODULE}, and not one copy each.",
+        fr=f"Les racines lisent {sorted(dossiers)} : elles doivent partager le MÊME "
+        f"module, {MODULE}, et non une copie chacune.",
     )
 
 
@@ -179,21 +218,28 @@ def test_detruire_dev_ne_touche_pas_prod(racines: Path, tmp_path: Path) -> None:
     shutil.copytree(racines, copie)
 
     avant = _ressources(_etat(copie, "prod"))
-    assert avant, "L'etat de prod est vide avant l'essai."
+    assert avant, message(
+        en="The prod state is empty before the attempt.",
+        fr="L'état de prod est vide avant l'essai.",
+    )
 
     detruit = terraform("destroy", "-auto-approve", "-input=false", "-no-color",
                         cwd=_racine(copie, "dev"))
-    assert detruit.returncode == 0, (
-        f"`terraform destroy` a echoue dans dev.\n{detruit.stderr[-900:]}"
+    assert detruit.returncode == 0, message(
+        en=f"`terraform destroy` failed in dev.\n{detruit.stderr[-900:]}",
+        fr=f"`terraform destroy` a échoué dans dev.\n{detruit.stderr[-900:]}",
     )
 
-    assert not _ressources(_etat(copie, "dev")), (
-        "L'etat de dev contient encore des ressources apres son destroy."
+    assert not _ressources(_etat(copie, "dev")), message(
+        en="The dev state still contains resources after its destroy.",
+        fr="L'état de dev contient encore des ressources après son destroy.",
     )
     apres = _ressources(_etat(copie, "prod"))
-    assert [r["address"] for r in apres] == [r["address"] for r in avant], (
-        "Detruire dev a modifie l'etat de prod. Les deux racines partagent donc "
-        "un etat, ce que la separation en repertoires devait justement empecher."
+    assert [r["address"] for r in apres] == [r["address"] for r in avant], message(
+        en="Destroying dev modified the prod state. The two root modules therefore share "
+        "a state, which is precisely what separating directories was supposed to prevent.",
+        fr="Détruire dev a modifié l'état de prod. Les deux racines partagent donc "
+        "un état, ce que la séparation en répertoires devait justement empêcher.",
     )
 
 
@@ -205,7 +251,9 @@ def test_les_deux_environnements_ont_converge(racines: Path) -> None:
     for env in ENVIRONNEMENTS:
         plan = terraform("plan", "-input=false", "-detailed-exitcode", "-no-color",
                          cwd=_racine(racines, env))
-        assert plan.returncode == 0, (
-            f"envs/{env} : plan -detailed-exitcode rend {plan.returncode}, "
-            f"attendu 0.\n{plan.stdout[-700:]}"
+        assert plan.returncode == 0, message(
+            en=f"envs/{env}: plan -detailed-exitcode returns {plan.returncode}, "
+            f"expected 0.\n{plan.stdout[-700:]}",
+            fr=f"envs/{env} : plan -detailed-exitcode rend {plan.returncode}, "
+            f"attendu 0.\n{plan.stdout[-700:]}",
         )

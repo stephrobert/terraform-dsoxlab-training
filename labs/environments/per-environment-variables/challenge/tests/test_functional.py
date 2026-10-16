@@ -29,7 +29,7 @@ from pathlib import Path
 
 import pytest
 
-from conftest import exiger_workdir, workdir_lab
+from conftest import exiger_workdir, message, workdir_lab
 
 WORKDIR = workdir_lab(__file__)
 LAB_ID = "environments-per-environment-variables"
@@ -80,10 +80,16 @@ def _variables_retenues(
         )
         if fait.returncode != 0:
             pytest.fail(
-                f"`terraform plan {' '.join(options)}` echoue (code "
+                message(
+                en=f"`terraform plan {' '.join(options)}` fails (code "
+                f"{fait.returncode}). Are the blocks of main.tf, outputs.tf and the "
+                f"types in variables.tf all completed?\n"
+                f"{(fait.stderr or fait.stdout)[-1200:]}",
+                fr=f"`terraform plan {' '.join(options)}` échoue (code "
                 f"{fait.returncode}). Les blocs de main.tf, outputs.tf et les "
-                f"types de variables.tf sont-ils tous completes ?\n"
-                f"{(fait.stderr or fait.stdout)[-1200:]}"
+                f"types de variables.tf sont-ils tous complétés ?\n"
+                f"{(fait.stderr or fait.stdout)[-1200:]}",
+            )
             )
         montre = _terraform("show", "-json", str(plan), cwd=rep, env=env)
         montre.check_returncode()
@@ -136,7 +142,10 @@ def travail() -> Iterator[Path]:
     if not (WORKDIR / ".terraform" / "providers").is_dir():
         init = _terraform("init", "-input=false", "-no-color", cwd=WORKDIR)
         if init.returncode != 0:
-            pytest.fail(f"`terraform init` echoue.\n{init.stderr[-900:]}")
+            pytest.fail(message(
+                en=f"`terraform init` fails.\n{init.stderr[-900:]}",
+                fr=f"`terraform init` échoue.\n{init.stderr[-900:]}",
+            ))
     yield WORKDIR
 
 
@@ -147,18 +156,25 @@ def test_le_garde_fou_est_retabli(travail: Path) -> None:
     """Sans option, le plan doit REFUSER de tourner : aucun environnement choisi."""
     fait = _plan(travail)
     sortie = fait.stdout + fait.stderr
-    assert fait.returncode != 0, (
-        "`terraform plan` sans aucune option REUSSIT. Une source implicite "
+    assert fait.returncode != 0, message(
+        en="`terraform plan` with no option at all SUCCEEDS. An implicit source "
+        "therefore still provides a value to the variables that have no "
+        "`default`, and the guard in variables.tf no longer protects anything. "
+        "Which file is loaded without being asked for?",
+        fr="`terraform plan` sans aucune option RÉUSSIT. Une source implicite "
         "fournit donc encore une valeur aux variables qui n'ont pas de "
-        "`default`, et le garde-fou de variables.tf ne protege plus rien. "
-        "Quel fichier est charge sans qu'on le demande ?"
+        "`default`, et le garde-fou de variables.tf ne protège plus rien. "
+        "Quel fichier est chargé sans qu'on le demande ?",
     )
-    assert "No value for required variable" in sortie, (
-        "Le plan echoue, mais pas pour la bonne raison. Attendu "
-        "« No value for required variable ».\n" + sortie[-900:]
+    assert "No value for required variable" in sortie, message(
+        en="The plan fails, but not for the right reason. Expected "
+        "\"No value for required variable\".\n" + sortie[-900:],
+        fr="Le plan échoue, mais pas pour la bonne raison. Attendu "
+        "« No value for required variable ».\n" + sortie[-900:],
     )
-    assert "env_name" in sortie, (
-        "L'erreur ne mentionne pas `env_name`.\n" + sortie[-900:]
+    assert "env_name" in sortie, message(
+        en="The error does not mention `env_name`.\n" + sortie[-900:],
+        fr="L'erreur ne mentionne pas `env_name`.\n" + sortie[-900:],
     )
 
 
@@ -170,18 +186,25 @@ def test_les_types_communs_sont_declares(travail: Path) -> None:
     retenues = _variables_retenues(travail, "-var-file=envs/dev.tfvars")
 
     for nom in COMMUNES:
-        assert nom in retenues, f"La variable `{nom}` n'est pas resolue."
+        assert nom in retenues, message(
+            en=f"The variable `{nom}` is not resolved.",
+            fr=f"La variable `{nom}` n'est pas résolue.",
+        )
 
-    assert isinstance(retenues["base_image"], str) and retenues["base_image"], (
-        f"`base_image` vaut {retenues['base_image']!r}, attendu une chaine non vide."
+    assert isinstance(retenues["base_image"], str) and retenues["base_image"], message(
+        en=f"`base_image` is {retenues['base_image']!r}, a non-empty string was expected.",
+        fr=f"`base_image` vaut {retenues['base_image']!r}, attendu une chaîne non vide.",
     )
-    assert isinstance(retenues["tags"], dict) and retenues["tags"], (
-        f"`tags` vaut {retenues['tags']!r}, attendu une map non vide."
+    assert isinstance(retenues["tags"], dict) and retenues["tags"], message(
+        en=f"`tags` is {retenues['tags']!r}, a non-empty map was expected.",
+        fr=f"`tags` vaut {retenues['tags']!r}, attendu une map non vide.",
     )
     for valeur in retenues["tags"].values():
-        assert isinstance(valeur, str), (
-            f"`tags` porte une valeur non textuelle ({valeur!r}) : le type "
-            "attendu est une map de chaines."
+        assert isinstance(valeur, str), message(
+            en=f"`tags` carries a non-textual value ({valeur!r}): the expected "
+            "type is a map of strings.",
+            fr=f"`tags` porte une valeur non textuelle ({valeur!r}) : le type "
+            "attendu est une map de chaînes.",
         )
 
 
@@ -191,14 +214,18 @@ def test_les_types_communs_sont_declares(travail: Path) -> None:
 def test_chaque_environnement_a_ses_valeurs(travail: Path) -> None:
     for env, attendu in ENVIRONNEMENTS.items():
         retenues = _variables_retenues(travail, f"-var-file=envs/{env}.tfvars")
-        assert retenues.get("env_name") == env, (
-            f"envs/{env}.tfvars donne env_name = "
-            f"{retenues.get('env_name')!r}, attendu {env!r}."
+        assert retenues.get("env_name") == env, message(
+            en=f"envs/{env}.tfvars gives env_name = "
+            f"{retenues.get('env_name')!r}, expected {env!r}.",
+            fr=f"envs/{env}.tfvars donne env_name = "
+            f"{retenues.get('env_name')!r}, attendu {env!r}.",
         )
         for cle, valeur in attendu.items():
-            assert retenues.get(cle) == valeur, (
-                f"envs/{env}.tfvars donne {cle} = {retenues.get(cle)!r}, "
-                f"attendu {valeur!r}."
+            assert retenues.get(cle) == valeur, message(
+                en=f"envs/{env}.tfvars gives {cle} = {retenues.get(cle)!r}, "
+                f"expected {valeur!r}.",
+                fr=f"envs/{env}.tfvars donne {cle} = {retenues.get(cle)!r}, "
+                f"attendu {valeur!r}.",
             )
 
 
@@ -206,12 +233,17 @@ def test_staging_ne_declenche_plus_d_avertissement(travail: Path) -> None:
     """Une cle mal orthographiee ne casse rien : elle se signale, sans plus."""
     fait = _plan(travail, "-var-file=envs/staging.tfvars")
     sortie = fait.stdout + fait.stderr
-    assert "Value for undeclared variable" not in sortie, (
-        "envs/staging.tfvars declenche encore « Value for undeclared "
-        "variable ». Une de ses cles ne correspond a aucun bloc `variable`, "
-        "et Terraform l'ignore SANS echouer : la variable reste a son "
-        "`default`. La cle se corrige, elle ne se contourne pas.\n"
-        + sortie[-700:]
+    assert "Value for undeclared variable" not in sortie, message(
+        en="envs/staging.tfvars still triggers \"Value for undeclared "
+        "variable\". One of its keys matches no `variable` block, "
+        "and Terraform ignores it WITHOUT failing: the variable keeps its "
+        "`default`. The key is to be fixed, not worked around.\n"
+        + sortie[-700:],
+        fr="envs/staging.tfvars déclenche encore « Value for undeclared "
+        "variable ». Une de ses clés ne correspond à aucun bloc `variable`, "
+        "et Terraform l'ignore SANS échouer : la variable reste à son "
+        "`default`. La clé se corrige, elle ne se contourne pas.\n"
+        + sortie[-700:],
     )
 
 
@@ -228,9 +260,11 @@ def test_les_valeurs_communes_viennent_du_fichier_auto_charge(
     """
     copie = _copie(travail, tmp_path / "sans-commun")
     commun = copie / "commun.auto.tfvars"
-    assert commun.is_file(), (
-        "commun.auto.tfvars a disparu : c'est lui qui porte les valeurs "
-        "partagees par tous les environnements."
+    assert commun.is_file(), message(
+        en="commun.auto.tfvars has disappeared: it is the file carrying the values "
+        "shared by every environment.",
+        fr="commun.auto.tfvars a disparu : c'est lui qui porte les valeurs "
+        "partagées par tous les environnements.",
     )
     commun.unlink()
 
@@ -243,11 +277,15 @@ def test_les_valeurs_communes_viennent_du_fichier_auto_charge(
     retenues = _variables_retenues(copie, "-var-file=envs/prod.tfvars")
     for nom in COMMUNES:
         reference = _variables_retenues(travail, "-var-file=envs/prod.tfvars")[nom]
-        assert retenues.get(nom) != reference, (
-            f"`{nom}` garde sa valeur alors que commun.auto.tfvars a ete "
-            "retire : elle est donc recopiee dans les fichiers "
-            "d'environnement. Les valeurs partagees se declarent une seule "
-            "fois, dans le fichier auto charge."
+        assert retenues.get(nom) != reference, message(
+            en=f"`{nom}` keeps its value although commun.auto.tfvars was "
+            "removed: it is therefore copied into the environment "
+            "files. Shared values are declared once, "
+            "in the auto-loaded file.",
+            fr=f"`{nom}` garde sa valeur alors que commun.auto.tfvars a été "
+            "retiré : elle est donc recopiée dans les fichiers "
+            "d'environnement. Les valeurs partagées se déclarent une seule "
+            "fois, dans le fichier auto chargé.",
         )
 
 
@@ -261,23 +299,30 @@ def test_une_variable_d_environnement_bat_le_default(travail: Path) -> None:
         retention_jours="42",
     )
     retenues = _variables_retenues(travail, env=env)
-    assert _nombre(retenues.get("retention_jours")) == 42, (
-        "TF_VAR_retention_jours=42 ne l'emporte pas sur le `default` du bloc "
-        f"`variable` : la valeur retenue est {retenues.get('retention_jours')!r}."
+    assert _nombre(retenues.get("retention_jours")) == 42, message(
+        en="TF_VAR_retention_jours=42 does not win over the `default` of the "
+        f"`variable` block: the value kept is {retenues.get('retention_jours')!r}.",
+        fr="TF_VAR_retention_jours=42 ne l'emporte pas sur le `default` du bloc "
+        f"`variable` : la valeur retenue est {retenues.get('retention_jours')!r}.",
     )
-    assert retenues.get("env_name") == "depuis-l-environnement", (
-        "TF_VAR_env_name n'est pas pris en compte alors qu'aucun fichier de "
-        "valeurs n'est charge."
+    assert retenues.get("env_name") == "depuis-l-environnement", message(
+        en="TF_VAR_env_name is not taken into account although no values "
+        "file is loaded.",
+        fr="TF_VAR_env_name n'est pas pris en compte alors qu'aucun fichier de "
+        "valeurs n'est chargé.",
     )
 
 
 def test_une_variable_d_environnement_perd_contre_un_fichier(travail: Path) -> None:
     env = _avec_tf_var(env_name="depuis-l-environnement")
     retenues = _variables_retenues(travail, "-var-file=envs/prod.tfvars", env=env)
-    assert retenues.get("env_name") == "prod", (
-        "Avec TF_VAR_env_name exporte ET -var-file=envs/prod.tfvars, la "
+    assert retenues.get("env_name") == "prod", message(
+        en="With TF_VAR_env_name exported AND -var-file=envs/prod.tfvars, the "
+        f"value kept is {retenues.get('env_name')!r}. An environment "
+        "variable loses against the slightest values file.",
+        fr="Avec TF_VAR_env_name exporté ET -var-file=envs/prod.tfvars, la "
         f"valeur retenue est {retenues.get('env_name')!r}. Une variable "
-        "d'environnement perd contre le moindre fichier de valeurs."
+        "d'environnement perd contre le moindre fichier de valeurs.",
     )
 
 
@@ -286,18 +331,23 @@ def test_l_ordre_des_options_tranche(travail: Path) -> None:
     avant = _variables_retenues(
         travail, "-var", "disk_size_gb=16", "-var-file=envs/prod.tfvars"
     )
-    assert _nombre(avant.get("disk_size_gb")) == 8, (
-        "`-var disk_size_gb=16` place AVANT `-var-file=envs/prod.tfvars` "
+    assert _nombre(avant.get("disk_size_gb")) == 8, message(
+        en="`-var disk_size_gb=16` placed BEFORE `-var-file=envs/prod.tfvars` "
+        f"gives {avant.get('disk_size_gb')!r}, expected 8: the file is "
+        "applied afterwards, so it wins.",
+        fr="`-var disk_size_gb=16` placé AVANT `-var-file=envs/prod.tfvars` "
         f"donne {avant.get('disk_size_gb')!r}, attendu 8 : le fichier est "
-        "applique apres, donc il gagne."
+        "appliqué après, donc il gagne.",
     )
 
     apres = _variables_retenues(
         travail, "-var-file=envs/prod.tfvars", "-var", "disk_size_gb=16"
     )
-    assert _nombre(apres.get("disk_size_gb")) == 16, (
-        "`-var disk_size_gb=16` place APRES le fichier donne "
-        f"{apres.get('disk_size_gb')!r}, attendu 16."
+    assert _nombre(apres.get("disk_size_gb")) == 16, message(
+        en="`-var disk_size_gb=16` placed AFTER the file gives "
+        f"{apres.get('disk_size_gb')!r}, expected 16.",
+        fr="`-var disk_size_gb=16` placé APRÈS le fichier donne "
+        f"{apres.get('disk_size_gb')!r}, attendu 16.",
     )
 
 
@@ -309,10 +359,13 @@ def test_un_auto_tfvars_lexicalement_posterieur_gagne(
         'base_image = "image-de-surcharge.qcow2"\n', encoding="utf-8"
     )
     retenues = _variables_retenues(copie, "-var-file=envs/prod.tfvars")
-    assert retenues.get("base_image") == "image-de-surcharge.qcow2", (
-        "Un fichier auto charge lexicalement posterieur a commun.auto.tfvars "
+    assert retenues.get("base_image") == "image-de-surcharge.qcow2", message(
+        en="An auto-loaded file lexically later than commun.auto.tfvars "
+        f"does not win: base_image is {retenues.get('base_image')!r}. "
+        "The *.auto.tfvars apply in lexical order, and the last one wins.",
+        fr="Un fichier auto chargé lexicalement postérieur à commun.auto.tfvars "
         f"ne l'emporte pas : base_image vaut {retenues.get('base_image')!r}. "
-        "Les *.auto.tfvars s'appliquent en ordre lexical, le dernier gagne."
+        "Les *.auto.tfvars s'appliquent en ordre lexical, le dernier gagne.",
     )
 
 
@@ -326,9 +379,11 @@ def test_un_type_complexe_se_passe_en_ligne_de_commande(travail: Path) -> None:
     assert retenues.get("tags") == {
         "equipe": "astreinte",
         "criticite": "haute",
-    }, (
-        f"`tags` vaut {retenues.get('tags')!r} apres une surcharge par `-var` "
-        "en syntaxe JSON. Un type complexe se passe bien en ligne de commande."
+    }, message(
+        en=f"`tags` is {retenues.get('tags')!r} after an override by `-var` "
+        "in JSON syntax. A complex type passes fine on the command line.",
+        fr=f"`tags` vaut {retenues.get('tags')!r} après une surcharge par `-var` "
+        "en syntaxe JSON. Un type complexe se passe bien en ligne de commande.",
     )
 
 
@@ -342,43 +397,58 @@ def test_l_etat_applique_est_celui_de_prod(travail: Path) -> None:
     racine = etat.get("values", {}).get("root_module", {})
     ressources = {r["address"]: r for r in racine.get("resources", [])}
 
-    assert "local_file.profil" in ressources, (
-        "`local_file.profil` est absent de l'etat : l'environnement prod "
-        "n'a pas ete applique (`terraform apply -var-file=envs/prod.tfvars`)."
+    assert "local_file.profil" in ressources, message(
+        en="`local_file.profil` is absent from the state: the prod environment "
+        "was not applied (`terraform apply -var-file=envs/prod.tfvars`).",
+        fr="`local_file.profil` est absent de l'état : l'environnement prod "
+        "n'a pas été appliqué (`terraform apply -var-file=envs/prod.tfvars`).",
     )
     profil = ressources["local_file.profil"]["values"]
-    assert profil["filename"].endswith("profils/prod.json"), (
-        f"Le profil produit est {profil['filename']!r}, attendu un chemin "
-        "finissant par profils/prod.json."
+    assert profil["filename"].endswith("profils/prod.json"), message(
+        en=f"The profile produced is {profil['filename']!r}, a path "
+        "ending in profils/prod.json was expected.",
+        fr=f"Le profil produit est {profil['filename']!r}, attendu un chemin "
+        "finissant par profils/prod.json.",
     )
 
     contenu = json.loads(profil["content"])
-    assert contenu.get("disque_go") == 8, (
-        f"Le profil consigne disque_go = {contenu.get('disque_go')!r}, "
-        "attendu 8."
+    assert contenu.get("disque_go") == 8, message(
+        en=f"The profile records disque_go = {contenu.get('disque_go')!r}, "
+        "expected 8.",
+        fr=f"Le profil consigne disque_go = {contenu.get('disque_go')!r}, "
+        "attendu 8.",
     )
-    assert contenu.get("retention") == 90, (
-        f"Le profil consigne retention = {contenu.get('retention')!r}, "
-        "attendu 90."
+    assert contenu.get("retention") == 90, message(
+        en=f"The profile records retention = {contenu.get('retention')!r}, "
+        "expected 90.",
+        fr=f"Le profil consigne retention = {contenu.get('retention')!r}, "
+        "attendu 90.",
     )
-    assert contenu.get("environnement") == "prod", (
-        f"Le profil consigne environnement = {contenu.get('environnement')!r}."
+    assert contenu.get("environnement") == "prod", message(
+        en=f"The profile records environnement = {contenu.get('environnement')!r}.",
+        fr=f"Le profil consigne environnement = {contenu.get('environnement')!r}.",
     )
 
     sorties = etat["values"]["outputs"]
-    assert sorties["taille_octets"]["value"] == 8 * 1024 * 1024 * 1024, (
-        f"`taille_octets` vaut {sorties['taille_octets']['value']!r}, attendu "
-        f"{8 * 1024 * 1024 * 1024} (8 Go convertis en octets)."
+    assert sorties["taille_octets"]["value"] == 8 * 1024 * 1024 * 1024, message(
+        en=f"`taille_octets` is {sorties['taille_octets']['value']!r}, expected "
+        f"{8 * 1024 * 1024 * 1024} (8 GB converted to bytes).",
+        fr=f"`taille_octets` vaut {sorties['taille_octets']['value']!r}, attendu "
+        f"{8 * 1024 * 1024 * 1024} (8 Go convertis en octets).",
     )
-    assert str(sorties["profil"]["value"]).endswith("profils/prod.json"), (
-        f"`profil` vaut {sorties['profil']['value']!r}."
+    assert str(sorties["profil"]["value"]).endswith("profils/prod.json"), message(
+        en=f"`profil` is {sorties['profil']['value']!r}.",
+        fr=f"`profil` vaut {sorties['profil']['value']!r}.",
     )
 
 
 def test_le_plan_de_prod_ne_propose_plus_rien(travail: Path) -> None:
     fait = _plan(travail, "-detailed-exitcode", "-var-file=envs/prod.tfvars")
-    assert fait.returncode == 0, (
-        f"`plan -detailed-exitcode -var-file=envs/prod.tfvars` rend "
-        f"{fait.returncode}, attendu 0. L'environnement prod n'a pas converge."
-        f"\n{(fait.stdout + fait.stderr)[-700:]}"
+    assert fait.returncode == 0, message(
+        en=f"`plan -detailed-exitcode -var-file=envs/prod.tfvars` returns "
+        f"{fait.returncode}, expected 0. The prod environment has not converged."
+        f"\n{(fait.stdout + fait.stderr)[-700:]}",
+        fr=f"`plan -detailed-exitcode -var-file=envs/prod.tfvars` rend "
+        f"{fait.returncode}, attendu 0. L'environnement prod n'a pas convergé."
+        f"\n{(fait.stdout + fait.stderr)[-700:]}",
     )

@@ -20,7 +20,14 @@ from pathlib import Path
 
 import pytest
 
-from conftest import exiger_workdir, output_json, show_json, terraform, workdir_lab
+from conftest import (
+    exiger_workdir,
+    message,
+    output_json,
+    show_json,
+    terraform,
+    workdir_lab,
+)
 
 WORKDIR = workdir_lab(__file__)
 LAB_ID = "write-code-dynamic-blocks"
@@ -39,7 +46,10 @@ def apply_variante(base: Path, tmp: Path, var: str) -> Path:
     shutil.copytree(base, tmp)
     app = terraform("apply", "-auto-approve", "-input=false", "-no-color",
                     "-var", var, cwd=tmp)
-    assert app.returncode == 0, f"apply variante a échoué.\n{app.stderr[-800:]}"
+    assert app.returncode == 0, message(
+        en=f"the variant apply failed.\n{app.stderr[-800:]}",
+        fr=f"apply variante a échoué.\n{app.stderr[-800:]}",
+    )
     return tmp
 
 
@@ -48,15 +58,25 @@ def applied() -> Path:
     exiger_workdir(WORKDIR, LAB_ID)
     init = terraform("init", "-input=false", "-no-color", cwd=WORKDIR)
     if init.returncode != 0:
-        pytest.fail(f"`terraform init` a échoué.\n{init.stderr[-1200:]}")
+        pytest.fail(message(
+            en=f"`terraform init` failed.\n{init.stderr[-1200:]}",
+            fr=f"`terraform init` a échoué.\n{init.stderr[-1200:]}",
+        ))
     app = terraform("apply", "-auto-approve", "-input=false", "-no-color", cwd=WORKDIR)
     if app.returncode != 0:
         pytest.fail(
-            "`terraform apply` a échoué. Un `???` subsiste, ou le `dynamic "
+            message(
+            en="`terraform apply` failed. A `???` remains, or the `dynamic "
+            "\"lifecycle\"` was not replaced by a literal `lifecycle` block "
+            "(Terraform answers \"Blocks of type \\\"lifecycle\\\" are not "
+            "expected here\").\n"
+            f"{app.stderr[-1500:]}",
+            fr="`terraform apply` a échoué. Un `???` subsiste, ou le `dynamic "
             "\"lifecycle\"` n'a pas été remplacé par un bloc `lifecycle` "
             "littéral (Terraform répond « Blocks of type \"lifecycle\" are not "
             "expected here »).\n"
-            f"{app.stderr[-1500:]}"
+            f"{app.stderr[-1500:]}",
+        )
         )
     return WORKDIR
 
@@ -67,19 +87,24 @@ def applied() -> Path:
 
 def test_trois_parties_entete_puis_modules_actifs(applied: Path) -> None:
     noms = [p["filename"] for p in parties(applied)]
-    assert noms == ["00-entete", "10-paquets", "10-users"], (
-        f"parties = {noms}. Attendu l'en-tête littéral en premier, puis les deux "
+    assert noms == ["00-entete", "10-paquets", "10-users"], message(
+        en=f"parties = {noms}. The literal header was expected first, then the two "
+        "active modules sorted by key. `debug` carries actif = false and must be "
+        "absent.",
+        fr=f"parties = {noms}. Attendu l'en-tête littéral en premier, puis les deux "
         "modules actifs triés par clé. `debug` porte actif = false et doit être "
-        "absent."
+        "absent.",
     )
 
 
 def test_le_filename_derive_de_la_cle(applied: Path) -> None:
     """Une itération qui n'exploiterait que `.value` ne produirait pas ces noms."""
     noms = [p["filename"] for p in parties(applied)]
-    assert "10-paquets" in noms and "10-users" in noms, (
-        f"parties = {noms}. Le filename doit contenir la clé du module "
-        "(`part.key`), pas un rang."
+    assert "10-paquets" in noms and "10-users" in noms, message(
+        en=f"parties = {noms}. The filename must contain the module's key "
+        "(`part.key`), not a rank.",
+        fr=f"parties = {noms}. Le filename doit contenir la clé du module "
+        "(`part.key`), pas un rang.",
     )
 
 
@@ -87,13 +112,17 @@ def test_le_module_inactif_est_absent(applied: Path) -> None:
     parts = parties(applied)
     noms = [p["filename"] for p in parts]
     contenus = " ".join(p.get("content", "") for p in parts)
-    assert not any("debug" in n for n in noms), (
-        f"parties = {noms}. Le module `debug` (actif = false) ne doit produire "
-        "aucune partie : le filtre va dans le `for_each`, pas dans le `content`."
+    assert not any("debug" in n for n in noms), message(
+        en=f"parties = {noms}. The `debug` module (actif = false) must produce "
+        "no part: the filter goes in the `for_each`, not in the `content`.",
+        fr=f"parties = {noms}. Le module `debug` (actif = false) ne doit produire "
+        "aucune partie : le filtre va dans le `for_each`, pas dans le `content`.",
     )
-    assert "echo debug" not in contenus, (
-        "Le contenu du module inactif apparaît dans une partie : filtrez dans le "
-        "`for_each`."
+    assert "echo debug" not in contenus, message(
+        en="The inactive module's content appears in a part: filter in the "
+        "`for_each`.",
+        fr="Le contenu du module inactif apparaît dans une partie : filtrez dans le "
+        "`for_each`.",
     )
 
 
@@ -105,9 +134,11 @@ def test_sans_module_il_reste_le_seul_entete(applied: Path, tmp_path: Path) -> N
     """La partie fixe ne doit pas avoir été absorbée dans le bloc dynamique."""
     rep = apply_variante(applied, tmp_path / "vide", "modules={}")
     noms = [p["filename"] for p in parties(rep)]
-    assert noms == ["00-entete"], (
-        f"Avec modules={{}}, parties = {noms}. Il doit rester exactement l'en-tête. "
-        "S'il ne reste rien, l'en-tête a été absorbé dans le `dynamic`."
+    assert noms == ["00-entete"], message(
+        en=f"With modules={{}}, parties = {noms}. Exactly the header must remain. "
+        "If nothing remains, the header was absorbed into the `dynamic`.",
+        fr=f"Avec modules={{}}, parties = {noms}. Il doit rester exactement l'en-tête. "
+        "S'il ne reste rien, l'en-tête a été absorbé dans le `dynamic`.",
     )
 
 
@@ -116,10 +147,13 @@ def test_quatre_modules_donnent_cinq_parties(applied: Path, tmp_path: Path) -> N
            'c={contenu="c\\n",actif=true},d={contenu="d\\n",actif=true}}')
     rep = apply_variante(applied, tmp_path / "quatre", var)
     noms = [p["filename"] for p in parties(rep)]
-    assert noms == ["00-entete", "10-a", "10-b", "10-c", "10-d"], (
-        f"Avec quatre modules actifs, parties = {noms}. Attendu l'en-tête plus "
+    assert noms == ["00-entete", "10-a", "10-b", "10-c", "10-d"], message(
+        en=f"With four active modules, parties = {noms}. The header plus "
+        "four parts sorted by key were expected. Hard-coded blocks could not "
+        "follow both this case and the empty case.",
+        fr=f"Avec quatre modules actifs, parties = {noms}. Attendu l'en-tête plus "
         "quatre parties triées par clé. Des blocs écrits en dur ne pourraient pas "
-        "suivre à la fois ce cas et le cas vide."
+        "suivre à la fois ce cas et le cas vide.",
     )
 
 
@@ -131,10 +165,14 @@ def test_outputs_parties_et_nombre(applied: Path) -> None:
     sorties = output_json(applied)
     parties_out = sorties["parties"]["value"]
     nb = sorties["nb_parties"]["value"]
-    assert isinstance(parties_out, list) and parties_out == [p["filename"] for p in parties(applied)], (
-        f"`parties` = {parties_out} ne correspond pas aux filenames générés."
+    assert isinstance(parties_out, list) and parties_out == [p["filename"] for p in parties(applied)], message(
+        en=f"`parties` = {parties_out} does not match the generated filenames.",
+        fr=f"`parties` = {parties_out} ne correspond pas aux filenames générés.",
     )
-    assert nb == len(parties_out), f"`nb_parties` = {nb}, attendu {len(parties_out)}."
+    assert nb == len(parties_out), message(
+        en=f"`nb_parties` = {nb}, expected {len(parties_out)}.",
+        fr=f"`nb_parties` = {nb}, attendu {len(parties_out)}.",
+    )
 
 
 # --------------------------------------------------------------------------
@@ -147,16 +185,21 @@ def test_local_file_porte_create_before_destroy(applied: Path) -> None:
     var = 'modules={paquets={contenu="packages:\\n  - vim\\n",actif=true}}'
     p = terraform("plan", "-input=false", "-no-color", "-out=tf.plan", "-var", var,
                   cwd=applied)
-    assert p.returncode == 0, f"plan a échoué.\n{p.stderr[-800:]}"
+    assert p.returncode == 0, message(
+        en=f"the plan failed.\n{p.stderr[-800:]}",
+        fr=f"plan a échoué.\n{p.stderr[-800:]}",
+    )
     plan = json.loads(terraform("show", "-json", "tf.plan", cwd=applied).stdout)
     actions = next(
         (rc["change"]["actions"] for rc in plan.get("resource_changes", [])
          if rc["address"] == "local_file.rendu"),
         None,
     )
-    assert actions == ["create", "delete"], (
-        f"actions sur local_file.rendu = {actions}, attendu ['create', 'delete']. "
-        "Le bloc `lifecycle` littéral doit porter `create_before_destroy = true`."
+    assert actions == ["create", "delete"], message(
+        en=f"actions on local_file.rendu = {actions}, expected ['create', 'delete']. "
+        "The literal `lifecycle` block must carry `create_before_destroy = true`.",
+        fr=f"actions sur local_file.rendu = {actions}, attendu ['create', 'delete']. "
+        "Le bloc `lifecycle` littéral doit porter `create_before_destroy = true`.",
     )
 
 
@@ -166,7 +209,9 @@ def test_local_file_porte_create_before_destroy(applied: Path) -> None:
 
 def test_la_configuration_est_stable_apres_apply(applied: Path) -> None:
     p = terraform("plan", "-input=false", "-detailed-exitcode", "-no-color", cwd=applied)
-    assert p.returncode == 0, (
-        f"`plan -detailed-exitcode` rend {p.returncode} (2 = des changements "
-        "restent planifiés). Un apply doit converger."
+    assert p.returncode == 0, message(
+        en=f"`plan -detailed-exitcode` returns {p.returncode} (2 = changes "
+        "remain planned). An apply must converge.",
+        fr=f"`plan -detailed-exitcode` rend {p.returncode} (2 = des changements "
+        "restent planifiés). Un apply doit converger.",
     )

@@ -16,7 +16,14 @@ from pathlib import Path
 
 import pytest
 
-from conftest import exiger_workdir, output_json, show_json, terraform, workdir_lab
+from conftest import (
+    exiger_workdir,
+    message,
+    output_json,
+    show_json,
+    terraform,
+    workdir_lab,
+)
 
 WORKDIR = workdir_lab(__file__)
 LAB_ID = "write-code-sensitive-data-ephemeral-values"
@@ -27,12 +34,19 @@ def applied() -> Path:
     exiger_workdir(WORKDIR, LAB_ID)
     init = terraform("init", "-input=false", "-no-color", cwd=WORKDIR)
     if init.returncode != 0:
-        pytest.fail(f"`terraform init` a echoue.\n{init.stderr[-1200:]}")
+        pytest.fail(message(
+            en=f"`terraform init` failed.\n{init.stderr[-1200:]}",
+            fr=f"`terraform init` a échoué.\n{init.stderr[-1200:]}",
+        ))
     app = terraform("apply", "-auto-approve", "-input=false", "-no-color", cwd=WORKDIR)
     if app.returncode != 0:
         pytest.fail(
-            "`terraform apply` a echoue. Un `???` restant, un output ephemere non "
-            f"passe par ephemeralasnull(), ou un jeton persiste ?\n{app.stderr[-1500:]}"
+            message(
+            en="`terraform apply` failed. A leftover `???`, an ephemeral output not "
+            f"passed through ephemeralasnull(), or a persisted token?\n{app.stderr[-1500:]}",
+            fr="`terraform apply` a échoué. Un `???` restant, un output éphémère non "
+            f"passé par ephemeralasnull(), ou un jeton persisté ?\n{app.stderr[-1500:]}",
+        )
         )
     return WORKDIR
 
@@ -47,16 +61,26 @@ def _resources(cwd: Path) -> list[dict]:
 
 def test_persistant_est_dans_le_state(applied: Path) -> None:
     passwords = [r for r in _resources(applied) if r.get("type") == "random_password"]
-    assert len(passwords) == 1, (
-        f"{len(passwords)} random_password dans le state, attendu 1 (le seul "
-        "persistant). Le jeton doit etre EPHEMERE, donc absent du state : si vous "
-        "en voyez deux, le bloc jeton est declare `resource` au lieu de `ephemeral`."
+    assert len(passwords) == 1, message(
+        en=f"{len(passwords)} random_password in the state, 1 expected (the only "
+        "persistent one). The token must be EPHEMERAL, hence absent from the state: if you "
+        "see two, the token block is declared `resource` instead of `ephemeral`.",
+        fr=f"{len(passwords)} random_password dans le state, attendu 1 (le seul "
+        "persistant). Le jeton doit être ÉPHÉMÈRE, donc absent du state : si vous "
+        "en voyez deux, le bloc jeton est déclaré `resource` au lieu de `ephemeral`.",
     )
-    assert passwords[0]["name"] == "persistant"
+    assert passwords[0]["name"] == "persistant", message(
+        en=f"The random_password in the state is named {passwords[0]['name']!r}, "
+        "`persistant` expected: the ephemeral one must not be there.",
+        fr=f"Le random_password du state s'appelle {passwords[0]['name']!r}, "
+        "`persistant` attendu : l'éphémère ne doit pas y figurer.",
+    )
     assert isinstance(passwords[0]["values"].get("result"), str) and \
-        len(passwords[0]["values"]["result"]) == 20, (
-        "Le random_password persistant doit exposer son `result` en clair dans le "
-        "state (c'est justement ce que l'ephemere evite)."
+        len(passwords[0]["values"]["result"]) == 20, message(
+        en="The persistent random_password must expose its `result` in clear in the "
+        "state (that is precisely what the ephemeral one avoids).",
+        fr="Le random_password persistant doit exposer son `result` en clair dans le "
+        "state (c'est justement ce que l'éphémère évite).",
     )
 
 
@@ -67,11 +91,20 @@ def test_persistant_est_dans_le_state(applied: Path) -> None:
 def test_ephemere_absent_du_state(applied: Path) -> None:
     state = show_json(applied)
     adresses = [r["address"] for r in state["values"]["root_module"]["resources"]]
-    assert not any("ephemeral" in a for a in adresses), (
-        f"Une adresse ephemere apparait dans le state : {adresses}. Une valeur "
-        "ephemere ne doit jamais y figurer."
+    assert not any("ephemeral" in a for a in adresses), message(
+        en=f"An ephemeral address appears in the state: {adresses}. An ephemeral "
+        "value must never appear there.",
+        fr=f"Une adresse éphémère apparaît dans le state : {adresses}. Une valeur "
+        "éphémère ne doit jamais y figurer.",
     )
-    assert all(r.get("mode") == "managed" for r in state["values"]["root_module"]["resources"])
+    assert all(
+        r.get("mode") == "managed" for r in state["values"]["root_module"]["resources"]
+    ), message(
+        en="Every resource in the state must be in `managed` mode: an ephemeral "
+        "block produces nothing there.",
+        fr="Toutes les ressources du state doivent être en mode `managed` : un "
+        "bloc éphémère n'y produit rien.",
+    )
 
 
 # --------------------------------------------------------------------------
@@ -80,10 +113,13 @@ def test_ephemere_absent_du_state(applied: Path) -> None:
 
 def test_jeton_masque_est_null(applied: Path) -> None:
     val = output_json(applied).get("jeton_masque", {}).get("value")
-    assert val is None, (
-        f"`jeton_masque` = {val!r}, attendu null. `ephemeralasnull()` rend null "
-        "toute valeur ephemere hors contexte ephemere. Une valeur NON ephemere "
-        "ressortirait telle quelle : ce null prouve que le jeton est bien ephemere."
+    assert val is None, message(
+        en=f"`jeton_masque` = {val!r}, expected null. `ephemeralasnull()` returns null "
+        "for any ephemeral value outside an ephemeral context. A NON-ephemeral value "
+        "would come back as it is: that null proves the token really is ephemeral.",
+        fr=f"`jeton_masque` = {val!r}, attendu null. `ephemeralasnull()` rend null "
+        "toute valeur éphémère hors contexte éphémère. Une valeur NON éphémère "
+        "ressortirait telle quelle : ce null prouve que le jeton est bien éphémère.",
     )
 
 
@@ -93,8 +129,11 @@ def test_jeton_masque_est_null(applied: Path) -> None:
 
 def test_configuration_stable_apres_apply(applied: Path) -> None:
     p = terraform("plan", "-input=false", "-detailed-exitcode", "-no-color", cwd=applied)
-    assert p.returncode == 0, (
-        f"`plan -detailed-exitcode` rend {p.returncode} (2 = des changements "
-        "restent planifies). Un apply doit converger. Note : une valeur ephemere "
-        "est regeneree a chaque run, mais elle ne cree pas de diff dans le state."
+    assert p.returncode == 0, message(
+        en=f"`plan -detailed-exitcode` returns {p.returncode} (2 = changes "
+        "remain planned). An apply must converge. Note: an ephemeral value "
+        "is regenerated at every run, but it creates no diff in the state.",
+        fr=f"`plan -detailed-exitcode` rend {p.returncode} (2 = des changements "
+        "restent planifiés). Un apply doit converger. Note : une valeur éphémère "
+        "est régénérée à chaque run, mais elle ne crée pas de diff dans le state.",
     )

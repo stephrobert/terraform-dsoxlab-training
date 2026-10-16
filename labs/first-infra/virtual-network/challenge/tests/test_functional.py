@@ -32,7 +32,7 @@ from pathlib import Path
 
 import pytest
 
-from conftest import exiger_workdir, workdir_lab
+from conftest import exiger_workdir, message, workdir_lab
 
 WORKDIR = workdir_lab(__file__)
 LAB_ID = "first-infra-virtual-network"
@@ -63,14 +63,17 @@ def _exiger_libvirt() -> None:
     sonde = _virsh("net-list", "--all")
     if sonde.returncode == 0:
         return
-    message = (
-        f"libvirt n'est pas joignable en `{URI}`. Ce lab cree un reseau virtuel "
-        "reel : verifiez que votre utilisateur appartient au groupe `libvirt`."
-        f"\n{sonde.stderr[-400:]}"
+    explication = message(
+        en=f"libvirt cannot be reached at `{URI}`. This lab creates a real virtual "
+        "network: check that your user belongs to the `libvirt` group."
+        f"\n{sonde.stderr[-400:]}",
+        fr=f"libvirt n'est pas joignable en `{URI}`. Ce lab crée un réseau virtuel "
+            "réel : vérifiez que votre utilisateur appartient au groupe `libvirt`."
+            f"\n{sonde.stderr[-400:]}",
     )
     if os.environ.get("LAB_WORKDIR"):
-        pytest.fail(message)
-    pytest.skip(message)
+        pytest.fail(explication)
+    pytest.skip(explication)
 
 
 @pytest.fixture(scope="module")
@@ -85,13 +88,20 @@ def applique() -> Iterator[dict]:
 
     init = _tf("init", "-input=false", "-no-color")
     if init.returncode != 0:
-        pytest.fail(f"`terraform init` a echoue.\n{init.stderr[-1500:]}")
+        pytest.fail(message(
+            en=f"`terraform init` failed.\n{init.stderr[-1500:]}",
+            fr=f"`terraform init` a échoué.\n{init.stderr[-1500:]}",
+        ))
 
     plan = _tf("plan", "-input=false", "-no-color", "-out=lecture.tfplan")
     if plan.returncode != 0:
         pytest.fail(
-            "`terraform plan` a echoue. Des `???` subsistent-ils ?\n"
-            f"{(plan.stderr or plan.stdout)[-1500:]}"
+            message(
+            en="`terraform plan` failed. Are there leftover `???`?\n"
+            f"{(plan.stderr or plan.stdout)[-1500:]}",
+            fr="`terraform plan` a échoué. Des `???` subsistent-ils ?\n"
+            f"{(plan.stderr or plan.stdout)[-1500:]}",
+        )
         )
     montre = _tf("show", "-json", "lecture.tfplan")
     montre.check_returncode()
@@ -99,7 +109,10 @@ def applique() -> Iterator[dict]:
 
     app = _tf("apply", "-auto-approve", "-input=false", "-no-color")
     if app.returncode != 0:
-        pytest.fail(f"`terraform apply` a echoue.\n{(app.stderr or app.stdout)[-1800:]}")
+        pytest.fail(message(
+            en=f"`terraform apply` failed.\n{(app.stderr or app.stdout)[-1800:]}",
+            fr=f"`terraform apply` a échoué.\n{(app.stderr or app.stdout)[-1800:]}",
+        ))
 
     try:
         yield representation
@@ -118,8 +131,12 @@ def _ressource_configuree(representation: dict, adresse: str) -> dict:
         if r.get("address") == adresse:
             return r
     pytest.fail(
-        f"{adresse} n'apparait pas dans la configuration. Adresses : "
-        f"{[r.get('address') for r in _config(representation).get('resources', [])]}"
+        message(
+        en=f"{adresse} does not appear in the configuration. Addresses: "
+        f"{[r.get('address') for r in _config(representation).get('resources', [])]}",
+        fr=f"{adresse} n'apparaît pas dans la configuration. Adresses : "
+        f"{[r.get('address') for r in _config(representation).get('resources', [])]}",
+    )
     )
 
 
@@ -147,33 +164,43 @@ def _sorties() -> dict:
 # --------------------------------------------------------------------------
 def test_le_reseau_nat_existe_avec_sa_plage_dhcp(applique: dict) -> None:
     gerees = _gerees()
-    assert RESEAU in gerees, (
-        f"Le state ne porte pas `{RESEAU}`. Adresses gerees : {sorted(gerees)}."
+    assert RESEAU in gerees, message(
+        en=f"The state does not carry `{RESEAU}`. Managed addresses: {sorted(gerees)}.",
+        fr=f"Le state ne porte pas `{RESEAU}`. Adresses gérées : {sorted(gerees)}.",
     )
 
     xml = _virsh("net-dumpxml", NOM_DU_RESEAU)
-    assert xml.returncode == 0, (
-        f"`virsh net-dumpxml {NOM_DU_RESEAU}` a echoue : l'hote ne connait pas "
-        f"ce reseau.\n{xml.stderr[-400:]}"
+    assert xml.returncode == 0, message(
+        en=f"`virsh net-dumpxml {NOM_DU_RESEAU}` failed: the host does not know "
+        f"that network.\n{xml.stderr[-400:]}",
+        fr=f"`virsh net-dumpxml {NOM_DU_RESEAU}` a échoué : l'hôte ne connaît pas "
+        f"ce réseau.\n{xml.stderr[-400:]}",
     )
 
-    assert "<forward mode='nat'" in xml.stdout or 'mode="nat"' in xml.stdout, (
-        "Le reseau n'est pas en mode NAT.\n\nUn reseau NAT donne aux machines "
-        f"un acces sortant sans les exposer.\n{xml.stdout[:600]}"
+    assert "<forward mode='nat'" in xml.stdout or 'mode="nat"' in xml.stdout, message(
+        en="The network is not in NAT mode.\n\nA NAT network gives the machines "
+        f"outbound access without exposing them.\n{xml.stdout[:600]}",
+        fr="Le réseau n'est pas en mode NAT.\n\nUn réseau NAT donne aux machines "
+        f"un accès sortant sans les exposer.\n{xml.stdout[:600]}",
     )
-    assert PASSERELLE in xml.stdout, (
-        f"La passerelle {PASSERELLE} n'apparait pas dans la definition du reseau."
+    assert PASSERELLE in xml.stdout, message(
+        en=f"The gateway {PASSERELLE} does not appear in the network's definition.",
+        fr=f"La passerelle {PASSERELLE} n'apparaît pas dans la définition du réseau.",
     )
     for borne in ("10.77.0.100", "10.77.0.200"):
-        assert borne in xml.stdout, (
-            f"La borne DHCP {borne} n'apparait pas.\n\nLa plage doit aller de "
-            ".100 a .200."
+        assert borne in xml.stdout, message(
+            en=f"The DHCP bound {borne} does not appear.\n\nThe range must go from "
+            ".100 to .200.",
+            fr=f"La borne DHCP {borne} n'apparaît pas.\n\nLa plage doit aller de "
+            ".100 à .200.",
         )
 
     valeurs = gerees[RESEAU]["values"]
-    assert valeurs.get("autostart") is False, (
-        f"`autostart` vaut {valeurs.get('autostart')!r}, attendu `false`. Un "
-        "reseau de lab n'a pas a redemarrer avec la machine de l'apprenant."
+    assert valeurs.get("autostart") is False, message(
+        en=f"`autostart` is {valeurs.get('autostart')!r}, expected `false`. A "
+        "lab network has no business restarting with the learner's machine.",
+        fr=f"`autostart` vaut {valeurs.get('autostart')!r}, attendu `false`. Un "
+        "réseau de lab n'a pas à redémarrer avec la machine de l'apprenant.",
     )
 
 
@@ -195,15 +222,20 @@ def test_les_outputs_referencent_la_ressource_et_pas_les_variables(
     """
     outputs = _config(applique).get("outputs") or {}
     for nom in ("nom_du_reseau", "passerelle"):
-        assert nom in outputs, (
-            f"L'output `{nom}` n'est pas declare. Presents : {sorted(outputs)}."
+        assert nom in outputs, message(
+            en=f"The output `{nom}` is not declared. Present: {sorted(outputs)}.",
+            fr=f"L'output `{nom}` n'est pas déclaré. Présents : {sorted(outputs)}.",
         )
         references = (outputs[nom].get("expression") or {}).get("references") or []
-        assert any(r.startswith(RESEAU) for r in references), (
-            f"L'output `{nom}` ne reference pas `{RESEAU}`.\nIl reference "
+        assert any(r.startswith(RESEAU) for r in references), message(
+            en=f"The output `{nom}` does not reference `{RESEAU}`.\nIt references "
+            f"{references}.\n\nIt probably reads a variable: the text would be "
+            "the same, but it would report what was ASKED FOR and not what "
+            "libvirt actually KEPT.",
+            fr=f"L'output `{nom}` ne référence pas `{RESEAU}`.\nIl référence "
             f"{references}.\n\nIl lit sans doute une variable : le texte serait "
-            "le meme, mais il rapporterait ce qu'on a DEMANDE et non ce que "
-            "libvirt a RETENU."
+            "le même, mais il rapporterait ce qu'on a DEMANDÉ et non ce que "
+            "libvirt a RETENU.",
         )
 
 
@@ -213,13 +245,19 @@ def test_les_outputs_referencent_la_ressource_et_pas_les_variables(
 def test_le_rapport_declare_un_depends_on_vers_le_reseau(applique: dict) -> None:
     rapport = _ressource_configuree(applique, RAPPORT)
     declares = rapport.get("depends_on") or []
-    assert RESEAU in declares, (
-        f"`{RAPPORT}` ne declare aucun `depends_on` vers `{RESEAU}`. Il porte "
+    assert RESEAU in declares, message(
+        en=f"`{RAPPORT}` declares no `depends_on` towards `{RESEAU}`. It carries "
+        f"{declares}.\n\nThat block consumes `var.nom_du_reseau`, a value known "
+        "before any apply: no expression ties it to the network. Terraform "
+        "builds its graph from the references it FINDS, and it finds "
+        "none. The two blocks are therefore independent in its eyes, and it "
+        "may start the report first.",
+        fr=f"`{RAPPORT}` ne déclare aucun `depends_on` vers `{RESEAU}`. Il porte "
         f"{declares}.\n\nCe bloc consomme `var.nom_du_reseau`, une valeur connue "
-        "avant tout apply : aucune expression ne le relie au reseau. Terraform "
-        "construit son graphe a partir des references qu'il TROUVE, et il n'en "
-        "trouve aucune. Les deux blocs sont donc independants a ses yeux, et il "
-        "peut lancer le rapport en premier."
+        "avant tout apply : aucune expression ne le relie au réseau. Terraform "
+        "construit son graphe à partir des références qu'il TROUVE, et il n'en "
+        "trouve aucune. Les deux blocs sont donc indépendants à ses yeux, et il "
+        "peut lancer le rapport en premier.",
     )
 
 
@@ -239,15 +277,21 @@ def test_le_rapport_ne_reference_le_reseau_nulle_part_ailleurs(
     """
     rapport = _ressource_configuree(applique, RAPPORT)
     expressions = json.dumps(rapport.get("expressions") or {})
-    assert RESEAU not in expressions, (
-        f"Les expressions de `{RAPPORT}` mentionnent `{RESEAU}` :\n"
-        f"{expressions[:400]}\n\nAvec une reference, l'arete existerait toute "
+    assert RESEAU not in expressions, message(
+        en=f"The expressions of `{RAPPORT}` do mention `{RESEAU}`:\n"
+        f"{expressions[:400]}\n\nWith a reference, the edge would exist on its "
+        "own and the `depends_on` would be redundant. The lab is about the "
+        "opposite case: the report must consume `var.nom_du_reseau`.",
+        fr=f"Les expressions de `{RAPPORT}` mentionnent `{RESEAU}` :\n"
+        f"{expressions[:400]}\n\nAvec une référence, l'arête existerait toute "
         "seule et le `depends_on` serait redondant. Le lab porte sur le cas "
-        "inverse : le rapport doit consommer `var.nom_du_reseau`."
+        "inverse : le rapport doit consommer `var.nom_du_reseau`.",
     )
-    assert "provisioner" in json.dumps(rapport) or rapport.get("provisioners"), (
-        f"`{RAPPORT}` ne declare aucun provisioner : il ne produit donc aucun "
-        "rapport."
+    assert "provisioner" in json.dumps(rapport) or rapport.get("provisioners"), message(
+        en=f"`{RAPPORT}` declares no provisioner: it therefore produces no "
+        "report.",
+        fr=f"`{RAPPORT}` ne déclare aucun provisioner : il ne produit donc aucun "
+        "rapport.",
     )
 
 
@@ -258,24 +302,33 @@ def test_le_rapport_porte_ce_que_seul_un_reseau_existant_donne(
     applique: dict,
 ) -> None:
     chemin = WORKDIR / FICHIER_RAPPORT
-    assert chemin.is_file(), (
-        f"`{FICHIER_RAPPORT}` est absent. Le provisioner ne s'est pas execute, "
-        "ou sa commande a echoue."
+    assert chemin.is_file(), message(
+        en=f"`{FICHIER_RAPPORT}` is missing. The provisioner did not run, "
+        "or its command failed.",
+        fr=f"`{FICHIER_RAPPORT}` est absent. Le provisioner ne s'est pas exécuté, "
+        "ou sa commande a échoué.",
     )
 
     contenu = chemin.read_text(encoding="utf-8")
-    assert contenu.strip(), (
-        f"`{FICHIER_RAPPORT}` est VIDE.\n\nC'est exactement le symptome de la "
-        "dependance manquante : `virsh net-dumpxml` s'est execute avant que le "
-        "reseau existe, a echoue en silence, et la redirection a cree un "
-        "fichier vide. Rien, dans la sortie de Terraform, ne l'a signale."
+    assert contenu.strip(), message(
+        en=f"`{FICHIER_RAPPORT}` is EMPTY.\n\nThat is exactly the symptom of the "
+        "missing dependency: `virsh net-dumpxml` ran before the "
+        "network existed, failed silently, and the redirection created an "
+        "empty file. Nothing in Terraform's output reported it.",
+        fr=f"`{FICHIER_RAPPORT}` est VIDE.\n\nC'est exactement le symptôme de la "
+        "dépendance manquante : `virsh net-dumpxml` s'est exécuté avant que le "
+        "réseau existe, a échoué en silence, et la redirection a créé un "
+        "fichier vide. Rien, dans la sortie de Terraform, ne l'a signalé.",
     )
 
     for atteste in (NOM_DU_RESEAU, PASSERELLE, "<uuid>"):
-        assert atteste in contenu, (
-            f"Le rapport ne contient pas {atteste!r}.\n\nUn UUID et une "
-            "passerelle ne s'inventent pas : seul un reseau deja cree peut les "
-            f"fournir.\nContenu :\n{contenu[:400]}"
+        assert atteste in contenu, message(
+            en=f"The report does not contain {atteste!r}.\n\nA UUID and a "
+            "gateway are not invented: only a network that already exists can "
+            f"provide them.\nContents:\n{contenu[:400]}",
+            fr=f"Le rapport ne contient pas {atteste!r}.\n\nUn UUID et une "
+            "passerelle ne s'inventent pas : seul un réseau déjà créé peut les "
+            f"fournir.\nContenu :\n{contenu[:400]}",
         )
 
 
@@ -292,24 +345,32 @@ def test_la_configuration_converge_puis_le_destroy_ne_laisse_rien(
     d'adresses, et c'est le lab suivant qui en paierait le prix.
     """
     stable = _tf("plan", "-detailed-exitcode", "-input=false", "-no-color")
-    assert stable.returncode == 0, (
-        f"`plan -detailed-exitcode` rend {stable.returncode}, attendu 0.\n"
-        f"{stable.stdout[-1000:]}"
+    assert stable.returncode == 0, message(
+        en=f"`plan -detailed-exitcode` returns {stable.returncode}, expected 0.\n"
+        f"{stable.stdout[-1000:]}",
+        fr=f"`plan -detailed-exitcode` rend {stable.returncode}, attendu 0.\n"
+        f"{stable.stdout[-1000:]}",
     )
 
     detruit = _tf("destroy", "-auto-approve", "-input=false", "-no-color")
-    assert detruit.returncode == 0, (
-        f"`terraform destroy` a echoue.\n{(detruit.stderr or detruit.stdout)[-1500:]}"
+    assert detruit.returncode == 0, message(
+        en=f"`terraform destroy` failed.\n{(detruit.stderr or detruit.stdout)[-1500:]}",
+        fr=f"`terraform destroy` a échoué.\n{(detruit.stderr or detruit.stdout)[-1500:]}",
     )
 
-    assert not _gerees(), (
-        f"Le state porte encore {sorted(_gerees())} apres le `destroy`."
+    assert not _gerees(), message(
+        en=f"The state still carries {sorted(_gerees())} after the `destroy`.",
+        fr=f"Le state porte encore {sorted(_gerees())} après le `destroy`.",
     )
 
     reste = _virsh("net-info", NOM_DU_RESEAU)
-    assert reste.returncode != 0, (
-        f"`virsh net-info {NOM_DU_RESEAU}` repond encore apres le `destroy` : "
-        "le reseau survit a l'hote.\n\nTerraform l'a retire de son state sans "
+    assert reste.returncode != 0, message(
+        en=f"`virsh net-info {NOM_DU_RESEAU}` still answers after the `destroy`: "
+        "the network outlives the host.\n\nTerraform removed it from its state without "
+        "the object disappearing, and the bridge will stay until the next "
+        "reboot.",
+        fr=f"`virsh net-info {NOM_DU_RESEAU}` répond encore après le `destroy` : "
+        "le réseau survit à l'hôte.\n\nTerraform l'a retiré de son state sans "
         "que l'objet disparaisse, et le pont restera jusqu'au prochain "
-        "redemarrage."
+        "redémarrage.",
     )

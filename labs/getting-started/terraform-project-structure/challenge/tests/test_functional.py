@@ -42,7 +42,7 @@ from pathlib import Path
 
 import pytest
 
-from conftest import exiger_workdir, workdir_lab
+from conftest import exiger_workdir, message, workdir_lab
 
 WORKDIR = workdir_lab(__file__)
 LAB_ID = "getting-started-terraform-project-structure"
@@ -95,7 +95,10 @@ def _tf(*args: str, cwd: Path | None = None) -> subprocess.CompletedProcess[str]
 def joue() -> Path:
     exiger_workdir(WORKDIR, LAB_ID)
     init = _tf("init", "-input=false", "-no-color")
-    assert init.returncode == 0, f"`terraform init` a echoue.\n{init.stderr[-1000:]}"
+    assert init.returncode == 0, message(
+        en=f"`terraform init` failed.\n{init.stderr[-1000:]}",
+        fr=f"`terraform init` a échoué.\n{init.stderr[-1000:]}",
+    )
     return WORKDIR
 
 
@@ -110,13 +113,16 @@ def _exiger_decoupage_fait(repertoire: Path) -> None:
     C'est le defaut le plus couteux du domaine, et il ne se voit qu'en jouant le
     lab sans rien faire.
     """
-    assert not (repertoire / MONOLITHE).exists(), (
-        f"`{MONOLITHE}` est toujours la : le decoupage n'a pas eu lieu.\n\n"
-        "Ce test ne mesure rien tant que le monolithe est en place."
+    assert not (repertoire / MONOLITHE).exists(), message(
+        en=f"`{MONOLITHE}` is still there: the split did not happen.\n\n"
+        "This test measures nothing as long as the monolith is in place.",
+        fr=f"`{MONOLITHE}` est toujours là : le découpage n'a pas eu lieu.\n\n"
+        "Ce test ne mesure rien tant que le monolithe est en place.",
     )
     manquants = [nom for nom in FICHIERS_ATTENDUS if not (repertoire / nom).is_file()]
-    assert not manquants, (
-        f"Le decoupage est incomplet, il manque {manquants}."
+    assert not manquants, message(
+        en=f"The split is incomplete, {manquants} are missing.",
+        fr=f"Le découpage est incomplet, il manque {manquants}.",
     )
 
 
@@ -124,8 +130,9 @@ def _plan_json(repertoire: Path) -> dict:
     """Le plan d'un repertoire, enregistre puis relu en JSON."""
     plan = _tf("plan", "-out=comparaison.tfplan", "-input=false", "-no-color",
                "-var", f"revision={REVISION}", cwd=repertoire)
-    assert plan.returncode == 0, (
-        f"Le plan a echoue dans {repertoire.name}.\n{plan.stderr[-1000:]}"
+    assert plan.returncode == 0, message(
+        en=f"The plan failed in {repertoire.name}.\n{plan.stderr[-1000:]}",
+        fr=f"Le plan a échoué dans {repertoire.name}.\n{plan.stderr[-1000:]}",
     )
     montre = _tf("show", "-json", "comparaison.tfplan", cwd=repertoire)
     montre.check_returncode()
@@ -156,16 +163,21 @@ def test_le_monolithe_a_ete_decoupe_et_non_recopie(joue: Path) -> None:
     constate avant les autres, parce qu'un monolithe laisse en place rend tout
     le reste incomprehensible.
     """
-    assert not (joue / MONOLITHE).exists(), (
-        f"`{MONOLITHE}` est toujours la.\n\nDecouper, c'est DEPLACER : tant que "
-        "le monolithe existe a cote des fichiers thematiques, chaque nom est "
-        "declare deux fois et Terraform refuse."
+    assert not (joue / MONOLITHE).exists(), message(
+        en=f"`{MONOLITHE}` is still there.\n\nSplitting means MOVING: as long as "
+        "the monolith exists next to the thematic files, every name is "
+        "declared twice and Terraform refuses.",
+        fr=f"`{MONOLITHE}` est toujours là.\n\nDécouper, c'est DÉPLACER : tant que "
+        "le monolithe existe à côté des fichiers thématiques, chaque nom est "
+        "déclaré deux fois et Terraform refuse.",
     )
 
     manquants = [nom for nom in FICHIERS_ATTENDUS if not (joue / nom).is_file()]
-    assert not manquants, (
-        f"Ces fichiers manquent : {manquants}.\nAttendus : "
-        f"{list(FICHIERS_ATTENDUS)}."
+    assert not manquants, message(
+        en=f"These files are missing: {manquants}.\nExpected: "
+        f"{list(FICHIERS_ATTENDUS)}.",
+        fr=f"Ces fichiers manquent : {manquants}.\nAttendus : "
+        f"{list(FICHIERS_ATTENDUS)}.",
     )
 
 
@@ -189,8 +201,9 @@ def test_le_plan_est_identique_a_celui_du_monolithe(joue: Path, tmp_path: Path) 
             shutil.copy2(source, origine / valeurs)
 
     init = _tf("init", "-input=false", "-no-color", cwd=origine)
-    assert init.returncode == 0, (
-        f"Impossible de rejouer le monolithe de reference.\n{init.stderr[-800:]}"
+    assert init.returncode == 0, message(
+        en=f"Cannot replay the reference monolith.\n{init.stderr[-800:]}",
+        fr=f"Impossible de rejouer le monolithe de référence.\n{init.stderr[-800:]}",
     )
 
     # La configuration decoupee est planifiee dans une COPIE SANS STATE, comme
@@ -203,34 +216,44 @@ def test_le_plan_est_identique_a_celui_du_monolithe(joue: Path, tmp_path: Path) 
         ignore=shutil.ignore_patterns("*.tfplan", "*.tfstate*", "rapport.txt"),
     )
     init_decoupee = _tf("init", "-input=false", "-no-color", cwd=decoupee)
-    assert init_decoupee.returncode == 0, (
-        f"`init` a echoue sur la copie.\n{init_decoupee.stderr[-800:]}"
+    assert init_decoupee.returncode == 0, message(
+        en=f"`init` failed on the copy.\n{init_decoupee.stderr[-800:]}",
+        fr=f"`init` a échoué sur la copie.\n{init_decoupee.stderr[-800:]}",
     )
 
     attendu = _empreinte(_plan_json(origine))
     obtenu = _empreinte(_plan_json(decoupee))
 
-    assert set(obtenu) == set(attendu), (
-        f"Le plan porte {sorted(obtenu)}.\nLe monolithe produisait "
-        f"{sorted(attendu)}.\n\nUn bloc a ete perdu ou ajoute pendant le "
-        "decoupage : deplacer ne doit rien changer."
+    assert set(obtenu) == set(attendu), message(
+        en=f"The plan carries {sorted(obtenu)}.\nThe monolith produced "
+        f"{sorted(attendu)}.\n\nA block was lost or added during the "
+        "split: moving must change nothing.",
+        fr=f"Le plan porte {sorted(obtenu)}.\nLe monolithe produisait "
+        f"{sorted(attendu)}.\n\nUn bloc a été perdu ou ajouté pendant le "
+        "découpage : déplacer ne doit rien changer.",
     )
 
     for adresse in sorted(attendu):
-        assert obtenu[adresse]["actions"] == attendu[adresse]["actions"], (
-            f"{adresse} : le plan annonce {obtenu[adresse]['actions']}, le "
-            f"monolithe annoncait {attendu[adresse]['actions']}."
+        assert obtenu[adresse]["actions"] == attendu[adresse]["actions"], message(
+            en=f"{adresse}: the plan announces {obtenu[adresse]['actions']}, the "
+            f"monolith announced {attendu[adresse]['actions']}.",
+            fr=f"{adresse} : le plan annonce {obtenu[adresse]['actions']}, le "
+            f"monolithe annonçait {attendu[adresse]['actions']}.",
         )
         divergents = {
             champ
             for champ in set(attendu[adresse]["after"]) | set(obtenu[adresse]["after"])
             if attendu[adresse]["after"].get(champ) != obtenu[adresse]["after"].get(champ)
         }
-        assert not divergents, (
-            f"{adresse} : ces valeurs ont change pendant le decoupage : "
+        assert not divergents, message(
+            en=f"{adresse}: these values changed during the split: "
+            f"{sorted(divergents)}.\n\nExpected "
+            f"{ {c: attendu[adresse]['after'].get(c) for c in divergents} }\n"
+            f"Got     { {c: obtenu[adresse]['after'].get(c) for c in divergents} }",
+            fr=f"{adresse} : ces valeurs ont changé pendant le découpage : "
             f"{sorted(divergents)}.\n\nAttendu "
             f"{ {c: attendu[adresse]['after'].get(c) for c in divergents} }\n"
-            f"Obtenu  { {c: obtenu[adresse]['after'].get(c) for c in divergents} }"
+            f"Obtenu  { {c: obtenu[adresse]['after'].get(c) for c in divergents} }",
         )
 
 
@@ -263,25 +286,33 @@ def test_chaque_fichier_porte_reellement_son_contenu(
 
     if ce_qui_doit_casser == "validate":
         rapport = json.loads(_tf("validate", "-json", cwd=copie).stdout or "{}")
-        assert rapport.get("valid") is False, (
-            f"Retirer `{fichier}` ne casse rien : `validate` passe toujours.\n\n"
-            f"Ce fichier ne porte donc pas ce qu'il devrait. Le decoupage attendu "
-            "met chaque nature de bloc dans son fichier."
+        assert rapport.get("valid") is False, message(
+            en=f"Removing `{fichier}` breaks nothing: `validate` still passes.\n\n"
+            f"That file therefore does not carry what it should. The expected split "
+            "puts each kind of block in its own file.",
+            fr=f"Retirer `{fichier}` ne casse rien : `validate` passe toujours.\n\n"
+            f"Ce fichier ne porte donc pas ce qu'il devrait. Le découpage attendu "
+            "met chaque nature de bloc dans son fichier.",
         )
         return
 
     plan = _plan_json(copie)
     if ce_qui_doit_casser == "ressources":
         adresses = {c["address"] for c in plan.get("resource_changes", [])}
-        assert not adresses, (
-            f"Retirer `{fichier}` laisse encore {sorted(adresses)} au plan.\n\n"
-            "Les ressources ne sont donc pas toutes dans ce fichier."
+        assert not adresses, message(
+            en=f"Removing `{fichier}` still leaves {sorted(adresses)} in the plan.\n\n"
+            "The resources are therefore not all in that file.",
+            fr=f"Retirer `{fichier}` laisse encore {sorted(adresses)} au plan.\n\n"
+            "Les ressources ne sont donc pas toutes dans ce fichier.",
         )
     else:
-        assert not plan.get("output_changes"), (
-            f"Retirer `{fichier}` laisse encore des sorties au plan : "
+        assert not plan.get("output_changes"), message(
+            en=f"Removing `{fichier}` still leaves outputs in the plan: "
+            f"{sorted(plan.get('output_changes', {}))}.\n\nThe `output` blocks are "
+            "therefore not all in that file.",
+            fr=f"Retirer `{fichier}` laisse encore des sorties au plan : "
             f"{sorted(plan.get('output_changes', {}))}.\n\nLes `output` ne sont "
-            "donc pas tous dans ce fichier."
+            "donc pas tous dans ce fichier.",
         )
 
 
@@ -300,8 +331,9 @@ def test_un_nom_declare_deux_fois_casse_la_configuration(
     shutil.copytree(joue, copie, ignore=shutil.ignore_patterns("*.tfplan", "*.tfstate*"))
 
     avant = json.loads(_tf("validate", "-json", cwd=copie).stdout or "{}")
-    assert avant.get("valid") is True, (
-        f"La configuration ne valide pas avant meme le doublon.\n{avant}"
+    assert avant.get("valid") is True, message(
+        en=f"The configuration does not validate even before the duplicate.\n{avant}",
+        fr=f"La configuration ne valide pas avant même le doublon.\n{avant}",
     )
 
     intrus = copie / "zz_doublon.tf"
@@ -310,17 +342,22 @@ def test_un_nom_declare_deux_fois_casse_la_configuration(
         encoding="utf-8",
     )
     pendant = json.loads(_tf("validate", "-json", cwd=copie).stdout or "{}")
-    assert pendant.get("valid") is False, (
-        "Declarer `projet` une seconde fois n'a rien casse.\n\nTerraform devrait "
-        "refuser : un nom ne se declare qu'une fois par repertoire, quel que "
-        "soit le fichier."
+    assert pendant.get("valid") is False, message(
+        en="Declaring `projet` a second time broke nothing.\n\nTerraform should "
+        "refuse: a name is declared only once per directory, whatever "
+        "the file.",
+        fr="Déclarer `projet` une seconde fois n'a rien cassé.\n\nTerraform devrait "
+        "refuser : un nom ne se déclare qu'une fois par répertoire, quel que "
+        "soit le fichier.",
     )
 
     intrus.unlink()
     apres = json.loads(_tf("validate", "-json", cwd=copie).stdout or "{}")
-    assert apres.get("valid") is True, (
-        "La configuration ne revient pas au vert une fois le doublon retire : "
-        "l'echec venait d'autre chose."
+    assert apres.get("valid") is True, message(
+        en="The configuration does not come back green once the duplicate is removed: "
+        "the failure came from something else.",
+        fr="La configuration ne revient pas au vert une fois le doublon retiré : "
+        "l'échec venait d'autre chose.",
     )
 
 
@@ -330,8 +367,9 @@ def test_un_nom_declare_deux_fois_casse_la_configuration(
 def test_chaque_variable_prend_la_valeur_de_la_source_qui_gagne(joue: Path) -> None:
     applique = _tf("apply", "-auto-approve", "-input=false", "-no-color",
                    "-var", f"revision={REVISION}")
-    assert applique.returncode == 0, (
-        f"`terraform apply` a echoue.\n{applique.stderr[-1000:]}"
+    assert applique.returncode == 0, message(
+        en=f"`terraform apply` failed.\n{applique.stderr[-1000:]}",
+        fr=f"`terraform apply` a échoué.\n{applique.stderr[-1000:]}",
     )
 
     proc = _tf("output", "-json")
@@ -339,14 +377,18 @@ def test_chaque_variable_prend_la_valeur_de_la_source_qui_gagne(joue: Path) -> N
     sorties = json.loads(proc.stdout or "{}")
 
     for nom, (attendue, pourquoi) in VALEURS_ATTENDUES.items():
-        assert nom in sorties, (
-            f"La sortie `{nom}` est absente. Presentes : {sorted(sorties)}."
+        assert nom in sorties, message(
+            en=f"The output `{nom}` is missing. Present: {sorted(sorties)}.",
+            fr=f"La sortie `{nom}` est absente. Présentes : {sorted(sorties)}.",
         )
         obtenue = sorties[nom]["value"]
-        assert obtenue == attendue, (
-            f"`{nom}` vaut {obtenue!r}, attendu {attendue!r}.\n\n{pourquoi}.\n\n"
+        assert obtenue == attendue, message(
+            en=f"`{nom}` is {obtenue!r}, expected {attendue!r}.\n\n{pourquoi}.\n\n"
+            "A reminder of the order, from weakest to strongest:\n"
+            "  default  <  TF_VAR_  <  terraform.tfvars  <  *.auto.tfvars  <  -var",
+            fr=f"`{nom}` vaut {obtenue!r}, attendu {attendue!r}.\n\n{pourquoi}.\n\n"
             "Rappel de l'ordre, du plus faible au plus fort :\n"
-            "  default  <  TF_VAR_  <  terraform.tfvars  <  *.auto.tfvars  <  -var"
+            "  default  <  TF_VAR_  <  terraform.tfvars  <  *.auto.tfvars  <  -var",
         )
 
 
@@ -355,7 +397,9 @@ def test_la_configuration_converge(joue: Path) -> None:
 
     plan = _tf("plan", "-detailed-exitcode", "-input=false", "-no-color",
                "-var", f"revision={REVISION}")
-    assert plan.returncode == 0, (
-        f"`plan -detailed-exitcode` rend {plan.returncode}, attendu 0.\n"
-        + plan.stdout[-800:]
+    assert plan.returncode == 0, message(
+        en=f"`plan -detailed-exitcode` returns {plan.returncode}, expected 0.\n"
+        + plan.stdout[-800:],
+        fr=f"`plan -detailed-exitcode` rend {plan.returncode}, attendu 0.\n"
+        + plan.stdout[-800:],
     )

@@ -29,7 +29,7 @@ from pathlib import Path
 
 import pytest
 
-from conftest import exiger_workdir, output_json, terraform, workdir_lab
+from conftest import exiger_workdir, message, output_json, terraform, workdir_lab
 
 WORKDIR = workdir_lab(__file__)
 LAB_ID = "write-code-tfvars-files"
@@ -45,10 +45,16 @@ def applied() -> Path:
     exiger_workdir(WORKDIR, LAB_ID)
     init = terraform("init", "-input=false", "-no-color", cwd=WORKDIR)
     if init.returncode != 0:
-        pytest.fail(f"`terraform init` a echoue.\n{init.stderr[-1200:]}")
+        pytest.fail(message(
+            en=f"`terraform init` failed.\n{init.stderr[-1200:]}",
+            fr=f"`terraform init` a échoué.\n{init.stderr[-1200:]}",
+        ))
     app = terraform("apply", "-auto-approve", "-input=false", "-no-color", cwd=WORKDIR)
     if app.returncode != 0:
-        pytest.fail(f"`terraform apply` a echoue.\n{app.stderr[-1500:]}")
+        pytest.fail(message(
+            en=f"`terraform apply` failed.\n{app.stderr[-1500:]}",
+            fr=f"`terraform apply` a échoué.\n{app.stderr[-1500:]}",
+        ))
     return WORKDIR
 
 
@@ -57,11 +63,15 @@ def applied() -> Path:
 # --------------------------------------------------------------------------
 def test_bucket_prend_la_valeur(applied: Path) -> None:
     v = output_json(applied)["bucket"]["value"]
-    assert v == BUCKET_ATTENDU, (
-        f"`bucket` = {v!r}, attendu {BUCKET_ATTENDU!r}. Le terraform.tfvars "
-        'fourni ecrit `bukcet = "prod"` (faute de frappe) : une variable non '
-        "declaree dans un .tfvars ne fait qu'un warning, bucket reste alors a "
-        f"son defaut {BUCKET_PAR_DEFAUT!r}. Corrigez le nom en `bucket`."
+    assert v == BUCKET_ATTENDU, message(
+        en=f"`bucket` = {v!r}, expected {BUCKET_ATTENDU!r}. The terraform.tfvars "
+        'provided writes `bukcet = "prod"` (a typo): a variable not '
+        "declared in a .tfvars only produces a warning, so bucket stays at "
+        f"its default {BUCKET_PAR_DEFAUT!r}. Fix the name to `bucket`.",
+        fr=f"`bucket` = {v!r}, attendu {BUCKET_ATTENDU!r}. Le terraform.tfvars "
+        'fourni écrit `bukcet = "prod"` (faute de frappe) : une variable non '
+        "déclarée dans un .tfvars ne fait qu'un warning, bucket reste alors à "
+        f"son défaut {BUCKET_PAR_DEFAUT!r}. Corrigez le nom en `bucket`.",
     )
 
 
@@ -70,13 +80,17 @@ def test_bucket_prend_la_valeur(applied: Path) -> None:
 # --------------------------------------------------------------------------
 def test_replicas_depuis_json(applied: Path) -> None:
     v = output_json(applied)["replicas"]["value"]
-    assert v == REPLICAS_ATTENDUS, (
-        f"`replicas` = {v!r}, attendu {REPLICAS_ATTENDUS}. terraform.tfvars "
-        "pose replicas = 2 ; creez un terraform.tfvars.json posant replicas = 5 : "
-        "la variante JSON l'emporte sur terraform.tfvars."
+    assert v == REPLICAS_ATTENDUS, message(
+        en=f"`replicas` = {v!r}, expected {REPLICAS_ATTENDUS}. terraform.tfvars "
+        "sets replicas = 2; create a terraform.tfvars.json setting replicas = 5: "
+        "the JSON variant wins over terraform.tfvars.",
+        fr=f"`replicas` = {v!r}, attendu {REPLICAS_ATTENDUS}. terraform.tfvars "
+        "pose replicas = 2 ; créez un terraform.tfvars.json posant replicas = 5 : "
+        "la variante JSON l'emporte sur terraform.tfvars.",
     )
-    assert isinstance(v, (int, float)) and not isinstance(v, bool), (
-        "`replicas` doit rester un nombre."
+    assert isinstance(v, (int, float)) and not isinstance(v, bool), message(
+        en="`replicas` must stay a number.",
+        fr="`replicas` doit rester un nombre.",
     )
 
 
@@ -95,13 +109,17 @@ def test_la_faute_de_frappe_ne_leve_aucune_erreur_et_laisse_le_reste_marcher(
     fichier ignore.
     """
     corrige = output_json(applied)
-    assert corrige["region"]["value"] == REGION_ATTENDUE, (
-        f"`region` = {corrige['region']['value']!r}, attendu "
-        f"{REGION_ATTENDUE!r} : elle vient du meme terraform.tfvars."
+    assert corrige["region"]["value"] == REGION_ATTENDUE, message(
+        en=f"`region` = {corrige['region']['value']!r}, expected "
+        f"{REGION_ATTENDUE!r}: it comes from the same terraform.tfvars.",
+        fr=f"`region` = {corrige['region']['value']!r}, attendu "
+        f"{REGION_ATTENDUE!r} : elle vient du même terraform.tfvars.",
     )
-    assert corrige["bucket"]["value"] == BUCKET_ATTENDU, (
-        "Ce test compare l'etat corrige a l'etat fautif : corrigez d'abord le "
-        "nom de la variable."
+    assert corrige["bucket"]["value"] == BUCKET_ATTENDU, message(
+        en="This test compares the fixed state with the faulty one: fix the "
+        "variable's name first.",
+        fr="Ce test compare l'état corrigé à l'état fautif : corrigez d'abord le "
+        "nom de la variable.",
     )
 
     # On refait la faute sur une COPIE : le travail de l'apprenant n'est jamais
@@ -117,22 +135,31 @@ def test_la_faute_de_frappe_ne_leve_aucune_erreur_et_laisse_le_reste_marcher(
     rejoue = terraform(
         "apply", "-auto-approve", "-input=false", "-no-color", cwd=copie
     )
-    assert rejoue.returncode == 0, (
-        "Avec la faute de frappe, `terraform apply` devrait REUSSIR. C'est tout "
-        "le sujet du lab : une variable non declaree dans un .tfvars ne leve "
-        f"qu'un avertissement.\n{rejoue.stderr[-1200:]}"
+    assert rejoue.returncode == 0, message(
+        en="With the typo, `terraform apply` should SUCCEED. That is the whole "
+        "subject of the lab: a variable not declared in a .tfvars raises "
+        f"only a warning.\n{rejoue.stderr[-1200:]}",
+        fr="Avec la faute de frappe, `terraform apply` devrait RÉUSSIR. C'est tout "
+        "le sujet du lab : une variable non déclarée dans un .tfvars ne lève "
+        f"qu'un avertissement.\n{rejoue.stderr[-1200:]}",
     )
 
     fautif = json.loads(terraform("output", "-json", cwd=copie).stdout)
-    assert fautif["bucket"]["value"] == BUCKET_PAR_DEFAUT, (
-        f"Avec la faute, `bucket` vaut {fautif['bucket']['value']!r} et non "
-        f"{BUCKET_PAR_DEFAUT!r}. La ligne fautive semble donc avoir ete prise "
-        "en compte, ce qui contredit le mecanisme enseigne."
+    assert fautif["bucket"]["value"] == BUCKET_PAR_DEFAUT, message(
+        en=f"With the typo, `bucket` is {fautif['bucket']['value']!r} and not "
+        f"{BUCKET_PAR_DEFAUT!r}. The faulty line therefore seems to have been taken "
+        "into account, which contradicts the mechanism being taught.",
+        fr=f"Avec la faute, `bucket` vaut {fautif['bucket']['value']!r} et non "
+        f"{BUCKET_PAR_DEFAUT!r}. La ligne fautive semble donc avoir été prise "
+        "en compte, ce qui contredit le mécanisme enseigné.",
     )
-    assert fautif["region"]["value"] == REGION_ATTENDUE, (
-        "Avec la faute, la region ne vient plus du fichier. Le fichier entier "
-        "aurait donc ete rejete, alors que Terraform n'ignore QUE la ligne "
-        "fautive : c'est ce qui rend l'erreur si difficile a voir."
+    assert fautif["region"]["value"] == REGION_ATTENDUE, message(
+        en="With the typo, the region no longer comes from the file. The whole file "
+        "would therefore have been rejected, whereas Terraform ignores ONLY the "
+        "faulty line: that is what makes the error so hard to see.",
+        fr="Avec la faute, la région ne vient plus du fichier. Le fichier entier "
+        "aurait donc été rejeté, alors que Terraform n'ignore QUE la ligne "
+        "fautive : c'est ce qui rend l'erreur si difficile à voir.",
     )
 
 
@@ -150,8 +177,9 @@ def test_le_manifeste_porte_les_trois_valeurs_et_la_configuration_converge(
     configuration qui tourne sur ses defauts.
     """
     manifeste = applied / "out" / "manifest.json"
-    assert manifeste.is_file(), (
-        f"Le manifeste est absent de {manifeste}. `main.tf` devait l'ecrire."
+    assert manifeste.is_file(), message(
+        en=f"The manifest is missing from {manifeste}. `main.tf` was supposed to write it.",
+        fr=f"Le manifeste est absent de {manifeste}. `main.tf` devait l'écrire.",
     )
     ecrit = json.loads(manifeste.read_text(encoding="utf-8"))
     attendu = {
@@ -159,13 +187,17 @@ def test_le_manifeste_porte_les_trois_valeurs_et_la_configuration_converge(
         "bucket": BUCKET_ATTENDU,
         "replicas": REPLICAS_ATTENDUS,
     }
-    assert ecrit == attendu, (
-        f"Le manifeste porte {ecrit}, attendu {attendu}.\n\nLes valeurs doivent "
-        "arriver jusqu'au disque, pas seulement jusqu'aux outputs."
+    assert ecrit == attendu, message(
+        en=f"The manifest carries {ecrit}, expected {attendu}.\n\nThe values must "
+        "reach the disk, not only the outputs.",
+        fr=f"Le manifeste porte {ecrit}, attendu {attendu}.\n\nLes valeurs doivent "
+        "arriver jusqu'au disque, pas seulement jusqu'aux outputs.",
     )
 
     p = terraform("plan", "-input=false", "-detailed-exitcode", "-no-color", cwd=applied)
-    assert p.returncode == 0, (
-        f"`plan -detailed-exitcode` rend {p.returncode} (2 = des changements "
-        "restent planifies). Un apply doit converger."
+    assert p.returncode == 0, message(
+        en=f"`plan -detailed-exitcode` returns {p.returncode} (2 = changes "
+        "remain planned). An apply must converge.",
+        fr=f"`plan -detailed-exitcode` rend {p.returncode} (2 = des changements "
+        "restent planifiés). Un apply doit converger.",
     )

@@ -33,7 +33,7 @@ from pathlib import Path
 
 import pytest
 
-from conftest import exiger_workdir, workdir_lab
+from conftest import exiger_workdir, message, workdir_lab
 
 # Le dossier des tests n'est pas sur le chemin d'import dans le mode de ce dépôt.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -53,9 +53,15 @@ VERROU_TENU = 20
 
 def _epreuve() -> dict:
     etat = os.environ.get("LAB_STATE_DIR")
-    assert etat, "LAB_STATE_DIR absent : lancez l'épreuve par `dsoxlab run`, puis notez par `dsoxlab check`."
+    assert etat, message(
+        en="LAB_STATE_DIR missing: start the exam with `dsoxlab run`, then grade it with `dsoxlab check`.",
+        fr="LAB_STATE_DIR absent : lancez l'épreuve par `dsoxlab run`, puis notez par `dsoxlab check`.",
+    )
     fichier = Path(etat) / "epreuve.json"
-    assert fichier.is_file(), f"{fichier} absent : la préparation n'a pas tourné (`dsoxlab run`)."
+    assert fichier.is_file(), message(
+        en=f"{fichier} missing: the preparation did not run (`dsoxlab run`).",
+        fr=f"{fichier} absent : la préparation n'a pas tourné (`dsoxlab run`).",
+    )
     return json.loads(fichier.read_text())
 
 
@@ -124,9 +130,11 @@ def _states(s3: S3) -> dict[str, dict]:
 
 
 def _chaine(env_cible: str, action: str, timeout: int = 600) -> subprocess.CompletedProcess[str]:
-    assert CHAINE.is_file() and os.access(CHAINE, os.X_OK), (
-        "chaine.sh absent ou non exécutable à la racine du répertoire de travail : "
-        "c'est l'interface que le harnais appelle."
+    assert CHAINE.is_file() and os.access(CHAINE, os.X_OK), message(
+        en="chaine.sh is missing or not executable at the root of the working directory: "
+        "it is the interface the harness calls.",
+        fr="chaine.sh absent ou non exécutable à la racine du répertoire de travail : "
+        "c'est l'interface que le harnais appelle.",
     )
     # stdin fermé : un script qui pose une question échoue au lieu de se bloquer.
     return subprocess.run(
@@ -159,43 +167,69 @@ def test_refactor_les_machines_de_prod_gardent_leur_identite() -> None:
     vide le garde aussi. Le test exige donc d'abord la production convergée."""
     e = _epreuve()
     r = _chaine("prod", "plan")
-    assert r.returncode == 0, "la production n'est pas encore remise d'aplomb : l'identité des machines ne prouve rien seule."
+    assert r.returncode == 0, message(
+        en="production is not back on its feet yet: the machines' identity proves nothing on its own.",
+        fr="la production n'est pas encore remise d'aplomb : l'identité des machines ne prouve rien seule.",
+    )
     for role, uuid in e["uuid_prod"].items():
         nom = f"{e['prefixe']}-prod-{role}"
         actuel = _uuid(nom)
-        assert actuel is not None, f"{nom} n'existe plus : la machine a été supprimée."
-        assert actuel == uuid, f"{nom} a été RECRÉÉE (UUID {uuid} devenu {actuel}) : l'incident se répare sans recréer."
-        assert _boote(nom), f"{nom} ne tourne pas, ou ne boote pas (moins de {SECONDES_CPU_MINIMUM} s de CPU)."
+        assert actuel is not None, message(
+            en=f"{nom} no longer exists: the machine was deleted.",
+            fr=f"{nom} n'existe plus : la machine a été supprimée.",
+        )
+        assert actuel == uuid, message(
+            en=f"{nom} was RECREATED (UUID {uuid} became {actuel}): the incident is repaired without recreating.",
+            fr=f"{nom} a été RECRÉÉE (UUID {uuid} devenu {actuel}) : l'incident se répare sans recréer.",
+        )
+        assert _boote(nom), message(
+            en=f"{nom} is not running, or does not boot (less than {SECONDES_CPU_MINIMUM} s of CPU).",
+            fr=f"{nom} ne tourne pas, ou ne boote pas (moins de {SECONDES_CPU_MINIMUM} s de CPU).",
+        )
 
 
 def test_refactor_le_plan_de_prod_ne_propose_plus_rien() -> None:
     r = _chaine("prod", "plan")
-    assert r.returncode == 0, (
-        f"`chaine.sh prod plan` rend {r.returncode}, attendu 0 : la production n'est pas remise d'aplomb.\n"
-        f"{r.stdout[-1500:]}{r.stderr[-1500:]}"
+    assert r.returncode == 0, message(
+        en=f"`chaine.sh prod plan` returns {r.returncode}, expected 0: production is not back on its feet.\n"
+        f"{r.stdout[-1500:]}{r.stderr[-1500:]}",
+        fr=f"`chaine.sh prod plan` rend {r.returncode}, attendu 0 : la production n'est pas remise d'aplomb.\n"
+        f"{r.stdout[-1500:]}{r.stderr[-1500:]}",
     )
 
 
 # ── state : verrou attendu, jamais forcé ; sauvegarde avant d'écrire ─────────
 
 def test_state_aucun_forcage_du_verrou() -> None:
-    assert CHAINE.is_file(), "chaine.sh absent : rien à vérifier, donc rien de prouvé."
+    assert CHAINE.is_file(), message(
+        en="chaine.sh missing: nothing to check, therefore nothing proven.",
+        fr="chaine.sh absent : rien à vérifier, donc rien de prouvé.",
+    )
     texte = CHAINE.read_text()
     for interdit in ("-lock=false", "force-unlock"):
-        assert interdit not in texte, f"`{interdit}` dans chaine.sh : un verrou ne se force pas, il s'attend."
+        assert interdit not in texte, message(
+            en=f"`{interdit}` in chaine.sh: a lock is not forced, it is waited for.",
+            fr=f"`{interdit}` dans chaine.sh : un verrou ne se force pas, il s'attend.",
+        )
 
 
 def test_state_le_verrou_tenu_par_une_autre_execution_est_attendu() -> None:
     e, s3 = _epreuve(), _s3()
     prod = [k for k, v in _states(s3).items() if f"{e['prefixe']}-prod-web" in v["domaines"]]
-    assert len(prod) == 1, f"un seul state doit gérer la production, trouvé : {prod or 'aucun'}"
+    assert len(prod) == 1, message(
+        en=f"a single state must manage production, found: {prod or 'none'}",
+        fr=f"un seul state doit gérer la production, trouvé : {prod or 'aucun'}",
+    )
     cle_verrou = prod[0] + ".tflock"
     verrou = json.dumps({
         "ID": "00000000-0000-0000-0000-00000000harn", "Operation": "OperationTypeApply",
         "Info": "", "Who": "harnais@epreuve-b", "Version": "1.16.1",
         "Created": datetime.now(UTC).isoformat(), "Path": prod[0],
     }).encode()
-    assert s3.ecrire(cle_verrou, verrou) == 200, "le harnais n'a pas pu poser son verrou"
+    assert s3.ecrire(cle_verrou, verrou) == 200, message(
+        en="the harness could not place its lock",
+        fr="le harnais n'a pas pu poser son verrou",
+    )
     liberer = threading.Timer(VERROU_TENU, lambda: s3.supprimer(cle_verrou))
     liberer.start()
     try:
@@ -206,10 +240,15 @@ def test_state_le_verrou_tenu_par_une_autre_execution_est_attendu() -> None:
         liberer.cancel()
         s3.supprimer(cle_verrou)
     if r.returncode != 0:
-        pytest.fail(f"pendant qu'une autre exécution tient le verrou, `chaine.sh prod plan` échoue (rc {r.returncode}) au lieu d'attendre.\n{r.stderr[-1200:]}")
-    assert duree >= VERROU_TENU - 2, (
-        f"`chaine.sh prod plan` a fini en {duree:.0f} s alors que le verrou était tenu {VERROU_TENU} s : "
-        "le verrou est ignoré."
+        pytest.fail(message(
+            en=f"while another run holds the lock, `chaine.sh prod plan` fails (rc {r.returncode}) instead of waiting.\n{r.stderr[-1200:]}",
+            fr=f"pendant qu'une autre exécution tient le verrou, `chaine.sh prod plan` échoue (rc {r.returncode}) au lieu d'attendre.\n{r.stderr[-1200:]}",
+        ))
+    assert duree >= VERROU_TENU - 2, message(
+        en=f"`chaine.sh prod plan` finished in {duree:.0f} s while the lock was held for {VERROU_TENU} s: "
+        "the lock is ignored.",
+        fr=f"`chaine.sh prod plan` a fini en {duree:.0f} s alors que le verrou était tenu {VERROU_TENU} s : "
+        "le verrou est ignoré.",
     )
 
 
@@ -218,9 +257,15 @@ def test_state_le_verrou_tenu_par_une_autre_execution_est_attendu() -> None:
 def test_environment_dev_a_ses_propres_machines() -> None:
     e = _epreuve()
     dev = _domaines(f"{e['prefixe']}-dev-")
-    assert dev, f"aucune machine `{e['prefixe']}-dev-*` : l'environnement dev n'existe pas."
+    assert dev, message(
+        en=f"no `{e['prefixe']}-dev-*` machine: the dev environment does not exist.",
+        fr=f"aucune machine `{e['prefixe']}-dev-*` : l'environnement dev n'existe pas.",
+    )
     for nom in dev:
-        assert _boote(nom), f"{nom} ne boote pas."
+        assert _boote(nom), message(
+            en=f"{nom} does not boot.",
+            fr=f"{nom} ne boote pas.",
+        )
 
 
 def test_environment_dev_et_prod_ne_partagent_aucun_state() -> None:
@@ -229,8 +274,14 @@ def test_environment_dev_et_prod_ne_partagent_aucun_state() -> None:
     states = _states(s3)
     avec_prod = [k for k, v in states.items() if any(n.startswith(prefixe_prod) for n in v["domaines"])]
     avec_dev = [k for k, v in states.items() if any(n.startswith(prefixe_dev) for n in v["domaines"])]
-    assert len(avec_prod) == 1 and len(avec_dev) == 1, f"states de prod : {avec_prod}, de dev : {avec_dev}"
-    assert avec_prod != avec_dev, f"dev et prod partagent le state {avec_prod[0]}."
+    assert len(avec_prod) == 1 and len(avec_dev) == 1, message(
+        en=f"prod states: {avec_prod}, dev states: {avec_dev}",
+        fr=f"states de prod : {avec_prod}, de dev : {avec_dev}",
+    )
+    assert avec_prod != avec_dev, message(
+        en=f"dev and prod share the state {avec_prod[0]}.",
+        fr=f"dev et prod partagent le state {avec_prod[0]}.",
+    )
 
 
 def test_environment_un_changement_sur_dev_laisse_prod_intacte_et_sauvegarde_avant() -> None:
@@ -242,16 +293,28 @@ def test_environment_un_changement_sur_dev_laisse_prod_intacte_et_sauvegarde_ava
     """
     e, s3 = _epreuve(), _s3()
     dev = sorted(_domaines(f"{e['prefixe']}-dev-"))
-    assert dev, "aucune machine de dev"
+    assert dev, message(
+        en="no dev machine",
+        fr="aucune machine de dev",
+    )
     cle_dev = next(k for k, v in _states(s3).items() if dev[0] in v["domaines"])
     avant = json.loads(s3.lire(cle_dev))
 
     _virsh("destroy", dev[0])
     plan = _chaine("dev", "plan")
-    assert plan.returncode == 2, f"dev a dérivé (machine arrêtée) : `chaine.sh dev plan` doit rendre 2, il rend {plan.returncode}."
+    assert plan.returncode == 2, message(
+        en=f"dev has drifted (machine stopped): `chaine.sh dev plan` must return 2, it returns {plan.returncode}.",
+        fr=f"dev a dérivé (machine arrêtée) : `chaine.sh dev plan` doit rendre 2, il rend {plan.returncode}.",
+    )
     apply = _chaine("dev", "apply")
-    assert apply.returncode == 0, f"`chaine.sh dev apply` rend {apply.returncode}.\n{apply.stderr[-1200:]}"
-    assert _boote(dev[0]), f"{dev[0]} n'a pas été relancée par l'apply."
+    assert apply.returncode == 0, message(
+        en=f"`chaine.sh dev apply` returns {apply.returncode}.\n{apply.stderr[-1200:]}",
+        fr=f"`chaine.sh dev apply` rend {apply.returncode}.\n{apply.stderr[-1200:]}",
+    )
+    assert _boote(dev[0]), message(
+        en=f"{dev[0]} was not restarted by the apply.",
+        fr=f"{dev[0]} n'a pas été relancée par l'apply.",
+    )
 
     copies = [f for f in WORKDIR.rglob("*.tfstate*") if ".terraform" not in f.parts and f.is_file()]
     sauvee = any(
@@ -264,22 +327,33 @@ def test_environment_un_changement_sur_dev_laisse_prod_intacte_et_sauvegarde_ava
             if contenu and json.loads(contenu).get("serial") == avant["serial"]:
                 sauvee = True
                 break
-    assert sauvee, (
-        f"aucune sauvegarde du state de dev au serial {avant['serial']} avant l'apply : "
-        "ni copie dans le répertoire de travail, ni version dans le bucket."
+    assert sauvee, message(
+        en=f"no backup of the dev state at serial {avant['serial']} before the apply: "
+        "neither a copy in the working directory, nor a version in the bucket.",
+        fr=f"aucune sauvegarde du state de dev au serial {avant['serial']} avant l'apply : "
+        "ni copie dans le répertoire de travail, ni version dans le bucket.",
     )
 
     prod = _chaine("prod", "plan")
-    assert prod.returncode == 0, f"après un changement sur dev, le plan de prod rend {prod.returncode} au lieu de 0."
+    assert prod.returncode == 0, message(
+        en=f"after a change on dev, the prod plan returns {prod.returncode} instead of 0.",
+        fr=f"après un changement sur dev, le plan de prod rend {prod.returncode} au lieu de 0.",
+    )
     for role, uuid in e["uuid_prod"].items():
-        assert _uuid(f"{e['prefixe']}-prod-{role}") == uuid, "un changement sur dev a touché la production"
+        assert _uuid(f"{e['prefixe']}-prod-{role}") == uuid, message(
+            en="a change on dev affected production",
+            fr="un changement sur dev a touché la production",
+        )
 
 
 # ── automate : codes de retour, aucune invite, plan relu ─────────────────────
 
 def test_automate_une_erreur_rend_1_sans_attendre_de_reponse() -> None:
     r = _chaine("inexistant", "plan", timeout=180)
-    assert r.returncode == 1, f"`chaine.sh inexistant plan` rend {r.returncode}, attendu 1."
+    assert r.returncode == 1, message(
+        en=f"`chaine.sh inexistant plan` returns {r.returncode}, expected 1.",
+        fr=f"`chaine.sh inexistant plan` rend {r.returncode}, attendu 1.",
+    )
 
 
 def test_automate_apply_n_applique_que_le_plan_relu() -> None:
@@ -291,25 +365,56 @@ def test_automate_apply_n_applique_que_le_plan_relu() -> None:
     """
     e = _epreuve()
     web, db = f"{e['prefixe']}-dev-web", f"{e['prefixe']}-dev-db"
-    assert _uuid(web) and _uuid(db), f"dev doit avoir ses machines web et db ({web}, {db})."
+    assert _uuid(web) and _uuid(db), message(
+        en=f"dev must have its web and db machines ({web}, {db}).",
+        fr=f"dev doit avoir ses machines web et db ({web}, {db}).",
+    )
     _virsh("destroy", web)
-    assert _chaine("dev", "plan").returncode == 2
+    assert _chaine("dev", "plan").returncode == 2, message(
+        en=f"{web} was stopped, so `chaine.sh dev plan` must announce a drift "
+        "(return code 2). It does not see it.",
+        fr=f"{web} a été arrêtée, donc `chaine.sh dev plan` doit annoncer une "
+        "dérive (code de retour 2). Il ne la voit pas.",
+    )
     _virsh("destroy", db)
     r = _chaine("dev", "apply")
-    assert r.returncode == 0, f"`chaine.sh dev apply` rend {r.returncode}.\n{r.stderr[-1200:]}"
-    assert _boote(web), f"{web} n'a pas été relancée : le plan relu n'a pas été appliqué."
-    assert _virsh("domstate", db).stdout.strip() != "running", (
-        f"{db}, arrêtée APRÈS le plan, a été relancée : l'apply n'a pas appliqué le plan relu "
-        "mais en a calculé un nouveau."
+    assert r.returncode == 0, message(
+        en=f"`chaine.sh dev apply` returns {r.returncode}.\n{r.stderr[-1200:]}",
+        fr=f"`chaine.sh dev apply` rend {r.returncode}.\n{r.stderr[-1200:]}",
+    )
+    assert _boote(web), message(
+        en=f"{web} was not restarted: the plan read back was not applied.",
+        fr=f"{web} n'a pas été relancée : le plan relu n'a pas été appliqué.",
+    )
+    assert _virsh("domstate", db).stdout.strip() != "running", message(
+        en=f"{db}, stopped AFTER the plan, was restarted: the apply did not apply the plan read back "
+        "but computed a new one.",
+        fr=f"{db}, arrêtée APRÈS le plan, a été relancée : l'apply n'a pas appliqué le plan relu "
+        "mais en a calculé un nouveau.",
     )
     # Remettre dev d'aplomb pour la suite.
-    assert _chaine("dev", "plan").returncode == 2
-    assert _chaine("dev", "apply").returncode == 0
-    assert _boote(db)
+    remise = message(
+        en="Putting dev back on its feet failed: this step belongs to the "
+        "harness, not to the exam. Replay `dsoxlab run`, then grade again.",
+        fr="La remise d'aplomb de dev a échoué : cette étape appartient au "
+        "harnais, pas à l'épreuve. Rejouez `dsoxlab run`, puis notez à nouveau.",
+    )
+    assert _chaine("dev", "plan").returncode == 2, remise
+    assert _chaine("dev", "apply").returncode == 0, remise
+    assert _boote(db), remise
 
 
 def test_automate_aucun_fichier_de_plan_ne_reste() -> None:
-    assert _chaine("prod", "plan").returncode == 0
-    assert _chaine("prod", "apply").returncode == 0
+    prealable = message(
+        en="Production must be converged before this check: the previous "
+        "tests say what is missing.",
+        fr="La production doit être convergée avant ce contrôle : les tests "
+        "précédents disent ce qui manque.",
+    )
+    assert _chaine("prod", "plan").returncode == 0, prealable
+    assert _chaine("prod", "apply").returncode == 0, prealable
     restes = _fichiers_de_plan()
-    assert not restes, f"fichier(s) de plan laissé(s) après l'apply : {[str(f.relative_to(WORKDIR)) for f in restes]}"
+    assert not restes, message(
+        en=f"plan file(s) left behind after the apply: {[str(f.relative_to(WORKDIR)) for f in restes]}",
+        fr=f"fichier(s) de plan laissé(s) après l'apply : {[str(f.relative_to(WORKDIR)) for f in restes]}",
+    )

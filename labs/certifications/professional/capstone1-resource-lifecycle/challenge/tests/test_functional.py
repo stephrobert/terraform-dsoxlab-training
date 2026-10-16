@@ -41,7 +41,7 @@ from pathlib import Path
 
 import pytest
 
-from conftest import exiger_workdir, workdir_lab
+from conftest import exiger_workdir, message, workdir_lab
 
 WORKDIR = workdir_lab(__file__)
 LAB_ID = "certifications-professional-capstone1-resource-lifecycle"
@@ -120,9 +120,11 @@ def joue() -> Path:
 @pytest.fixture(scope="module")
 def etat(joue: Path) -> dict:
     proc = _tf("show", "-json")
-    assert proc.returncode == 0, (
-        f"`terraform show -json` a echoue.\n\nLe repertoire n'a pas ete "
-        f"initialise, ou rien n'a ete applique.\n{proc.stderr[-800:]}"
+    assert proc.returncode == 0, message(
+        en=f"`terraform show -json` failed.\n\nThe directory was not "
+        f"initialised, or nothing was applied.\n{proc.stderr[-800:]}",
+        fr=f"`terraform show -json` a échoué.\n\nLe répertoire n'a pas été "
+        f"initialisé, ou rien n'a été appliqué.\n{proc.stderr[-800:]}",
     )
     return json.loads(proc.stdout)
 
@@ -139,37 +141,50 @@ def _gerees(etat: dict) -> dict[str, dict]:
 # --------------------------------------------------------------------------
 def test_l_instance_est_importee_et_non_recreee(etat: dict) -> None:
     gerees = _gerees(etat)
-    assert ADRESSE_INSTANCE in gerees, (
-        f"`{ADRESSE_INSTANCE}` n'est pas dans le state. Adresses presentes : "
-        f"{sorted(gerees)}."
+    assert ADRESSE_INSTANCE in gerees, message(
+        en=f"`{ADRESSE_INSTANCE}` is not in the state. Addresses present: "
+        f"{sorted(gerees)}.",
+        fr=f"`{ADRESSE_INSTANCE}` n'est pas dans le state. Adresses présentes : "
+        f"{sorted(gerees)}.",
     )
 
     dans_le_state = gerees[ADRESSE_INSTANCE]["values"].get("id")
     vivantes = _instances_vivantes()
 
-    assert dans_le_state in vivantes, (
-        f"L'instance du state porte l'identifiant {dans_le_state!r}, et Floci ne "
-        f"connait que {vivantes}.\n\nCette instance a ete CREEE par Terraform, "
-        "pas importee : un import reprend l'objet existant avec son identifiant."
+    assert dans_le_state in vivantes, message(
+        en=f"The state's instance carries the identifier {dans_le_state!r}, and Floci "
+        f"only knows {vivantes}.\n\nThat instance was CREATED by Terraform, "
+        "not imported: an import takes over the existing object with its identifier.",
+        fr=f"L'instance du state porte l'identifiant {dans_le_state!r}, et Floci ne "
+        f"connaît que {vivantes}.\n\nCette instance a été CRÉÉE par Terraform, "
+        "pas importée : un import reprend l'objet existant avec son identifiant.",
     )
-    assert len(vivantes) == 1, (
-        f"Floci compte {len(vivantes)} instances `{NOM_INSTANCE}` : {vivantes}.\n\n"
-        "Une seule devait exister. Un import rate laisse l'objet d'origine a "
-        "cote de celui que Terraform a cree."
+    assert len(vivantes) == 1, message(
+        en=f"Floci counts {len(vivantes)} `{NOM_INSTANCE}` instances: {vivantes}.\n\n"
+        "A single one was supposed to exist. A failed import leaves the original object "
+        "next to the one Terraform created.",
+        fr=f"Floci compte {len(vivantes)} instances `{NOM_INSTANCE}` : {vivantes}.\n\n"
+        "Une seule devait exister. Un import raté laisse l'objet d'origine à "
+        "côté de celui que Terraform a créé.",
     )
 
 
 def test_le_bucket_est_importe(etat: dict) -> None:
     gerees = _gerees(etat)
-    assert ADRESSE_BUCKET in gerees, (
-        f"`{ADRESSE_BUCKET}` n'est pas dans le state. Adresses presentes : "
-        f"{sorted(gerees)}."
+    assert ADRESSE_BUCKET in gerees, message(
+        en=f"`{ADRESSE_BUCKET}` is not in the state. Addresses present: "
+        f"{sorted(gerees)}.",
+        fr=f"`{ADRESSE_BUCKET}` n'est pas dans le state. Adresses présentes : "
+        f"{sorted(gerees)}.",
     )
     identifiant = gerees[ADRESSE_BUCKET]["values"].get("id")
-    assert identifiant == BUCKET, (
-        f"Le bucket du state porte l'identifiant {identifiant!r}, attendu "
+    assert identifiant == BUCKET, message(
+        en=f"The state's bucket carries the identifier {identifiant!r}, expected "
+        f"{BUCKET!r}.\n\nAn S3 bucket's identifier is its name: a bucket "
+        "created under another name is not the one that had to be taken over.",
+        fr=f"Le bucket du state porte l'identifiant {identifiant!r}, attendu "
         f"{BUCKET!r}.\n\nL'identifiant d'un bucket S3 est son nom : un bucket "
-        "cree sous un autre nom n'est pas celui qu'il fallait reprendre."
+        "créé sous un autre nom n'est pas celui qu'il fallait reprendre.",
     )
 
 
@@ -187,22 +202,33 @@ def test_la_derive_a_ete_acceptee_des_deux_cotes(etat: dict) -> None:
     identifiant = gerees[ADRESSE_INSTANCE]["values"]["id"]
 
     chez_le_fournisseur = _tag_owner(identifiant)
-    assert chez_le_fournisseur == OWNER_APRES_DERIVE, (
-        f"Cote Floci, le tag `Owner` vaut {chez_le_fournisseur!r}, attendu "
+    assert chez_le_fournisseur == OWNER_APRES_DERIVE, message(
+        en=f"On the Floci side, the `Owner` tag is {chez_le_fournisseur!r}, expected "
         f"{OWNER_APRES_DERIVE!r}.\n\n"
         + (
-            "La derive n'a pas ete provoquee : l'enonce demande de la creer a la "
-            "main, hors Terraform, avant de decider quoi en faire."
+            "The drift was not provoked: the instruction asks you to create it by "
+            "hand, outside Terraform, before deciding what to do with it."
+            if chez_le_fournisseur == OWNER_ORIGINE
+            else "The tag does not have the expected value."
+        ),
+        fr=f"Côté Floci, le tag `Owner` vaut {chez_le_fournisseur!r}, attendu "
+        f"{OWNER_APRES_DERIVE!r}.\n\n"
+        + (
+            "La dérive n'a pas été provoquée : l'énoncé demande de la créer à la "
+            "main, hors Terraform, avant de décider quoi en faire."
             if chez_le_fournisseur == OWNER_ORIGINE
             else "Le tag n'a pas la valeur attendue."
-        )
+        ),
     )
 
     dans_le_state = gerees[ADRESSE_INSTANCE]["values"].get("tags", {}).get("Owner")
-    assert dans_le_state == OWNER_APRES_DERIVE, (
-        f"Dans le state, le tag `Owner` vaut {dans_le_state!r} alors que le "
-        f"fournisseur porte {chez_le_fournisseur!r}.\n\nLa derive a ete constatee "
-        "mais pas reconciliee : le state doit suivre le reel."
+    assert dans_le_state == OWNER_APRES_DERIVE, message(
+        en=f"In the state, the `Owner` tag is {dans_le_state!r} while the "
+        f"provider carries {chez_le_fournisseur!r}.\n\nThe drift was observed "
+        "but not reconciled: the state must follow reality.",
+        fr=f"Dans le state, le tag `Owner` vaut {dans_le_state!r} alors que le "
+        f"fournisseur porte {chez_le_fournisseur!r}.\n\nLa dérive a été constatée "
+        "mais pas réconciliée : le state doit suivre le réel.",
     )
 
 
@@ -211,26 +237,41 @@ def test_la_derive_a_ete_acceptee_des_deux_cotes(etat: dict) -> None:
 # --------------------------------------------------------------------------
 def test_le_reel_colle_au_code_et_le_state_colle_au_reel(joue: Path) -> None:
     ordinaire = _tf("plan", "-detailed-exitcode", "-input=false", "-no-color")
-    assert ordinaire.returncode == 0, (
-        f"`plan -detailed-exitcode` rend {ordinaire.returncode}, attendu 0.\n\n"
+    assert ordinaire.returncode == 0, message(
+        en=f"`plan -detailed-exitcode` returns {ordinaire.returncode}, expected 0.\n\n"
         + (
-            "Un code 2 signale que votre configuration decrit autre chose que "
-            "l'objet reel. C'est le critere de reussite d'un import, et le plus "
-            "souvent oublie : tant que le plan propose quelque chose, l'import "
+            "A code 2 signals that your configuration describes something other than "
+            "the real object. That is an import's success criterion, and the most "
+            "often forgotten: as long as the plan proposes something, the import "
+            "is not finished.\n"
+            if ordinaire.returncode == 2
+            else "A code 1 signals an error.\n"
+        )
+        + ordinaire.stdout[-1000:],
+        fr=f"`plan -detailed-exitcode` rend {ordinaire.returncode}, attendu 0.\n\n"
+        + (
+            "Un code 2 signale que votre configuration décrit autre chose que "
+            "l'objet réel. C'est le critère de réussite d'un import, et le plus "
+            "souvent oublié : tant que le plan propose quelque chose, l'import "
             "n'est pas fini.\n"
             if ordinaire.returncode == 2
             else "Un code 1 signale une erreur.\n"
         )
-        + ordinaire.stdout[-1000:]
+        + ordinaire.stdout[-1000:],
     )
 
     refresh = _tf("plan", "-refresh-only", "-detailed-exitcode", "-input=false", "-no-color")
-    assert refresh.returncode == 0, (
-        f"`plan -refresh-only -detailed-exitcode` rend {refresh.returncode}, "
+    assert refresh.returncode == 0, message(
+        en=f"`plan -refresh-only -detailed-exitcode` returns {refresh.returncode}, "
+        "expected 0.\n\nThe ordinary plan passes, but the state does not match "
+        "reality: a drift remains to be reconciled. The two criteria come out "
+        "together, and the first alone can return 0 on a stale state.\n"
+        + refresh.stdout[-1000:],
+        fr=f"`plan -refresh-only -detailed-exitcode` rend {refresh.returncode}, "
         "attendu 0.\n\nLe plan ordinaire passe, mais le state ne colle pas au "
-        "reel : une derive reste a reconcilier. Les deux criteres tombent "
-        "ensemble, et le premier seul peut sortir en 0 sur un state perime.\n"
-        + refresh.stdout[-1000:]
+        "réel : une dérive reste à réconcilier. Les deux critères tombent "
+        "ensemble, et le premier seul peut sortir en 0 sur un state périmé.\n"
+        + refresh.stdout[-1000:],
     )
 
 
@@ -247,19 +288,23 @@ def test_le_destroy_ne_laisse_rien_ni_dans_le_state_ni_chez_le_fournisseur(
     d'un nettoyage oublie ne l'est pas.
     """
     detruit = _tf("destroy", "-auto-approve", "-input=false", "-no-color")
-    assert detruit.returncode == 0, (
-        f"`terraform destroy` a echoue.\n{detruit.stderr[-1000:]}"
+    assert detruit.returncode == 0, message(
+        en=f"`terraform destroy` failed.\n{detruit.stderr[-1000:]}",
+        fr=f"`terraform destroy` a échoué.\n{detruit.stderr[-1000:]}",
     )
 
     apres = _tf("show", "-json")
     apres.check_returncode()
     restantes = _gerees(json.loads(apres.stdout))
-    assert not restantes, (
-        f"Le state porte encore {sorted(restantes)} apres le destroy."
+    assert not restantes, message(
+        en=f"The state still carries {sorted(restantes)} after the destroy.",
+        fr=f"Le state porte encore {sorted(restantes)} après le destroy.",
     )
 
     vivantes = _instances_vivantes()
-    assert not vivantes, (
-        f"Floci connait encore les instances {vivantes} apres le destroy.\n\n"
-        "Une instance importee est geree comme une autre : le destroy l'emporte."
+    assert not vivantes, message(
+        en=f"Floci still knows the instances {vivantes} after the destroy.\n\n"
+        "An imported instance is managed like any other: the destroy takes it away.",
+        fr=f"Floci connaît encore les instances {vivantes} après le destroy.\n\n"
+        "Une instance importée est gérée comme une autre : le destroy l'emporte.",
     )

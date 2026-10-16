@@ -24,7 +24,14 @@ from pathlib import Path
 
 import pytest
 
-from conftest import exiger_workdir, output_json, show_json, terraform, workdir_lab
+from conftest import (
+    exiger_workdir,
+    message,
+    output_json,
+    show_json,
+    terraform,
+    workdir_lab,
+)
 
 WORKDIR = workdir_lab(__file__)
 LAB_ID = "write-code-sensitive-data-write-only-arguments"
@@ -51,22 +58,32 @@ def _floci_joignable() -> bool:
 def applied() -> Iterator[Path]:
     exiger_workdir(WORKDIR, LAB_ID)
     if not _floci_joignable():
-        message = (
-            f"Floci injoignable sur {FLOCI_HOST}:{FLOCI_PORT}. Le lab en a besoin "
-            "pour l'API SSM. `dsoxlab run/check` le demarre tout seul (runtime."
-            "services)."
+        absence = message(
+            en=f"Floci unreachable on {FLOCI_HOST}:{FLOCI_PORT}. The lab needs it "
+            "for the SSM API. `dsoxlab run/check` starts it on its own "
+            "(runtime.services).",
+            fr=f"Floci injoignable sur {FLOCI_HOST}:{FLOCI_PORT}. Le lab en a besoin "
+            "pour l'API SSM. `dsoxlab run/check` le démarre tout seul "
+            "(runtime.services).",
         )
         if os.environ.get("LAB_WORKDIR"):
-            pytest.fail(message)
-        pytest.skip(message)
+            pytest.fail(absence)
+        pytest.skip(absence)
     init = terraform("init", "-input=false", "-no-color", cwd=WORKDIR)
     if init.returncode != 0:
-        pytest.fail(f"`terraform init` a echoue.\n{init.stderr[-1200:]}")
+        pytest.fail(message(
+            en=f"`terraform init` failed.\n{init.stderr[-1200:]}",
+            fr=f"`terraform init` a échoué.\n{init.stderr[-1200:]}",
+        ))
     app = terraform("apply", "-auto-approve", "-input=false", "-no-color", cwd=WORKDIR)
     if app.returncode != 0:
         pytest.fail(
-            "`terraform apply` a echoue. Un `???` restant, ou `value_wo` sans son "
-            f"`value_wo_version` (le couple est obligatoire) ?\n{app.stderr[-1500:]}"
+            message(
+            en="`terraform apply` failed. A leftover `???`, or `value_wo` without its "
+            f"`value_wo_version` (the pair is mandatory)?\n{app.stderr[-1500:]}",
+            fr="`terraform apply` a échoué. Un `???` restant, ou `value_wo` sans son "
+            f"`value_wo_version` (le couple est obligatoire) ?\n{app.stderr[-1500:]}",
+        )
         )
     yield WORKDIR
     # Teardown : Floci est un etat EXTERNE partage (memoire, long-vecu sous
@@ -79,8 +96,9 @@ def applied() -> Iterator[Path]:
 def _param(cwd: Path) -> dict:
     resources = show_json(cwd)["values"]["root_module"]["resources"]
     params = [r for r in resources if r.get("type") == "aws_ssm_parameter"]
-    assert len(params) == 1, (
-        f"{len(params)} aws_ssm_parameter dans le state, attendu 1."
+    assert len(params) == 1, message(
+        en=f"{len(params)} aws_ssm_parameter in the state, 1 expected.",
+        fr=f"{len(params)} aws_ssm_parameter dans le state, attendu 1.",
     )
     return params[0]
 
@@ -91,11 +109,15 @@ def _param(cwd: Path) -> dict:
 
 def test_value_wo_absent_du_state(applied: Path) -> None:
     values = _param(applied)["values"]
-    assert values["value_wo"] is None, (
-        f"`value_wo` = {values['value_wo']!r} dans le state, attendu null. Un "
-        "argument write-only est transmis au provider mais jamais persiste : s'il "
-        "porte une valeur ici, c'est un argument ordinaire (`value`) qui a ete "
-        "utilise, et le secret fuite."
+    assert values["value_wo"] is None, message(
+        en=f"`value_wo` = {values['value_wo']!r} in the state, expected null. A "
+        "write-only argument is passed to the provider but never persisted: if it "
+        "carries a value here, then an ordinary argument (`value`) was "
+        "used, and the secret leaks.",
+        fr=f"`value_wo` = {values['value_wo']!r} dans le state, attendu null. Un "
+        "argument write-only est transmis au provider mais jamais persisté : s'il "
+        "porte une valeur ici, c'est un argument ordinaire (`value`) qui a été "
+        "utilisé, et le secret fuite.",
     )
 
 
@@ -105,12 +127,18 @@ def test_value_wo_absent_du_state(applied: Path) -> None:
 
 def test_secret_absent_du_fichier_state(applied: Path) -> None:
     tfstate = applied / "terraform.tfstate"
-    assert tfstate.is_file(), "terraform.tfstate absent apres apply."
+    assert tfstate.is_file(), message(
+        en="terraform.tfstate missing after the apply.",
+        fr="terraform.tfstate absent après apply.",
+    )
     contenu = tfstate.read_text(encoding="utf-8")
-    assert SENTINELLE not in contenu, (
-        "La valeur du secret apparait en clair dans terraform.tfstate. C'est "
-        "exactement ce qu'un argument write-only doit empecher : le secret ne "
-        "doit jamais toucher le state."
+    assert SENTINELLE not in contenu, message(
+        en="The secret's value appears in clear in terraform.tfstate. That is "
+        "exactly what a write-only argument must prevent: the secret must "
+        "never touch the state.",
+        fr="La valeur du secret apparaît en clair dans terraform.tfstate. C'est "
+        "exactement ce qu'un argument write-only doit empêcher : le secret ne "
+        "doit jamais toucher le state.",
     )
 
 
@@ -120,14 +148,18 @@ def test_secret_absent_du_fichier_state(applied: Path) -> None:
 
 def test_version_wo_persistee(applied: Path) -> None:
     values = _param(applied)["values"]
-    assert values.get("value_wo_version") == 1, (
-        f"`value_wo_version` = {values.get('value_wo_version')!r}, attendu 1. Ce "
-        "numero, lui, est stocke dans le state : c'est ce qui dit a Terraform "
-        "quand renvoyer la valeur au service."
+    assert values.get("value_wo_version") == 1, message(
+        en=f"`value_wo_version` = {values.get('value_wo_version')!r}, expected 1. That "
+        "number, on the other hand, is stored in the state: it is what tells Terraform "
+        "when to send the value back to the service.",
+        fr=f"`value_wo_version` = {values.get('value_wo_version')!r}, attendu 1. Ce "
+        "numéro, lui, est stocké dans le state : c'est ce qui dit à Terraform "
+        "quand renvoyer la valeur au service.",
     )
     version_output = output_json(applied).get("value_wo_version", {}).get("value")
-    assert version_output == 1, (
-        f"output value_wo_version = {version_output!r}, attendu 1."
+    assert version_output == 1, message(
+        en=f"output value_wo_version = {version_output!r}, expected 1.",
+        fr=f"output value_wo_version = {version_output!r}, attendu 1.",
     )
 
 
@@ -137,8 +169,11 @@ def test_version_wo_persistee(applied: Path) -> None:
 
 def test_configuration_stable_apres_apply(applied: Path) -> None:
     p = terraform("plan", "-input=false", "-detailed-exitcode", "-no-color", cwd=applied)
-    assert p.returncode == 0, (
-        f"`plan -detailed-exitcode` rend {p.returncode} (2 = des changements "
-        "restent planifies). Tant que value_wo_version ne change pas, aucun renvoi "
-        f"de la valeur n'est prevu et le plan doit etre vide.\n{p.stdout[-800:]}"
+    assert p.returncode == 0, message(
+        en=f"`plan -detailed-exitcode` returns {p.returncode} (2 = changes "
+        "remain planned). As long as value_wo_version does not change, no resending "
+        f"of the value is planned and the plan must be empty.\n{p.stdout[-800:]}",
+        fr=f"`plan -detailed-exitcode` rend {p.returncode} (2 = des changements "
+        "restent planifiés). Tant que value_wo_version ne change pas, aucun renvoi "
+        f"de la valeur n'est prévu et le plan doit être vide.\n{p.stdout[-800:]}",
     )

@@ -41,7 +41,7 @@ from pathlib import Path
 
 import pytest
 
-from conftest import exiger_workdir, output_json, terraform, workdir_lab
+from conftest import exiger_workdir, message, output_json, terraform, workdir_lab
 
 WORKDIR = workdir_lab(__file__)
 LAB_ID = "certifications-professional-capstone6-hcp"
@@ -156,14 +156,19 @@ def joue() -> Path:
 
 def _applique(repertoire: Path, ou: str) -> dict:
     init = terraform("init", "-input=false", "-no-color", cwd=repertoire)
-    assert init.returncode == 0, f"`init` a échoué dans `{ou}/`.\n{init.stderr[-800:]}"
+    assert init.returncode == 0, message(
+        en=f"`init` failed in `{ou}/`.\n{init.stderr[-800:]}",
+        fr=f"`init` a échoué dans `{ou}/`.\n{init.stderr[-800:]}",
+    )
 
     applique = terraform(
         "apply", "-auto-approve", "-input=false", "-no-color", cwd=repertoire
     )
-    assert applique.returncode == 0, (
-        f"`apply` a échoué dans `{ou}/`.\n\nUn `???` subsiste, ou une expression "
-        f"ne tient pas.\n{applique.stderr[-1200:]}"
+    assert applique.returncode == 0, message(
+        en=f"`apply` failed in `{ou}/`.\n\nA `???` remains, or an expression "
+        f"does not hold.\n{applique.stderr[-1200:]}",
+        fr=f"`apply` a échoué dans `{ou}/`.\n\nUn `???` subsiste, ou une expression "
+        f"ne tient pas.\n{applique.stderr[-1200:]}",
     )
     return {c: v["value"] for c, v in output_json(repertoire).items()}
 
@@ -178,16 +183,22 @@ def sorties(joue: Path) -> dict:
 # --------------------------------------------------------------------------
 def test_les_sept_situations_sont_qualifiees(sorties: dict) -> None:
     verdicts = sorties.get("verdicts")
-    assert isinstance(verdicts, dict), (
-        f"`verdicts` rend {type(verdicts).__name__}, une map attendue."
+    assert isinstance(verdicts, dict), message(
+        en=f"`verdicts` returns {type(verdicts).__name__}, a map was expected.",
+        fr=f"`verdicts` rend {type(verdicts).__name__}, une map attendue.",
     )
-    assert set(verdicts) == set(VERDICTS_ATTENDUS), (
-        f"Situations qualifiées : {sorted(verdicts)}.\nAttendu les sept : "
-        f"{sorted(VERDICTS_ATTENDUS)}."
+    assert set(verdicts) == set(VERDICTS_ATTENDUS), message(
+        en=f"Situations classified: {sorted(verdicts)}.\nAll seven were expected: "
+        f"{sorted(VERDICTS_ATTENDUS)}.",
+        fr=f"Situations qualifiées : {sorted(verdicts)}.\nAttendu les sept : "
+        f"{sorted(VERDICTS_ATTENDUS)}.",
     )
 
     hors = {n: v for n, v in verdicts.items() if v not in VERDICTS_ADMIS}
-    assert not hors, f"Verdicts hors vocabulaire : {hors}."
+    assert not hors, message(
+        en=f"Verdicts outside the vocabulary: {hors}.",
+        fr=f"Verdicts hors vocabulaire : {hors}.",
+    )
 
 
 def test_les_sept_verdicts_sont_tous_differents(sorties: dict) -> None:
@@ -202,10 +213,13 @@ def test_les_sept_verdicts_sont_tous_differents(sorties: dict) -> None:
     doublons = {
         v for v in verdicts.values() if list(verdicts.values()).count(v) > 1
     }
-    assert not doublons, (
-        f"Ces verdicts sont rendus plusieurs fois : {sorted(doublons)}.\n\n"
+    assert not doublons, message(
+        en=f"These verdicts are returned several times: {sorted(doublons)}.\n\n"
+        "The seven situations have seven different outcomes. Two cases receiving "
+        "the same verdict signal a rule that confuses them.",
+        fr=f"Ces verdicts sont rendus plusieurs fois : {sorted(doublons)}.\n\n"
         "Les sept situations ont sept issues différentes. Deux cas qui reçoivent "
-        "le même verdict signalent une règle qui les confond."
+        "le même verdict signalent une règle qui les confond.",
     )
 
 
@@ -213,21 +227,24 @@ def test_les_sept_verdicts_sont_tous_differents(sorties: dict) -> None:
 def test_chaque_situation_recoit_le_bon_verdict(sorties: dict, cas: str) -> None:
     attendu, pourquoi = VERDICTS_ATTENDUS[cas]
     obtenu = sorties["verdicts"].get(cas)
-    assert obtenu == attendu, (
-        f"`{cas}` vaut {obtenu!r}, attendu {attendu!r}.\n\n{pourquoi.capitalize()}."
+    assert obtenu == attendu, message(
+        en=f"`{cas}` is {obtenu!r}, expected {attendu!r}.\n\n{pourquoi.capitalize()}.",
+        fr=f"`{cas}` vaut {obtenu!r}, attendu {attendu!r}.\n\n{pourquoi.capitalize()}.",
     )
 
 
 @pytest.mark.parametrize("fait", sorted(GOUVERNANCE_ATTENDUE))
 def test_chaque_fait_de_gouvernance(sorties: dict, fait: str) -> None:
     gouvernance = sorties.get("gouvernance")
-    assert isinstance(gouvernance, dict), (
-        f"`gouvernance` rend {type(gouvernance).__name__}, une map attendue."
+    assert isinstance(gouvernance, dict), message(
+        en=f"`gouvernance` returns {type(gouvernance).__name__}, a map was expected.",
+        fr=f"`gouvernance` rend {type(gouvernance).__name__}, une map attendue.",
     )
     attendu, pourquoi = GOUVERNANCE_ATTENDUE[fait]
     obtenu = gouvernance.get(fait)
-    assert obtenu == attendu, (
-        f"`{fait}` vaut {obtenu!r}, {attendu!r} attendu.\n\n{pourquoi.capitalize()}."
+    assert obtenu == attendu, message(
+        en=f"`{fait}` is {obtenu!r}, {attendu!r} expected.\n\n{pourquoi.capitalize()}.",
+        fr=f"`{fait}` vaut {obtenu!r}, {attendu!r} attendu.\n\n{pourquoi.capitalize()}.",
     )
 
 
@@ -259,15 +276,20 @@ def test_le_rattachement_va_jusqu_a_l_authentification(joue: Path) -> None:
     sortie = proc.stdout + proc.stderr
 
     restantes = {m: r for m, r in FAUTES.items() if m in sortie}
-    assert not restantes, (
-        "Le rattachement porte encore des fautes :\n"
-        + "\n".join(f"  - {r}" for r in restantes.values())
+    assert not restantes, message(
+        en="The attachment still carries mistakes:\n"
+        + "\n".join(f"  - {r}" for r in restantes.values()),
+        fr="Le rattachement porte encore des fautes :\n"
+        + "\n".join(f"  - {r}" for r in restantes.values()),
     )
 
-    assert FRONTIERE in sortie, (
-        "Le rattachement ne va pas jusqu'à l'authentification.\n\nUne "
+    assert FRONTIERE in sortie, message(
+        en="The attachment does not go as far as authentication.\n\nA "
+        "correct `cloud` configuration stops at \"Required token could not "
+        f"be found\". Output obtained:\n\n{sortie[-1000:]}",
+        fr="Le rattachement ne va pas jusqu'à l'authentification.\n\nUne "
         "configuration `cloud` correcte s'arrête sur « Required token could not "
-        f"be found ». Sortie obtenue :\n\n{sortie[-1000:]}"
+        f"be found ». Sortie obtenue :\n\n{sortie[-1000:]}",
     )
 
 
@@ -280,16 +302,21 @@ def test_le_rattachement_designe_le_bon_workspace(joue: Path) -> None:
     texte = (joue / RATTACHEMENT / "versions.tf").read_text(encoding="utf-8")
     nu = "\n".join(ligne.split("#")[0] for ligne in texte.splitlines())
 
-    assert f'"{ORGANISATION}"' in nu, (
-        f"L'organisation `{ORGANISATION}` n'est pas écrite en chaîne littérale.\n\n"
-        "Un bloc `cloud` est résolu avant toute évaluation d'expression."
+    assert f'"{ORGANISATION}"' in nu, message(
+        en=f"The organisation `{ORGANISATION}` is not written as a literal string.\n\n"
+        "A `cloud` block is resolved before any expression evaluation.",
+        fr=f"L'organisation `{ORGANISATION}` n'est pas écrite en chaîne littérale.\n\n"
+        "Un bloc `cloud` est résolu avant toute évaluation d'expression.",
     )
-    assert f'"{WORKSPACE}"' in nu, (
-        f"Le workspace `{WORKSPACE}` n'est pas désigné."
+    assert f'"{WORKSPACE}"' in nu, message(
+        en=f"The workspace `{WORKSPACE}` is not named.",
+        fr=f"Le workspace `{WORKSPACE}` n'est pas désigné.",
     )
-    assert "tags" not in nu, (
-        "Le rattachement porte des `tags`. Il vise UN workspace, par son nom : "
-        "les deux stratégies s'excluent."
+    assert "tags" not in nu, message(
+        en="The attachment carries `tags`. It targets ONE workspace, by its name: "
+        "the two strategies are mutually exclusive.",
+        fr="Le rattachement porte des `tags`. Il vise UN workspace, par son nom : "
+        "les deux stratégies s'excluent.",
     )
 
 
@@ -308,13 +335,19 @@ def test_le_jeton_n_entre_pas_dans_le_state(joue: Path, secret: dict) -> None:
     ciblée ne le verrait pas.
     """
     etat = joue / REP_SECRET / "terraform.tfstate"
-    assert etat.is_file(), "Aucun state : la configuration n'a pas été appliquée."
+    assert etat.is_file(), message(
+        en="No state: the configuration was not applied.",
+        fr="Aucun state : la configuration n'a pas été appliquée.",
+    )
 
     contenu = etat.read_text(encoding="utf-8")
-    assert JETON not in contenu, (
-        f"Le state porte le jeton en clair, {contenu.count(JETON)} fois.\n\n"
+    assert JETON not in contenu, message(
+        en=f"The state carries the token in clear, {contenu.count(JETON)} times.\n\n"
+        "`sensitive` stops Terraform from DISPLAYING it, not from recording it. A "
+        "state is read, backed up and shared.",
+        fr=f"Le state porte le jeton en clair, {contenu.count(JETON)} fois.\n\n"
         "`sensitive` empêche Terraform de l'AFFICHER, pas de l'enregistrer. Un "
-        "state se lit, se sauvegarde et se partage."
+        "state se lit, se sauvegarde et se partage.",
     )
 
 
@@ -326,25 +359,37 @@ def test_la_fiche_permet_de_verifier_sans_divulguer(joue: Path, secret: dict) ->
     moitié et ne servirait plus à rien.
     """
     fiche = joue / REP_SECRET / "fiche-service.txt"
-    assert fiche.is_file(), (
-        "`fiche-service.txt` n'a pas été créée : la ressource n'a pas été "
-        "appliquée."
+    assert fiche.is_file(), message(
+        en="`fiche-service.txt` was not created: the resource was not "
+        "applied.",
+        fr="`fiche-service.txt` n'a pas été créée : la ressource n'a pas été "
+        "appliquée.",
     )
 
     texte = fiche.read_text(encoding="utf-8")
     empreinte = hashlib.sha256(JETON.encode()).hexdigest()
 
-    assert JETON not in texte, "La fiche porte le jeton en clair."
-    assert empreinte in texte, (
-        "La fiche ne porte pas l'empreinte SHA-256 du jeton.\n\nSans elle, un "
+    assert JETON not in texte, message(
+        en="The record carries the token in clear.",
+        fr="La fiche porte le jeton en clair.",
+    )
+    assert empreinte in texte, message(
+        en="The record does not carry the token's SHA-256 fingerprint.\n\nWithout it, an "
+        "auditor can check nothing: the record is indeed free of secrets, but "
+        "it is also of no use.",
+        fr="La fiche ne porte pas l'empreinte SHA-256 du jeton.\n\nSans elle, un "
         "auditeur ne peut rien vérifier : la fiche est certes sans secret, mais "
-        "elle est aussi sans usage."
+        "elle est aussi sans usage.",
     )
 
     publiee = secret.get("empreinte_publiee")
-    assert publiee == empreinte, (
-        f"`empreinte_publiee` vaut {publiee!r}, l'empreinte du jeton attendue.\n\n"
+    assert publiee == empreinte, message(
+        en=f"`empreinte_publiee` is {publiee!r}, the token's fingerprint was expected.\n\n"
+        "Terraform propagates sensitivity through functions without looking at "
+        "what they do: the output must therefore be annotated `sensitive`, failing "
+        "which the apply fails on \"Output refers to sensitive values\".",
+        fr=f"`empreinte_publiee` vaut {publiee!r}, l'empreinte du jeton attendue.\n\n"
         "Terraform propage la sensibilité à travers les fonctions sans regarder "
         "ce qu'elles font : l'output doit donc être annoté `sensitive`, faute de "
-        "quoi l'apply échoue sur « Output refers to sensitive values »."
+        "quoi l'apply échoue sur « Output refers to sensitive values ».",
     )

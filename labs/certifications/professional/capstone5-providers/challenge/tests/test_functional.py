@@ -45,7 +45,7 @@ from pathlib import Path
 
 import pytest
 
-from conftest import exiger_workdir, workdir_lab
+from conftest import exiger_workdir, message, workdir_lab
 
 WORKDIR = workdir_lab(__file__)
 LAB_ID = "certifications-professional-capstone5-providers"
@@ -120,7 +120,10 @@ def _instances_vivantes(nom: str, region: str) -> list[str]:
 def joue() -> Path:
     exiger_workdir(WORKDIR, LAB_ID)
     init = _tf("init", "-input=false", "-no-color")
-    assert init.returncode == 0, f"`terraform init` a echoue.\n{init.stderr[-1000:]}"
+    assert init.returncode == 0, message(
+        en=f"`terraform init` failed.\n{init.stderr[-1000:]}",
+        fr=f"`terraform init` a échoué.\n{init.stderr[-1000:]}",
+    )
     return WORKDIR
 
 
@@ -128,12 +131,17 @@ def joue() -> Path:
 def configuration(joue: Path) -> dict:
     """La configuration telle que Terraform la comprend, pas telle qu'elle est ecrite."""
     plan = _tf("plan", "-out=providers.tfplan", "-input=false", "-no-color")
-    assert plan.returncode == 0, (
-        "`terraform plan` a echoue.\n\nSi le message parle de « No valid "
-        "credential sources found », le provider cherche des identifiants la ou "
+    assert plan.returncode == 0, message(
+        en="`terraform plan` failed.\n\nIf the message mentions \"No valid "
+        "credential sources found\", the provider is looking for credentials where "
+        "there are none: it needs non-empty dummy credentials and "
+        "the options that spare it from going to check an identity.\n\n"
+        f"{plan.stderr[-1200:]}",
+        fr="`terraform plan` a échoué.\n\nSi le message parle de « No valid "
+        "credential sources found », le provider cherche des identifiants là où "
         "il n'y en a pas : il lui faut des identifiants factices non vides et "
-        "les options qui le dispensent d'aller verifier une identite.\n\n"
-        f"{plan.stderr[-1200:]}"
+        "les options qui le dispensent d'aller vérifier une identité.\n\n"
+        f"{plan.stderr[-1200:]}",
     )
     montre = _tf("show", "-json", "providers.tfplan")
     montre.check_returncode()
@@ -143,8 +151,9 @@ def configuration(joue: Path) -> dict:
 @pytest.fixture(scope="module")
 def etat(joue: Path) -> dict:
     applique = _tf("apply", "-auto-approve", "-input=false", "-no-color")
-    assert applique.returncode == 0, (
-        f"`terraform apply` a echoue.\n{applique.stderr[-1200:]}"
+    assert applique.returncode == 0, message(
+        en=f"`terraform apply` failed.\n{applique.stderr[-1200:]}",
+        fr=f"`terraform apply` a échoué.\n{applique.stderr[-1200:]}",
     )
     proc = _tf("show", "-json")
     proc.check_returncode()
@@ -157,33 +166,44 @@ def etat(joue: Path) -> dict:
 def test_deux_configurations_du_provider_coexistent(configuration: dict) -> None:
     configs = configuration.get("provider_config") or {}
 
-    assert CLE_DEFAUT in configs, (
-        f"Aucune configuration par defaut du provider. Presentes : "
-        f"{sorted(configs)}."
+    assert CLE_DEFAUT in configs, message(
+        en=f"No default provider configuration. Present: "
+        f"{sorted(configs)}.",
+        fr=f"Aucune configuration par défaut du provider. Présentes : "
+        f"{sorted(configs)}.",
     )
-    assert CLE_ALIASEE in configs, (
-        f"Aucune configuration aliasee `{CLE_ALIASEE}`.\nPresentes : "
-        f"{sorted(configs)}.\n\nUne seconde configuration du MEME provider exige "
-        "un `alias` : sans lui, Terraform refuse le doublon."
+    assert CLE_ALIASEE in configs, message(
+        en=f"No aliased configuration `{CLE_ALIASEE}`.\nPresent: "
+        f"{sorted(configs)}.\n\nA second configuration of the SAME provider requires "
+        "an `alias`: without it, Terraform refuses the duplicate.",
+        fr=f"Aucune configuration aliasée `{CLE_ALIASEE}`.\nPrésentes : "
+        f"{sorted(configs)}.\n\nUne seconde configuration du MÊME provider exige "
+        "un `alias` : sans lui, Terraform refuse le doublon.",
     )
 
     alias = configs[CLE_ALIASEE].get("alias")
-    assert alias == "archives", (
-        f"La seconde configuration porte l'alias {alias!r}, `archives` attendu."
+    assert alias == "archives", message(
+        en=f"The second configuration carries the alias {alias!r}, `archives` expected.",
+        fr=f"La seconde configuration porte l'alias {alias!r}, `archives` attendu.",
     )
 
     regions = {
         cle: (configs[cle].get("expressions", {}).get("region", {}) or {}).get("constant_value")
         for cle in (CLE_DEFAUT, CLE_ALIASEE)
     }
-    assert regions[CLE_DEFAUT] == REGION_PAR_DEFAUT, (
-        f"La configuration par defaut vise la region {regions[CLE_DEFAUT]!r}, "
-        f"{REGION_PAR_DEFAUT!r} attendue."
+    assert regions[CLE_DEFAUT] == REGION_PAR_DEFAUT, message(
+        en=f"The default configuration targets region {regions[CLE_DEFAUT]!r}, "
+        f"{REGION_PAR_DEFAUT!r} expected.",
+        fr=f"La configuration par défaut vise la région {regions[CLE_DEFAUT]!r}, "
+        f"{REGION_PAR_DEFAUT!r} attendue.",
     )
-    assert regions[CLE_ALIASEE] == REGION_ARCHIVES, (
-        f"La configuration aliasee vise la region {regions[CLE_ALIASEE]!r}, "
+    assert regions[CLE_ALIASEE] == REGION_ARCHIVES, message(
+        en=f"The aliased configuration targets region {regions[CLE_ALIASEE]!r}, "
+        f"{REGION_ARCHIVES!r} expected.\n\nTwo configurations targeting the "
+        "same region are of no use: that is what distinguishes them.",
+        fr=f"La configuration aliasée vise la région {regions[CLE_ALIASEE]!r}, "
         f"{REGION_ARCHIVES!r} attendue.\n\nDeux configurations qui visent la "
-        "meme region ne servent a rien : c'est ce qui les distingue."
+        "même région ne servent à rien : c'est ce qui les distingue.",
     )
 
 
@@ -204,15 +224,21 @@ def test_chaque_ressource_est_rattachee_a_la_bonne_configuration(
         for r in configuration["root_module"]["resources"]
     }
 
-    assert rattachements.get(PRINCIPAL) == CLE_DEFAUT, (
-        f"`{PRINCIPAL}` est rattachee a {rattachements.get(PRINCIPAL)!r}, "
-        f"{CLE_DEFAUT!r} attendu."
+    assert rattachements.get(PRINCIPAL) == CLE_DEFAUT, message(
+        en=f"`{PRINCIPAL}` is attached to {rattachements.get(PRINCIPAL)!r}, "
+        f"{CLE_DEFAUT!r} expected.",
+        fr=f"`{PRINCIPAL}` est rattachée à {rattachements.get(PRINCIPAL)!r}, "
+        f"{CLE_DEFAUT!r} attendu.",
     )
-    assert rattachements.get(ARCHIVES) == CLE_ALIASEE, (
-        f"`{ARCHIVES}` est rattachee a {rattachements.get(ARCHIVES)!r}, "
+    assert rattachements.get(ARCHIVES) == CLE_ALIASEE, message(
+        en=f"`{ARCHIVES}` is attached to {rattachements.get(ARCHIVES)!r}, "
+        f"{CLE_ALIASEE!r} expected.\n\nWithout the `provider` argument, a resource "
+        "uses the DEFAULT configuration. It would be created in the wrong "
+        "place, silently: the two instances look alike.",
+        fr=f"`{ARCHIVES}` est rattachée à {rattachements.get(ARCHIVES)!r}, "
         f"{CLE_ALIASEE!r} attendu.\n\nSans l'argument `provider`, une ressource "
-        "utilise la configuration PAR DEFAUT. Elle serait creee au mauvais "
-        "endroit, en silence : les deux instances se ressemblent."
+        "utilise la configuration PAR DÉFAUT. Elle serait créée au mauvais "
+        "endroit, en silence : les deux instances se ressemblent.",
     )
 
 
@@ -222,25 +248,35 @@ def test_chaque_ressource_est_rattachee_a_la_bonne_configuration(
 def test_la_version_du_provider_est_contrainte(joue: Path) -> None:
     """Le verrou dit ce qui est REELLEMENT epingle, le `.tf` ce qui est souhaite."""
     verrou = joue / ".terraform.lock.hcl"
-    assert verrou.is_file(), "`.terraform.lock.hcl` est absent : `init` n'a pas abouti."
+    assert verrou.is_file(), message(
+        en="`.terraform.lock.hcl` is missing: `init` did not succeed.",
+        fr="`.terraform.lock.hcl` est absent : `init` n'a pas abouti.",
+    )
 
     contenu = verrou.read_text(encoding="utf-8")
-    assert "hashicorp/aws" in contenu, (
-        "Le verrou ne mentionne pas `hashicorp/aws`."
+    assert "hashicorp/aws" in contenu, message(
+        en="The lock does not mention `hashicorp/aws`.",
+        fr="Le verrou ne mentionne pas `hashicorp/aws`.",
     )
-    assert "constraints" in contenu, (
-        "Le verrou ne porte AUCUNE contrainte de version.\n\nLe provider a ete "
-        "installe sans contrainte : rien ne garantit que le collegue obtiendra "
-        "la meme version.\n\nAttention, `constraints` n'est ecrit qu'a la "
-        "CREATION de l'entree : si vous avez ajoute la contrainte apres coup, "
-        "supprimez `.terraform.lock.hcl` et relancez `init`."
+    assert "constraints" in contenu, message(
+        en="The lock carries NO version constraint.\n\nThe provider was "
+        "installed without a constraint: nothing guarantees that the colleague will get "
+        "the same version.\n\nCareful, `constraints` is only written at the "
+        "CREATION of the entry: if you added the constraint afterwards, "
+        "delete `.terraform.lock.hcl` and run `init` again.",
+        fr="Le verrou ne porte AUCUNE contrainte de version.\n\nLe provider a été "
+        "installé sans contrainte : rien ne garantit que le collègue obtiendra "
+        "la même version.\n\nAttention, `constraints` n'est écrit qu'à la "
+        "CRÉATION de l'entrée : si vous avez ajouté la contrainte après coup, "
+        "supprimez `.terraform.lock.hcl` et relancez `init`.",
     )
 
     proc = _tf("version", "-json")
     proc.check_returncode()
     choisis = json.loads(proc.stdout).get("provider_selections", {})
-    assert any("hashicorp/aws" in cle for cle in choisis), (
-        f"Le provider aws n'est pas installe. Presents : {sorted(choisis)}."
+    assert any("hashicorp/aws" in cle for cle in choisis), message(
+        en=f"The aws provider is not installed. Present: {sorted(choisis)}.",
+        fr=f"Le provider aws n'est pas installé. Présents : {sorted(choisis)}.",
     )
 
 
@@ -258,8 +294,9 @@ def test_les_deux_instances_existent_chez_l_emulateur(etat: dict) -> None:
         for r in etat["values"]["root_module"]["resources"]
         if r["mode"] == "managed"
     }
-    assert set(adresses) == {PRINCIPAL, ARCHIVES}, (
-        f"Le state porte {sorted(adresses)}, attendu {sorted({PRINCIPAL, ARCHIVES})}."
+    assert set(adresses) == {PRINCIPAL, ARCHIVES}, message(
+        en=f"The state carries {sorted(adresses)}, expected {sorted({PRINCIPAL, ARCHIVES})}.",
+        fr=f"Le state porte {sorted(adresses)}, attendu {sorted({PRINCIPAL, ARCHIVES})}.",
     )
 
     attendu = (
@@ -268,26 +305,35 @@ def test_les_deux_instances_existent_chez_l_emulateur(etat: dict) -> None:
     )
     for adresse, nom, sa_region, l_autre in attendu:
         chez_elle = _instances_vivantes(nom, sa_region)
-        assert adresses[adresse] in chez_elle, (
-            f"L'instance `{nom}` du state porte l'identifiant "
-            f"{adresses[adresse]!r}, et l'emulateur ne connait que {chez_elle} "
-            f"dans la region {sa_region}."
+        assert adresses[adresse] in chez_elle, message(
+            en=f"The `{nom}` instance in the state carries the identifier "
+            f"{adresses[adresse]!r}, and the emulator only knows {chez_elle} "
+            f"in region {sa_region}.",
+            fr=f"L'instance `{nom}` du state porte l'identifiant "
+            f"{adresses[adresse]!r}, et l'émulateur ne connaît que {chez_elle} "
+            f"dans la région {sa_region}.",
         )
 
         ailleurs = _instances_vivantes(nom, l_autre)
-        assert adresses[adresse] not in ailleurs, (
-            f"L'instance `{nom}` est visible dans la region {l_autre}, alors "
+        assert adresses[adresse] not in ailleurs, message(
+            en=f"The `{nom}` instance is visible in region {l_autre}, although "
+            f"it should live in {sa_region}.\n\nBoth resources were "
+            "created by the SAME provider configuration: the `provider` "
+            "argument is missing on the one that was supposed to go elsewhere.",
+            fr=f"L'instance `{nom}` est visible dans la région {l_autre}, alors "
             f"qu'elle devrait vivre en {sa_region}.\n\nLes deux ressources ont "
-            "ete creees par la MEME configuration de provider : l'argument "
-            "`provider` manque sur celle qui devait aller ailleurs."
+            "été créées par la MÊME configuration de provider : l'argument "
+            "`provider` manque sur celle qui devait aller ailleurs.",
         )
 
 
 def test_la_configuration_converge(joue: Path, etat: dict) -> None:
     plan = _tf("plan", "-detailed-exitcode", "-input=false", "-no-color")
-    assert plan.returncode == 0, (
-        f"`plan -detailed-exitcode` rend {plan.returncode}, attendu 0.\n"
-        + plan.stdout[-800:]
+    assert plan.returncode == 0, message(
+        en=f"`plan -detailed-exitcode` returns {plan.returncode}, expected 0.\n"
+        + plan.stdout[-800:],
+        fr=f"`plan -detailed-exitcode` rend {plan.returncode}, attendu 0.\n"
+        + plan.stdout[-800:],
     )
 
 
@@ -302,13 +348,17 @@ def test_le_destroy_ne_laisse_aucune_instance(joue: Path) -> None:
     d'instance ni de lab.
     """
     detruit = _tf("destroy", "-auto-approve", "-input=false", "-no-color")
-    assert detruit.returncode == 0, f"`destroy` a echoue.\n{detruit.stderr[-1000:]}"
+    assert detruit.returncode == 0, message(
+        en=f"`destroy` failed.\n{detruit.stderr[-1000:]}",
+        fr=f"`destroy` a échoué.\n{detruit.stderr[-1000:]}",
+    )
 
     for nom, region in (
         ("capstone5-principal", REGION_PAR_DEFAUT),
         ("capstone5-archives", REGION_ARCHIVES),
     ):
         vivantes = _instances_vivantes(nom, region)
-        assert not vivantes, (
-            f"L'emulateur connait encore {vivantes} pour `{nom}` apres le destroy."
+        assert not vivantes, message(
+            en=f"The emulator still knows {vivantes} for `{nom}` after the destroy.",
+            fr=f"L'émulateur connaît encore {vivantes} pour `{nom}` après le destroy.",
         )

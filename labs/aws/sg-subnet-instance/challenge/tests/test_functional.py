@@ -33,7 +33,7 @@ from collections.abc import Iterator
 
 import pytest
 
-from conftest import exiger_workdir, workdir_lab
+from conftest import exiger_workdir, message, workdir_lab
 
 WORKDIR = workdir_lab(__file__)
 LAB_ID = "aws-sg-subnet-instance"
@@ -66,7 +66,10 @@ def _aws(*args: str) -> subprocess.CompletedProcess[str]:
 def _etat() -> list[dict]:
     res = _tf("show", "-json")
     if res.returncode != 0:
-        pytest.fail(f"`terraform show -json` a echoue :\n{res.stderr[-600:]}")
+        pytest.fail(message(
+            en=f"`terraform show -json` failed:\n{res.stderr[-600:]}",
+            fr=f"`terraform show -json` a échoué :\n{res.stderr[-600:]}",
+        ))
     etat = json.loads(res.stdout or "{}")
     return etat.get("values", {}).get("root_module", {}).get("resources", [])
 
@@ -104,17 +107,23 @@ def _exiger_floci() -> None:
     """
     if _floci_joignable():
         return
-    message = (
-        f"Floci n'est pas joignable sur {FLOCI_HOST}:{FLOCI_PORT}. Ce lab en a "
-        "besoin : Floci emule l'API AWS en local, sans compte ni carte "
+    explication = message(
+        en=f"Floci cannot be reached on {FLOCI_HOST}:{FLOCI_PORT}. This lab needs "
+        "it: Floci emulates the AWS API locally, with no account and no credit "
+        "card.\n\n"
+        "Start the lab with `dsoxlab run aws-sg-subnet-instance`, which starts it "
+        "on its own, and run your `dsoxlab check` FROM that session: the "
+        "service stops when you leave it.",
+        fr=f"Floci n'est pas joignable sur {FLOCI_HOST}:{FLOCI_PORT}. Ce lab en a "
+        "besoin : Floci émule l'API AWS en local, sans compte ni carte "
         "bancaire.\n\n"
-        "Lancez le lab avec `dsoxlab run aws-sg-subnet-instance`, qui le demarre tout "
+        "Lancez le lab avec `dsoxlab run aws-sg-subnet-instance`, qui le démarre tout "
         "seul, et faites votre `dsoxlab check` DEPUIS cette session : le "
-        "service s'arrete quand vous la quittez."
+        "service s'arrête quand vous la quittez.",
     )
     if os.environ.get("LAB_WORKDIR"):
-        pytest.fail(message)
-    pytest.skip(message)
+        pytest.fail(explication)
+    pytest.skip(explication)
 
 @pytest.fixture(scope="module", autouse=True)
 def applique() -> Iterator[None]:
@@ -132,20 +141,32 @@ def applique() -> Iterator[None]:
         time.sleep(2)
     if sonde is None or sonde.returncode != 0:
         pytest.fail(
-            f"L'emulateur EC2 ne repond pas sur {ENDPOINT}. Le lab le declare "
+            message(
+            en=f"The EC2 emulator does not answer on {ENDPOINT}. The lab declares it "
+            "under `runtime.services`: `dsoxlab run` and `dsoxlab check` start "
+            f"it on their own.\n{sonde.stderr[-400:] if sonde else ''}",
+            fr=f"L'émulateur EC2 ne répond pas sur {ENDPOINT}. Le lab le déclare "
             "en `runtime.services` : `dsoxlab run` et `dsoxlab check` le "
-            f"demarrent tout seuls.\n{sonde.stderr[-400:] if sonde else ''}"
+            f"démarrent tout seuls.\n{sonde.stderr[-400:] if sonde else ''}",
+        )
         )
 
     init = _tf("init", "-input=false", "-no-color")
     if init.returncode != 0:
-        pytest.fail(f"`terraform init` a echoue :\n{init.stderr[-800:]}")
+        pytest.fail(message(
+            en=f"`terraform init` failed:\n{init.stderr[-800:]}",
+            fr=f"`terraform init` a échoué :\n{init.stderr[-800:]}",
+        ))
 
     app = _tf("apply", "-auto-approve", "-input=false", "-no-color")
     if app.returncode != 0:
         pytest.fail(
-            "`terraform apply` a echoue. Des blocs sont-ils encore a `???` ?\n"
-            f"{(app.stderr or app.stdout)[-1500:]}"
+            message(
+            en="`terraform apply` failed. Are any blocks still set to `???`?\n"
+            f"{(app.stderr or app.stdout)[-1500:]}",
+            fr="`terraform apply` a échoué. Des blocs sont-ils encore à `???` ?\n"
+            f"{(app.stderr or app.stdout)[-1500:]}",
+        )
         )
 
     yield
@@ -167,15 +188,23 @@ def applique() -> Iterator[None]:
 def test_le_reseau_est_gere_et_porte_deux_subnets() -> None:
     """Le VPC et les deux subnets doivent exister, et etre geres."""
     vpc = _du_type("aws_vpc")
-    assert len(vpc) == 1, f"un seul VPC attendu, {len(vpc)} trouve(s)"
+    assert len(vpc) == 1, message(
+        en=f"one VPC expected, {len(vpc)} found",
+        fr=f"un seul VPC attendu, {len(vpc)} trouvé(s)",
+    )
 
     subnets = _du_type("aws_subnet")
-    assert len(subnets) == 2, (
-        f"deux subnets attendus, {len(subnets)} trouve(s). `reseau.tf` est "
-        "fourni, il ne faut pas le modifier."
+    assert len(subnets) == 2, message(
+        en=f"two subnets expected, {len(subnets)} found. `reseau.tf` is "
+        "provided and must not be modified.",
+        fr=f"deux subnets attendus, {len(subnets)} trouvé(s). `reseau.tf` est "
+        "fourni, il ne faut pas le modifier.",
     )
     tiers = {s["values"].get("tags", {}).get("Tier") for s in subnets}
-    assert tiers == {"public", "private"}, f"tags Tier obtenus : {tiers}"
+    assert tiers == {"public", "private"}, message(
+        en=f"Tier tags obtained: {tiers}",
+        fr=f"tags Tier obtenus : {tiers}",
+    )
 
 
 def test_le_subnet_est_designe_par_une_data_source_filtree() -> None:
@@ -186,40 +215,55 @@ def test_le_subnet_est_designe_par_une_data_source_filtree() -> None:
     liste qu'il faudrait indexer, donc trier au hasard.
     """
     data = [r for r in _etat() if r.get("mode") == "data"]
-    assert data, (
-        "aucune data source dans l'etat : le subnet est-il designe par un "
-        "index de liste plutot que par son tag ?"
+    assert data, message(
+        en="no data source in the state: is the subnet named by a "
+        "list index rather than by its tag?",
+        fr="aucune data source dans l'état : le subnet est-il désigné par un "
+        "index de liste plutôt que par son tag ?",
     )
     types = {r.get("type") for r in data}
-    assert "aws_subnet" in types, (
-        f"data sources trouvees : {types}. Le lab attend `data \"aws_subnet\"`, "
-        "au singulier, qui echoue si le filtre ne designe pas exactement un "
-        "subnet."
+    assert "aws_subnet" in types, message(
+        en=f"data sources found: {types}. The lab expects `data \"aws_subnet\"`, "
+        "in the singular, which fails if the filter does not name exactly one "
+        "subnet.",
+        fr=f"data sources trouvées : {types}. Le lab attend `data \"aws_subnet\"`, "
+        "au singulier, qui échoue si le filtre ne désigne pas exactement un "
+        "subnet.",
     )
 
     retenu = next(r for r in data if r.get("type") == "aws_subnet")
     tier = (retenu["values"].get("tags") or {}).get("Tier")
-    assert tier == "public", (
-        f"le subnet retenu porte Tier={tier!r} au lieu de 'public' : le filtre "
-        "ne vise pas le bon tag."
+    assert tier == "public", message(
+        en=f"the chosen subnet carries Tier={tier!r} instead of 'public': the filter "
+        "does not target the right tag.",
+        fr=f"le subnet retenu porte Tier={tier!r} au lieu de 'public' : le filtre "
+        "ne vise pas le bon tag.",
     )
 
 
 def test_l_instance_vit_dans_le_subnet_retenu() -> None:
     instances = _du_type("aws_instance")
-    assert len(instances) == 1, f"une instance attendue, {len(instances)} trouvee(s)"
+    assert len(instances) == 1, message(
+        en=f"one instance expected, {len(instances)} found",
+        fr=f"une instance attendue, {len(instances)} trouvée(s)",
+    )
 
     data_subnet = next(
         (r for r in _etat()
          if r.get("mode") == "data" and r.get("type") == "aws_subnet"), None
     )
-    assert data_subnet is not None, "pas de data source de subnet"
+    assert data_subnet is not None, message(
+        en="no subnet data source",
+        fr="pas de data source de subnet",
+    )
 
     attendu = data_subnet["values"].get("id")
     obtenu = instances[0]["values"].get("subnet_id")
-    assert obtenu == attendu, (
-        f"l'instance est dans {obtenu}, alors que le subnet retenu est "
-        f"{attendu}. Son `subnet_id` doit venir de la data source."
+    assert obtenu == attendu, message(
+        en=f"the instance is in {obtenu}, while the chosen subnet is "
+        f"{attendu}. Its `subnet_id` must come from the data source.",
+        fr=f"l'instance est dans {obtenu}, alors que le subnet retenu est "
+        f"{attendu}. Son `subnet_id` doit venir de la data source.",
     )
 
 
@@ -234,29 +278,41 @@ def test_le_groupe_appartient_au_vpc_et_n_a_aucune_regle_entrante_inline() -> No
     et le plan ne se stabilise jamais.
     """
     groupes = _du_type("aws_security_group")
-    assert len(groupes) == 1, f"un groupe attendu, {len(groupes)} trouve(s)"
+    assert len(groupes) == 1, message(
+        en=f"one group expected, {len(groupes)} found",
+        fr=f"un groupe attendu, {len(groupes)} trouvé(s)",
+    )
     valeurs = groupes[0]["values"]
 
     vpc = _du_type("aws_vpc")[0]["values"]["id"]
-    assert valeurs.get("vpc_id") == vpc, (
-        f"le groupe est rattache a {valeurs.get('vpc_id')}, pas au VPC du lab "
-        f"({vpc})."
+    assert valeurs.get("vpc_id") == vpc, message(
+        en=f"the group is attached to {valeurs.get('vpc_id')}, not to the lab's VPC "
+        f"({vpc}).",
+        fr=f"le groupe est rattaché à {valeurs.get('vpc_id')}, pas au VPC du lab "
+        f"({vpc}).",
     )
 
     inline = valeurs.get("ingress") or []
-    assert inline == [], (
-        f"le groupe porte {len(inline)} regle(s) d'entree INLINE. Elles doivent "
-        "toutes etre des ressources `aws_vpc_security_group_ingress_rule` : "
-        "melanger les deux styles produit une difference perpetuelle."
+    assert inline == [], message(
+        en=f"the group carries {len(inline)} INLINE ingress rule(s). They must "
+        "all be `aws_vpc_security_group_ingress_rule` resources: "
+        "mixing the two styles produces a perpetual diff.",
+        fr=f"le groupe porte {len(inline)} règle(s) d'entrée INLINE. Elles doivent "
+        "toutes être des ressources `aws_vpc_security_group_ingress_rule` : "
+        "mélanger les deux styles produit une différence perpétuelle.",
     )
 
 
 def test_le_nom_du_groupe_est_accepte_par_le_provider() -> None:
     """Un nom qui commence par `sg-` est refuse. S'il est applique, il est bon."""
     nom = _du_type("aws_security_group")[0]["values"].get("name") or ""
-    assert nom, "le groupe n'a pas de nom"
-    assert not nom.startswith("sg-"), (
-        f"nom {nom!r} : le provider refuse tout nom commencant par `sg-`."
+    assert nom, message(
+        en="the group has no name",
+        fr="le groupe n'a pas de nom",
+    )
+    assert not nom.startswith("sg-"), message(
+        en=f"name {nom!r}: the provider refuses any name starting with `sg-`.",
+        fr=f"nom {nom!r} : le provider refuse tout nom commençant par `sg-`.",
     )
 
 
@@ -270,25 +326,33 @@ def test_les_trois_flux_viennent_d_un_seul_bloc_for_each() -> None:
     trois `name` de ressource differents, donc un seul element par adresse.
     """
     regles = _du_type("aws_vpc_security_group_ingress_rule")
-    assert len(regles) == 3, (
-        f"trois regles d'entree attendues, {len(regles)} trouvee(s). Elles "
-        "doivent venir de `for_each` sur `var.flux_entrants`."
+    assert len(regles) == 3, message(
+        en=f"three ingress rules expected, {len(regles)} found. They "
+        "must come from `for_each` over `var.flux_entrants`.",
+        fr=f"trois règles d'entrée attendues, {len(regles)} trouvée(s). Elles "
+        "doivent venir de `for_each` sur `var.flux_entrants`.",
     )
 
     noms = {r.get("name") for r in regles}
-    assert len(noms) == 1, (
-        f"les regles proviennent de {len(noms)} blocs differents ({noms}). Le "
-        "lab en attend UN SEUL, porte par `for_each`."
+    assert len(noms) == 1, message(
+        en=f"the rules come from {len(noms)} different blocks ({noms}). The "
+        "lab expects ONE SINGLE block, driven by `for_each`.",
+        fr=f"les règles proviennent de {len(noms)} blocs différents ({noms}). Le "
+        "lab en attend UN SEUL, porté par `for_each`.",
     )
 
     index = [r.get("index") for r in regles]
-    assert all(isinstance(i, str) for i in index), (
-        f"index obtenus : {index}. Des entiers signent un `count` ; `for_each` "
-        "sur une map donne des chaines."
+    assert all(isinstance(i, str) for i in index), message(
+        en=f"indexes obtained: {index}. Integers are the signature of a `count`; `for_each` "
+        "over a map gives strings.",
+        fr=f"index obtenus : {index}. Des entiers signent un `count` ; `for_each` "
+        "sur une map donne des chaînes.",
     )
-    assert set(index) == FLUX_ATTENDUS, (
-        f"cles obtenues : {sorted(i for i in index if i)}, attendues : "
-        f"{sorted(FLUX_ATTENDUS)}"
+    assert set(index) == FLUX_ATTENDUS, message(
+        en=f"keys obtained: {sorted(i for i in index if i)}, expected: "
+        f"{sorted(FLUX_ATTENDUS)}",
+        fr=f"clés obtenues : {sorted(i for i in index if i)}, attendues : "
+        f"{sorted(FLUX_ATTENDUS)}",
     )
 
 
@@ -297,23 +361,33 @@ def test_chaque_regle_ouvre_son_port_et_une_seule_cidr() -> None:
     obtenus = set()
     for regle in _du_type("aws_vpc_security_group_ingress_rule"):
         v = regle["values"]
-        assert v.get("ip_protocol") == "tcp", (
-            f"regle {regle.get('index')!r} : ip_protocol="
-            f"{v.get('ip_protocol')!r}, 'tcp' attendu"
+        assert v.get("ip_protocol") == "tcp", message(
+            en=f"rule {regle.get('index')!r}: ip_protocol="
+            f"{v.get('ip_protocol')!r}, 'tcp' expected",
+            fr=f"règle {regle.get('index')!r} : ip_protocol="
+            f"{v.get('ip_protocol')!r}, 'tcp' attendu",
         )
-        assert v.get("from_port") == v.get("to_port"), (
-            f"regle {regle.get('index')!r} : la plage doit viser un seul port, "
-            f"obtenu {v.get('from_port')}-{v.get('to_port')}"
+        assert v.get("from_port") == v.get("to_port"), message(
+            en=f"rule {regle.get('index')!r}: the range must target a single port, "
+            f"got {v.get('from_port')}-{v.get('to_port')}",
+            fr=f"règle {regle.get('index')!r} : la plage doit viser un seul port, "
+            f"obtenu {v.get('from_port')}-{v.get('to_port')}",
         )
-        assert v.get("cidr_ipv4"), (
-            f"regle {regle.get('index')!r} : aucune `cidr_ipv4`"
+        assert v.get("cidr_ipv4"), message(
+            en=f"rule {regle.get('index')!r}: no `cidr_ipv4`",
+            fr=f"règle {regle.get('index')!r} : aucune `cidr_ipv4`",
         )
-        assert v.get("cidr_ipv4") != "0.0.0.0/0", (
-            f"regle {regle.get('index')!r} ouvre a 0.0.0.0/0 : le lab demande "
-            "la seule CIDR de `var.cidr_autorise`."
+        assert v.get("cidr_ipv4") != "0.0.0.0/0", message(
+            en=f"rule {regle.get('index')!r} opens to 0.0.0.0/0: the lab asks for "
+            "the single CIDR of `var.cidr_autorise`.",
+            fr=f"règle {regle.get('index')!r} ouvre à 0.0.0.0/0 : le lab demande "
+            "la seule CIDR de `var.cidr_autorise`.",
         )
         obtenus.add(v.get("from_port"))
-    assert obtenus == ports, f"ports ouverts : {sorted(obtenus)}, attendus {sorted(ports)}"
+    assert obtenus == ports, message(
+        en=f"open ports: {sorted(obtenus)}, expected {sorted(ports)}",
+        fr=f"ports ouverts : {sorted(obtenus)}, attendus {sorted(ports)}",
+    )
 
 
 # ── 4. La sortie est declaree explicitement ─────────────────────────────────
@@ -326,19 +400,25 @@ def test_la_sortie_est_declaree_sans_ports() -> None:
     `to_port` « should not be defined ».
     """
     sorties = _du_type("aws_vpc_security_group_egress_rule")
-    assert len(sorties) == 1, (
-        f"une regle de sortie attendue, {len(sorties)} trouvee(s). Sans elle, "
-        "l'instance ne peut joindre personne."
+    assert len(sorties) == 1, message(
+        en=f"one egress rule expected, {len(sorties)} found. Without it, "
+        "the instance can reach nobody.",
+        fr=f"une règle de sortie attendue, {len(sorties)} trouvée(s). Sans elle, "
+        "l'instance ne peut joindre personne.",
     )
     v = sorties[0]["values"]
-    assert v.get("ip_protocol") == "-1", (
-        f"ip_protocol={v.get('ip_protocol')!r} : '-1' attendu pour couvrir tous "
-        "les protocoles."
+    assert v.get("ip_protocol") == "-1", message(
+        en=f"ip_protocol={v.get('ip_protocol')!r}: '-1' expected to cover every "
+        "protocol.",
+        fr=f"ip_protocol={v.get('ip_protocol')!r} : '-1' attendu pour couvrir tous "
+        "les protocoles.",
     )
     for champ in ("from_port", "to_port"):
-        assert v.get(champ) is None, (
-            f"{champ}={v.get(champ)!r} : avec `-1`, aucun port ne doit etre "
-            "defini."
+        assert v.get(champ) is None, message(
+            en=f"{champ}={v.get(champ)!r}: with `-1`, no port must be "
+            "defined.",
+            fr=f"{champ}={v.get(champ)!r} : avec `-1`, aucun port ne doit être "
+            "défini.",
         )
 
 
@@ -353,10 +433,13 @@ def test_l_instance_reference_le_groupe_par_identifiant() -> None:
     groupe = _du_type("aws_security_group")[0]["values"]["id"]
 
     ids = instance.get("vpc_security_group_ids") or []
-    assert groupe in ids, (
-        f"le groupe {groupe} n'est pas dans `vpc_security_group_ids` "
+    assert groupe in ids, message(
+        en=f"group {groupe} is not in `vpc_security_group_ids` "
+        f"({ids}). Careful: `security_groups` expects names and only applies "
+        "in the default VPC.",
+        fr=f"le groupe {groupe} n'est pas dans `vpc_security_group_ids` "
         f"({ids}). Attention : `security_groups` attend des noms et ne vaut "
-        "que dans le VPC par defaut."
+        "que dans le VPC par défaut.",
     )
 
 
@@ -368,42 +451,60 @@ def test_l_emulateur_rapporte_les_quatre_regles() -> None:
     groupe = _du_type("aws_security_group")[0]["values"]["id"]
     res = _aws("ec2", "describe-security-group-rules", "--filters",
                f"Name=group-id,Values={groupe}", "--output", "json")
-    assert res.returncode == 0, (
-        f"`describe-security-group-rules` a echoue :\n{res.stderr[-400:]}"
+    assert res.returncode == 0, message(
+        en=f"`describe-security-group-rules` failed:\n{res.stderr[-400:]}",
+        fr=f"`describe-security-group-rules` a échoué :\n{res.stderr[-400:]}",
     )
     regles = json.loads(res.stdout or "{}").get("SecurityGroupRules", [])
     entrantes = [r for r in regles if not r.get("IsEgress")]
     sortantes = [r for r in regles if r.get("IsEgress")]
 
-    assert len(entrantes) == 3, (
-        f"l'API rapporte {len(entrantes)} regle(s) entrante(s) sur ce groupe, "
-        "3 attendues"
+    assert len(entrantes) == 3, message(
+        en=f"the API reports {len(entrantes)} ingress rule(s) on this group, "
+        "3 expected",
+        fr=f"l'API rapporte {len(entrantes)} règle(s) entrante(s) sur ce groupe, "
+        "3 attendues",
     )
-    assert sortantes, "l'API ne rapporte aucune regle sortante sur ce groupe"
+    assert sortantes, message(
+        en="the API reports no egress rule on this group",
+        fr="l'API ne rapporte aucune règle sortante sur ce groupe",
+    )
 
 
 def test_un_plan_relance_n_annonce_aucun_changement() -> None:
     """Idempotence. Un melange des deux styles ferait rendre 2 indefiniment."""
     res = _tf("plan", "-input=false", "-detailed-exitcode", "-no-color")
-    assert res.returncode == 0, (
-        f"`plan -detailed-exitcode` a rendu {res.returncode}. La valeur 2 "
-        "signale une derive : des regles inline cohabitent-elles avec les "
-        f"ressources dediees ?\n{(res.stdout or res.stderr)[-900:]}"
+    assert res.returncode == 0, message(
+        en=f"`plan -detailed-exitcode` returned {res.returncode}. The value 2 "
+        "signals a drift: are inline rules coexisting with the dedicated "
+        f"resources?\n{(res.stdout or res.stderr)[-900:]}",
+        fr=f"`plan -detailed-exitcode` a rendu {res.returncode}. La valeur 2 "
+        "signale une dérive : des règles inline cohabitent-elles avec les "
+        f"ressources dédiées ?\n{(res.stdout or res.stderr)[-900:]}",
     )
 
 
 def test_les_trois_outputs_sont_renseignes() -> None:
     res = _tf("output", "-json")
-    assert res.returncode == 0, f"`terraform output` a echoue :\n{res.stderr[-400:]}"
+    assert res.returncode == 0, message(
+        en=f"`terraform output` failed:\n{res.stderr[-400:]}",
+        fr=f"`terraform output` a échoué :\n{res.stderr[-400:]}",
+    )
     sorties = json.loads(res.stdout or "{}")
 
     for nom in ("subnet_id", "security_group_id", "instance_subnet_id"):
-        assert nom in sorties, f"output `{nom}` absent"
-        assert sorties[nom].get("value"), (
-            f"output `{nom}` vide : sa `value` est-elle encore a `???` ?"
+        assert nom in sorties, message(
+            en=f"output `{nom}` missing",
+            fr=f"output `{nom}` absent",
+        )
+        assert sorties[nom].get("value"), message(
+            en=f"output `{nom}` empty: is its `value` still set to `???`?",
+            fr=f"output `{nom}` vide : sa `value` est-elle encore à `???` ?",
         )
 
-    assert sorties["subnet_id"]["value"] == sorties["instance_subnet_id"]["value"], (
-        "le subnet expose et celui de l'instance different : l'instance n'a pas "
-        "ete posee dans le subnet retenu."
+    assert sorties["subnet_id"]["value"] == sorties["instance_subnet_id"]["value"], message(
+        en="the exposed subnet and the instance's subnet differ: the instance was not "
+        "placed in the chosen subnet.",
+        fr="le subnet exposé et celui de l'instance diffèrent : l'instance n'a pas "
+        "été posée dans le subnet retenu.",
     )

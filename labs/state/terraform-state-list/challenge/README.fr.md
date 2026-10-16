@@ -3,9 +3,12 @@
 ## ✅ Objectif
 
 Dans `challenge/work`, tous les fichiers sont **complets et applicables**, sauf
-un : **`reponses.auto.tfvars`**, qui porte cinq `???`.
+un : **`reponses.auto.tfvars`**, qui porte cinq placeholders.
 
-Commencez par appliquer, sans quoi il n'y a rien à chercher :
+Ces placeholders sont **applicables à dessein** : le fichier est un
+`*.auto.tfvars`, donc Terraform le charge à chaque commande, et une valeur qui
+ne parserait pas empêcherait l'`apply` dont vous avez besoin. Commencez donc par
+appliquer, placeholders en place, sans quoi il n'y a rien à chercher :
 
 ```bash
 terraform init

@@ -37,7 +37,7 @@ from pathlib import Path
 
 import pytest
 
-from conftest import exiger_workdir, workdir_lab
+from conftest import exiger_workdir, message, workdir_lab
 
 WORKDIR = workdir_lab(__file__)
 LAB_ID = "hcp-terraform-hcp-workspaces"
@@ -189,20 +189,30 @@ def _atteint_la_frontiere(sortie: str, repertoire: str) -> None:
     restantes = {
         message: raison for message, raison in FAUTES.items() if message in sortie
     }
-    assert not restantes, (
-        f"`{repertoire}/` porte encore des fautes de configuration :\n"
+    assert not restantes, message(
+        en=f"`{repertoire}/` still carries configuration mistakes:\n"
+        + "\n".join(f"  - {r}" for r in restantes.values())
+        + "\n\nThose messages come from the backend's initialisation, and not from "
+        "`validate`: measured on 2026-09-25, `validate` answers \"Success\" on "
+        "two of them.",
+        fr=f"`{repertoire}/` porte encore des fautes de configuration :\n"
         + "\n".join(f"  - {r}" for r in restantes.values())
         + "\n\nCes messages viennent de l'initialisation du backend, et non de "
-        "`validate` : mesure du 2026-09-25, `validate` repond « Success » sur "
-        "deux d'entre eux."
+        "`validate` : mesure du 2026-09-25, `validate` répond « Success » sur "
+        "deux d'entre eux.",
     )
 
-    assert FRONTIERE in sortie, (
-        f"`{repertoire}/` ne s'arrete pas au jeton.\n\nUne configuration `cloud` "
-        "correcte va jusqu'a la demande d'authentification, et c'est la "
-        "frontiere de ce lab : il ne requiert aucun compte. Le test neutralise "
-        "d'ailleurs tout jeton du poste, pour que la mesure soit la meme "
-        "partout.\n\nSortie obtenue :\n\n" + sortie[-1200:]
+    assert FRONTIERE in sortie, message(
+        en=f"`{repertoire}/` does not stop at the token.\n\nA correct `cloud` "
+        "configuration goes as far as the authentication request, and that is "
+        "this lab's boundary: it requires no account. The test also neutralises "
+        "any token on the machine, so that the measurement is the same "
+        "everywhere.\n\nOutput obtained:\n\n" + sortie[-1200:],
+        fr=f"`{repertoire}/` ne s'arrête pas au jeton.\n\nUne configuration `cloud` "
+        "correcte va jusqu'à la demande d'authentification, et c'est la "
+        "frontière de ce lab : il ne requiert aucun compte. Le test neutralise "
+        "d'ailleurs tout jeton du poste, pour que la mesure soit la même "
+        "partout.\n\nSortie obtenue :\n\n" + sortie[-1200:],
     )
 
 
@@ -233,40 +243,55 @@ def test_chaque_repertoire_emploie_la_strategie_attendue(joue: Path) -> None:
     nomme = _blocs_cloud((joue / NOMME / "main.tf").read_text(encoding="utf-8"))
     etiquete = _blocs_cloud((joue / ETIQUETE / "main.tf").read_text(encoding="utf-8"))
 
-    assert len(nomme) == 1, (
-        f"`{NOMME}/main.tf` declare {len(nomme)} blocs `cloud`, un attendu."
+    assert len(nomme) == 1, message(
+        en=f"`{NOMME}/main.tf` declares {len(nomme)} `cloud` blocks, one expected.",
+        fr=f"`{NOMME}/main.tf` déclare {len(nomme)} blocs `cloud`, un attendu.",
     )
-    assert len(etiquete) == 1, (
-        f"`{ETIQUETE}/main.tf` declare {len(etiquete)} blocs `cloud`. Il n'en "
+    assert len(etiquete) == 1, message(
+        en=f"`{ETIQUETE}/main.tf` declares {len(etiquete)} `cloud` blocks. There is "
+        "only ONE per configuration: the second does not add a second "
+        "attachment, it makes the configuration invalid.",
+        fr=f"`{ETIQUETE}/main.tf` déclare {len(etiquete)} blocs `cloud`. Il n'en "
         "existe qu'UN par configuration : le second n'ajoute pas un second "
-        "rattachement, il rend la configuration invalide."
+        "rattachement, il rend la configuration invalide.",
     )
 
     par_nom, par_etiquettes = nomme[0], etiquete[0]
 
-    assert re.search(rf'\bname\b\s*=\s*"{WORKSPACE}"', par_nom), (
-        f"`{NOMME}/` ne se rattache pas par NOM au workspace `{WORKSPACE}`."
+    assert re.search(rf'\bname\b\s*=\s*"{WORKSPACE}"', par_nom), message(
+        en=f"`{NOMME}/` does not attach BY NAME to the workspace `{WORKSPACE}`.",
+        fr=f"`{NOMME}/` ne se rattache pas par NOM au workspace `{WORKSPACE}`.",
     )
-    assert not re.search(r"\btags\b", par_nom), (
-        f"`{NOMME}/` porte encore des `tags`. Les deux strategies s'excluent : "
-        "ce repertoire se rattache par nom SEUL."
+    assert not re.search(r"\btags\b", par_nom), message(
+        en=f"`{NOMME}/` still carries `tags`. The two strategies are mutually exclusive: "
+        "this directory attaches by name ONLY.",
+        fr=f"`{NOMME}/` porte encore des `tags`. Les deux stratégies s'excluent : "
+        "ce répertoire se rattache par nom SEUL.",
     )
-    assert re.search(rf'\borganization\b\s*=\s*"{ORGANISATION}"', par_nom), (
-        f"`{NOMME}/` ne porte pas l'organisation `{ORGANISATION}` en chaine "
-        "litterale.\n\nUn bloc `cloud` est resolu avant toute evaluation "
-        "d'expression : il ne peut referencer aucune valeur nommee, pas meme "
-        "une variable avec une valeur par defaut."
+    assert re.search(rf'\borganization\b\s*=\s*"{ORGANISATION}"', par_nom), message(
+        en=f"`{NOMME}/` does not carry the organisation `{ORGANISATION}` as a literal "
+        "string.\n\nA `cloud` block is resolved before any expression "
+        "evaluation: it can reference no named value, not even "
+        "a variable with a default value.",
+        fr=f"`{NOMME}/` ne porte pas l'organisation `{ORGANISATION}` en chaîne "
+        "littérale.\n\nUn bloc `cloud` est résolu avant toute évaluation "
+        "d'expression : il ne peut référencer aucune valeur nommée, pas même "
+        "une variable avec une valeur par défaut.",
     )
 
-    assert re.search(r"\btags\b\s*=", par_etiquettes), (
-        f"`{ETIQUETE}/` ne se rattache pas par ETIQUETTES."
+    assert re.search(r"\btags\b\s*=", par_etiquettes), message(
+        en=f"`{ETIQUETE}/` does not attach BY TAGS.",
+        fr=f"`{ETIQUETE}/` ne se rattache pas par ÉTIQUETTES.",
     )
-    assert re.search(r"\bproject\b\s*=", par_etiquettes), (
-        f"`{ETIQUETE}/` ne declare pas de `project`. Le rattachement attendu "
-        "restreint la selection a un projet."
+    assert re.search(r"\bproject\b\s*=", par_etiquettes), message(
+        en=f"`{ETIQUETE}/` declares no `project`. The expected attachment "
+        "restricts the selection to one project.",
+        fr=f"`{ETIQUETE}/` ne déclare pas de `project`. Le rattachement attendu "
+        "restreint la sélection à un projet.",
     )
-    assert not re.search(r"\bname\b\s*=", par_etiquettes), (
-        f"`{ETIQUETE}/` porte un `name` : les deux strategies s'excluent."
+    assert not re.search(r"\bname\b\s*=", par_etiquettes), message(
+        en=f"`{ETIQUETE}/` carries a `name`: the two strategies are mutually exclusive.",
+        fr=f"`{ETIQUETE}/` porte un `name` : les deux stratégies s'excluent.",
     )
 
 
@@ -278,15 +303,19 @@ def reponses(joue: Path) -> dict:
     repertoire = joue / QUESTIONNAIRE
 
     init = _tf("init", "-input=false", "-no-color", cwd=repertoire)
-    assert init.returncode == 0, (
-        f"`init` a echoue dans `{QUESTIONNAIRE}/`.\n{init.stderr[-800:]}"
+    assert init.returncode == 0, message(
+        en=f"`init` failed in `{QUESTIONNAIRE}/`.\n{init.stderr[-800:]}",
+        fr=f"`init` a échoué dans `{QUESTIONNAIRE}/`.\n{init.stderr[-800:]}",
     )
 
     applique = _tf("apply", "-auto-approve", "-input=false", "-no-color", cwd=repertoire)
-    assert applique.returncode == 0, (
-        f"`apply` a echoue dans `{QUESTIONNAIRE}/`.\n\nUne reponse hors de "
-        "l'enumere est refusee AU PLAN, et le message dit quoi ecrire.\n"
-        f"{applique.stderr[-1200:]}"
+    assert applique.returncode == 0, message(
+        en=f"`apply` failed in `{QUESTIONNAIRE}/`.\n\nAn answer outside the "
+        "enumeration is refused AT PLAN TIME, and the message says what to write.\n"
+        f"{applique.stderr[-1200:]}",
+        fr=f"`apply` a échoué dans `{QUESTIONNAIRE}/`.\n\nUne réponse hors de "
+        "l'énuméré est refusée AU PLAN, et le message dit quoi écrire.\n"
+        f"{applique.stderr[-1200:]}",
     )
 
     proc = _tf("output", "-json", cwd=repertoire)
@@ -298,7 +327,9 @@ def reponses(joue: Path) -> dict:
 def test_chaque_reponse_du_questionnaire(reponses: dict, question: str) -> None:
     attendue, pourquoi = REPONSES_ATTENDUES[question]
     obtenue = reponses.get(question)
-    assert obtenue == attendue, (
-        f"`{question}` vaut {obtenue!r}, {attendue!r} attendu.\n\n"
-        f"{pourquoi.capitalize()}."
+    assert obtenue == attendue, message(
+        en=f"`{question}` is {obtenue!r}, {attendue!r} expected.\n\n"
+        f"{pourquoi.capitalize()}.",
+        fr=f"`{question}` vaut {obtenue!r}, {attendue!r} attendu.\n\n"
+        f"{pourquoi.capitalize()}.",
     )

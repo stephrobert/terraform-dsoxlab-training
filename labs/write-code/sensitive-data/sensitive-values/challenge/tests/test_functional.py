@@ -17,7 +17,14 @@ from pathlib import Path
 
 import pytest
 
-from conftest import exiger_workdir, output_json, show_json, terraform, workdir_lab
+from conftest import (
+    exiger_workdir,
+    message,
+    output_json,
+    show_json,
+    terraform,
+    workdir_lab,
+)
 
 WORKDIR = workdir_lab(__file__)
 LAB_ID = "write-code-sensitive-data-sensitive-values"
@@ -28,12 +35,19 @@ def applied() -> Path:
     exiger_workdir(WORKDIR, LAB_ID)
     init = terraform("init", "-input=false", "-no-color", cwd=WORKDIR)
     if init.returncode != 0:
-        pytest.fail(f"`terraform init` a echoue.\n{init.stderr[-1200:]}")
+        pytest.fail(message(
+            en=f"`terraform init` failed.\n{init.stderr[-1200:]}",
+            fr=f"`terraform init` a échoué.\n{init.stderr[-1200:]}",
+        ))
     app = terraform("apply", "-auto-approve", "-input=false", "-no-color", cwd=WORKDIR)
     if app.returncode != 0:
         pytest.fail(
-            "`terraform apply` a echoue. Un `???` restant, une valeur SENSIBLE "
-            f"utilisee en cle for_each (Invalid for_each argument) ?\n{app.stderr[-1500:]}"
+            message(
+            en="`terraform apply` failed. A leftover `???`, a SENSITIVE value "
+            f"used as a for_each key (Invalid for_each argument)?\n{app.stderr[-1500:]}",
+            fr="`terraform apply` a échoué. Un `???` restant, une valeur SENSIBLE "
+            f"utilisée en clé for_each (Invalid for_each argument) ?\n{app.stderr[-1500:]}",
+        )
         )
     return WORKDIR
 
@@ -49,11 +63,16 @@ def _confs(cwd: Path) -> list[dict]:
 
 def test_for_each_sur_cles_non_sensibles(applied: Path) -> None:
     confs = _confs(applied)
-    assert confs, "Aucune instance conf : le for_each a-t-il abouti ?"
+    assert confs, message(
+        en="No conf instance: did the for_each succeed?",
+        fr="Aucune instance conf : le for_each a-t-il abouti ?",
+    )
     indices = {r.get("index") for r in confs}
-    assert indices == {"web", "db"}, (
-        f"Cles conf = {sorted(indices)}, attendu web/db. Iterez sur var.services "
-        "(NON sensible) : une valeur sensible en cle for_each est refusee."
+    assert indices == {"web", "db"}, message(
+        en=f"conf keys = {sorted(indices)}, expected web/db. Iterate over var.services "
+        "(NOT sensitive): a sensitive value as a for_each key is refused.",
+        fr=f"Clés conf = {sorted(indices)}, attendu web/db. Itérez sur var.services "
+        "(NON sensible) : une valeur sensible en clé for_each est refusée.",
     )
 
 
@@ -64,10 +83,13 @@ def test_for_each_sur_cles_non_sensibles(applied: Path) -> None:
 def test_content_marque_sensible(applied: Path) -> None:
     for r in _confs(applied):
         sv = r.get("sensitive_values", {})
-        assert sv.get("content") is True, (
-            f"conf[{r.get('index')!r}] : content n'est pas marque sensible dans "
-            "sensitive_values. Un attribut alimente par une valeur sensible doit "
-            "l'etre : c'est la trace de la contamination."
+        assert sv.get("content") is True, message(
+            en=f"conf[{r.get('index')!r}]: content is not marked sensitive in "
+            "sensitive_values. An attribute fed by a sensitive value must "
+            "be: that is the trace of the contamination.",
+            fr=f"conf[{r.get('index')!r}] : content n'est pas marqué sensible dans "
+            "sensitive_values. Un attribut alimenté par une valeur sensible doit "
+            "l'être : c'est la trace de la contamination.",
         )
 
 
@@ -77,13 +99,16 @@ def test_content_marque_sensible(applied: Path) -> None:
 
 def test_empreinte_declassifiee(applied: Path) -> None:
     out = output_json(applied).get("empreinte", {})
-    assert out.get("sensitive") is False, (
-        "`empreinte` ne doit pas etre sensible : le sha256 d'un secret reste "
-        "sensible, utilisez nonsensitive() pour l'exposer."
+    assert out.get("sensitive") is False, message(
+        en="`empreinte` must not be sensitive: the sha256 of a secret stays "
+        "sensitive, use nonsensitive() to expose it.",
+        fr="`empreinte` ne doit pas être sensible : le sha256 d'un secret reste "
+        "sensible, utilisez nonsensitive() pour l'exposer.",
     )
     v = out.get("value")
-    assert isinstance(v, str) and len(v) == 64, (
-        f"`empreinte` = {v!r}, attendu un sha256 (64 hex)."
+    assert isinstance(v, str) and len(v) == 64, message(
+        en=f"`empreinte` = {v!r}, a sha256 (64 hex) was expected.",
+        fr=f"`empreinte` = {v!r}, attendu un sha256 (64 hex).",
     )
 
 
@@ -93,7 +118,9 @@ def test_empreinte_declassifiee(applied: Path) -> None:
 
 def test_configuration_stable_apres_apply(applied: Path) -> None:
     p = terraform("plan", "-input=false", "-detailed-exitcode", "-no-color", cwd=applied)
-    assert p.returncode == 0, (
-        f"`plan -detailed-exitcode` rend {p.returncode} (2 = des changements "
-        "restent planifies). Un apply doit converger."
+    assert p.returncode == 0, message(
+        en=f"`plan -detailed-exitcode` returns {p.returncode} (2 = changes "
+        "remain planned). An apply must converge.",
+        fr=f"`plan -detailed-exitcode` rend {p.returncode} (2 = des changements "
+        "restent planifiés). Un apply doit converger.",
     )

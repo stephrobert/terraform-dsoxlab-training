@@ -24,7 +24,7 @@ from pathlib import Path
 
 import pytest
 
-from conftest import exiger_workdir, show_json, terraform, workdir_lab
+from conftest import exiger_workdir, message, show_json, terraform, workdir_lab
 
 WORKDIR = workdir_lab(__file__)
 LAB_ID = "state-terraform-state-rm"
@@ -48,7 +48,10 @@ def _actions_du_plan(cwd: Path, nom: str) -> dict[str, list[str]]:
     """Enregistre un plan et rend, par adresse, la liste de ses actions."""
     plan = terraform("plan", "-input=false", "-no-color", f"-out={nom}", cwd=cwd)
     if plan.returncode != 0:
-        pytest.fail(f"`terraform plan -out` a echoue.\n{plan.stderr[-900:]}")
+        pytest.fail(message(
+            en=f"`terraform plan -out` failed.\n{plan.stderr[-900:]}",
+            fr=f"`terraform plan -out` a échoué.\n{plan.stderr[-900:]}",
+        ))
     montre = terraform("show", "-json", nom, cwd=cwd)
     montre.check_returncode()
     return {
@@ -70,14 +73,23 @@ def applied() -> Iterator[Path]:
     init = terraform("init", "-input=false", "-no-color", cwd=WORKDIR)
     if init.returncode != 0:
         pytest.fail(
-            "`terraform init` a echoue. Un `???` restant dans le bloc `removed` "
-            f"que vous avez decommente ?\n{init.stderr[-1200:]}"
+            message(
+            en="`terraform init` failed. A leftover `???` in the `removed` block "
+            f"you uncommented?\n{init.stderr[-1200:]}",
+            fr="`terraform init` a échoué. Un `???` restant dans le bloc `removed` "
+            f"que vous avez décommenté ?\n{init.stderr[-1200:]}",
+        )
         )
     if "values" not in show_json(WORKDIR):
         pytest.fail(
-            "Le state est vide : le projet n'a jamais ete applique. Lancez "
-            "`terraform apply` dans challenge/work pour poser l'etat de depart "
-            "(quatre ressources gerees), puis faites les deux retraits."
+            message(
+            en="The state is empty: the project was never applied. Run "
+            "`terraform apply` in challenge/work to lay down the starting state "
+            "(four managed resources), then do both removals.",
+            fr="Le state est vide : le projet n'a jamais été appliqué. Lancez "
+            "`terraform apply` dans challenge/work pour poser l'état de départ "
+            "(quatre ressources gérées), puis faites les deux retraits.",
+        )
         )
     yield WORKDIR
 
@@ -89,18 +101,24 @@ def applied() -> Iterator[Path]:
 def test_les_deux_cibles_ont_quitte_le_state(applied: Path) -> None:
     presentes = _adresses_managees(applied)
     restantes = RETIREES & presentes
-    assert not restantes, (
-        f"Ces ressources sont encore gerees : {sorted(restantes)}. Elles "
+    assert not restantes, message(
+        en=f"These resources are still managed: {sorted(restantes)}. They "
+        "were supposed to come out of the state, one through `state rm`, the other through the "
+        "`removed` block.",
+        fr=f"Ces ressources sont encore gérées : {sorted(restantes)}. Elles "
         "devaient sortir du state, l'une par `state rm`, l'autre par le bloc "
-        "`removed`."
+        "`removed`.",
     )
     manquants = TEMOINS - presentes
-    assert not manquants, (
-        f"Ces temoins ont disparu du state : {sorted(manquants)}. Ils devaient "
-        f"rester geres. State actuel : {sorted(presentes)}"
+    assert not manquants, message(
+        en=f"These witnesses have disappeared from the state: {sorted(manquants)}. They were supposed "
+        f"to stay managed. Current state: {sorted(presentes)}",
+        fr=f"Ces témoins ont disparu du state : {sorted(manquants)}. Ils devaient "
+        f"rester gérés. State actuel : {sorted(presentes)}",
     )
-    assert presentes == TEMOINS, (
-        f"Le state porte {sorted(presentes)}, attendu exactement {sorted(TEMOINS)}."
+    assert presentes == TEMOINS, message(
+        en=f"The state carries {sorted(presentes)}, exactly {sorted(TEMOINS)} expected.",
+        fr=f"Le state porte {sorted(presentes)}, attendu exactement {sorted(TEMOINS)}.",
     )
 
 
@@ -116,13 +134,17 @@ def test_les_fichiers_ont_survecu(applied: Path) -> None:
             manquants.append(nom)
         elif chemin.read_text(encoding="utf-8") != attendu:
             contenus_faux.append(nom)
-    assert not manquants, (
-        f"Ces fichiers ont ete DETRUITS : {manquants}. Sortir une ressource du "
-        "state ne doit pas toucher a l'objet reel. Pour le bloc `removed`, c'est "
-        "`destroy = false` qui l'empeche : sans lui, le defaut est de detruire."
+    assert not manquants, message(
+        en=f"These files were DESTROYED: {manquants}. Taking a resource out of the "
+        "state must not touch the real object. For the `removed` block, it is "
+        "`destroy = false` that prevents it: without it, the default is to destroy.",
+        fr=f"Ces fichiers ont été DÉTRUITS : {manquants}. Sortir une ressource du "
+        "state ne doit pas toucher à l'objet réel. Pour le bloc `removed`, c'est "
+        "`destroy = false` qui l'empêche : sans lui, le défaut est de détruire.",
     )
-    assert not contenus_faux, (
-        f"Ces fichiers ont ete recrees au lieu d'etre conserves : {contenus_faux}."
+    assert not contenus_faux, message(
+        en=f"These files were recreated instead of being kept: {contenus_faux}.",
+        fr=f"Ces fichiers ont été recréés au lieu d'être conservés : {contenus_faux}.",
     )
 
 
@@ -133,11 +155,15 @@ def test_les_fichiers_ont_survecu(applied: Path) -> None:
 def test_plus_aucun_changement_en_attente(applied: Path) -> None:
     plan = terraform("plan", "-input=false", "-detailed-exitcode", "-no-color",
                      cwd=applied)
-    assert plan.returncode == 0, (
-        f"plan -detailed-exitcode rend {plan.returncode}, attendu 0. Un code 2 "
-        "signale soit un bloc `resource` oublie dans le code (la ressource "
-        "retiree du state serait orpheline, et Terraform voudrait la RECREER), "
-        f"soit un bloc `removed` jamais applique.\n{plan.stdout[-1000:]}"
+    assert plan.returncode == 0, message(
+        en=f"plan -detailed-exitcode returns {plan.returncode}, expected 0. A code 2 "
+        "signals either a `resource` block forgotten in the code (the resource "
+        "removed from the state would be orphaned, and Terraform would want to RECREATE it), "
+        f"or a `removed` block never applied.\n{plan.stdout[-1000:]}",
+        fr=f"plan -detailed-exitcode rend {plan.returncode}, attendu 0. Un code 2 "
+        "signale soit un bloc `resource` oublié dans le code (la ressource "
+        "retirée du state serait orpheline, et Terraform voudrait la RECRÉER), "
+        f"soit un bloc `removed` jamais appliqué.\n{plan.stdout[-1000:]}",
     )
 
 
@@ -157,9 +183,11 @@ def test_une_ressource_orpheline_serait_recreee(applied: Path, tmp_path: Path) -
         encoding="utf-8",
     )
     actions = _actions_du_plan(copie, "orpheline.tfplan")
-    assert actions.get("local_file.rapport") == ["create"], (
-        "Une ressource presente dans le code mais absente du state devrait etre "
-        f"planifiee en `create`. Actions relevees : {actions}"
+    assert actions.get("local_file.rapport") == ["create"], message(
+        en="A resource present in the code but absent from the state should be "
+        f"planned as `create`. Actions recorded: {actions}",
+        fr="Une ressource présente dans le code mais absente du state devrait être "
+        f"planifiée en `create`. Actions relevées : {actions}",
     )
 
 
@@ -179,10 +207,13 @@ def test_sans_destroy_false_le_bloc_removed_detruit(applied: Path, tmp_path: Pat
         "removed {\n  from = local_file.conserve\n}\n", encoding="utf-8"
     )
     actions = _actions_du_plan(copie, "cobaye.tfplan")
-    assert actions.get("local_file.conserve") == ["delete"], (
-        "Sans `destroy = false`, le bloc `removed` devrait planifier une "
-        f"DESTRUCTION. Actions relevees : {actions}. Si ce test echoue, le "
-        "comportement par defaut de Terraform a change et le lab doit etre revu."
+    assert actions.get("local_file.conserve") == ["delete"], message(
+        en="Without `destroy = false`, the `removed` block should plan a "
+        f"DESTRUCTION. Actions recorded: {actions}. If this test fails, "
+        "Terraform's default behaviour has changed and the lab must be revised.",
+        fr="Sans `destroy = false`, le bloc `removed` devrait planifier une "
+        f"DESTRUCTION. Actions relevées : {actions}. Si ce test échoue, le "
+        "comportement par défaut de Terraform a changé et le lab doit être revu.",
     )
 
 
@@ -200,7 +231,9 @@ def test_avec_destroy_false_l_action_est_forget(applied: Path, tmp_path: Path) -
         encoding="utf-8",
     )
     actions = _actions_du_plan(copie, "cobaye.tfplan")
-    assert actions.get("local_file.conserve") == ["forget"], (
-        "Avec `destroy = false`, l'action attendue est `forget` (oublier sans "
-        f"detruire). Actions relevees : {actions}"
+    assert actions.get("local_file.conserve") == ["forget"], message(
+        en="With `destroy = false`, the expected action is `forget` (forget without "
+        f"destroying). Actions recorded: {actions}",
+        fr="Avec `destroy = false`, l'action attendue est `forget` (oublier sans "
+        f"détruire). Actions relevées : {actions}",
     )

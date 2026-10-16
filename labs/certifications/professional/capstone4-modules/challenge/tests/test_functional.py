@@ -33,7 +33,7 @@ from pathlib import Path
 
 import pytest
 
-from conftest import exiger_workdir, workdir_lab
+from conftest import exiger_workdir, message, workdir_lab
 
 WORKDIR = workdir_lab(__file__)
 LAB_ID = "certifications-professional-capstone4-modules"
@@ -63,11 +63,15 @@ def _tf(*args: str, cwd: Path | None = None) -> subprocess.CompletedProcess[str]
 def joue() -> Path:
     exiger_workdir(WORKDIR, LAB_ID)
     init = _tf("init", "-input=false", "-no-color")
-    assert init.returncode == 0, (
-        "`terraform init` a echoue.\n\nSi le message parle de « applies only to "
-        "registry modules », c'est l'argument `version` pose sur un module "
+    assert init.returncode == 0, message(
+        en="`terraform init` failed.\n\nIf the message mentions \"applies only to "
+        "registry modules\", it is the `version` argument set on a local "
+        "module: it only applies to registry modules.\n\n"
+        f"{init.stderr[-1000:]}",
+        fr="`terraform init` a échoué.\n\nSi le message parle de « applies only to "
+        "registry modules », c'est l'argument `version` posé sur un module "
         "local : il ne s'applique qu'aux modules de registry.\n\n"
-        f"{init.stderr[-1000:]}"
+        f"{init.stderr[-1000:]}",
     )
     return WORKDIR
 
@@ -75,7 +79,10 @@ def joue() -> Path:
 @pytest.fixture(scope="module")
 def etat(joue: Path) -> dict:
     proc = _tf("show", "-json")
-    assert proc.returncode == 0, f"`terraform show -json` a echoue.\n{proc.stderr[-800:]}"
+    assert proc.returncode == 0, message(
+        en=f"`terraform show -json` failed.\n{proc.stderr[-800:]}",
+        fr=f"`terraform show -json` a échoué.\n{proc.stderr[-800:]}",
+    )
     return json.loads(proc.stdout)
 
 
@@ -106,10 +113,13 @@ def _exiger_refactor_fait(etat: dict) -> None:
     """
     adresses = set(_adresses_et_identifiants(etat))
     sous_module = {a for a in adresses if a.startswith("module.")}
-    assert sous_module, (
-        "Aucune ressource ne vit sous un module : le refactor n'a pas eu lieu.\n\n"
-        f"Adresses presentes : {sorted(adresses)}\n\n"
-        "Ce test ne mesure rien tant que la configuration est restee plate."
+    assert sous_module, message(
+        en="No resource lives under a module: the refactor did not happen.\n\n"
+        f"Addresses present: {sorted(adresses)}\n\n"
+        "This test measures nothing as long as the configuration has stayed flat.",
+        fr="Aucune ressource ne vit sous un module : le refactor n'a pas eu lieu.\n\n"
+        f"Adresses présentes : {sorted(adresses)}\n\n"
+        "Ce test ne mesure rien tant que la configuration est restée plate.",
     )
 
 
@@ -127,8 +137,9 @@ def _identifiants_de_depart(joue: Path) -> set[str]:
     une constante recopiee finirait par mentir le jour ou la fixture change.
     """
     reference = joue.parent.parent / "fixtures" / "terraform.tfstate"
-    assert reference.is_file(), (
-        f"Le state de reference est introuvable : {reference}"
+    assert reference.is_file(), message(
+        en=f"The reference state cannot be found: {reference}",
+        fr=f"Le state de référence est introuvable : {reference}",
     )
     document = json.loads(reference.read_text(encoding="utf-8"))
     return {
@@ -143,23 +154,32 @@ def _identifiants_de_depart(joue: Path) -> set[str]:
 # --------------------------------------------------------------------------
 def test_les_ressources_vivent_desormais_sous_un_module(etat: dict) -> None:
     adresses = set(_adresses_et_identifiants(etat))
-    assert adresses, "Le state ne porte aucune ressource geree."
+    assert adresses, message(
+        en="The state carries no managed resource.",
+        fr="Le state ne porte aucune ressource gérée.",
+    )
 
     restantes = adresses & ADRESSES_PLATES
-    assert not restantes, (
-        f"Ces adresses plates existent encore : {sorted(restantes)}.\n\nLa "
+    assert not restantes, message(
+        en=f"These flat addresses still exist: {sorted(restantes)}.\n\nThe "
+        "duplication has not gone: the resources must live under "
+        "`module.*`.",
+        fr=f"Ces adresses plates existent encore : {sorted(restantes)}.\n\nLa "
         "duplication n'a pas disparu : les ressources doivent vivre sous "
-        "`module.*`."
+        "`module.*`.",
     )
 
     hors_module = {a for a in adresses if not a.startswith("module.")}
-    assert not hors_module, (
-        f"Ces ressources ne sont pas dans un module : {sorted(hors_module)}."
+    assert not hors_module, message(
+        en=f"These resources are not in a module: {sorted(hors_module)}.",
+        fr=f"Ces ressources ne sont pas dans un module : {sorted(hors_module)}.",
     )
 
-    assert len(adresses) == len(ADRESSES_PLATES), (
-        f"Le state porte {len(adresses)} ressources, {len(ADRESSES_PLATES)} "
-        f"attendues.\nPresentes : {sorted(adresses)}"
+    assert len(adresses) == len(ADRESSES_PLATES), message(
+        en=f"The state carries {len(adresses)} resources, {len(ADRESSES_PLATES)} "
+        f"expected.\nPresent: {sorted(adresses)}",
+        fr=f"Le state porte {len(adresses)} ressources, {len(ADRESSES_PLATES)} "
+        f"attendues.\nPrésentes : {sorted(adresses)}",
     )
 
 
@@ -176,10 +196,13 @@ def test_le_module_est_appele_une_fois_par_service(etat: dict) -> None:
         if adresse.startswith("module.") and '["' in adresse:
             cles.add(adresse.split('["', 1)[1].split('"]', 1)[0])
 
-    assert cles == set(SERVICES), (
-        f"Le module est instancie pour {sorted(cles) or 'aucune cle'}.\n"
+    assert cles == set(SERVICES), message(
+        en=f"The module is instantiated for {sorted(cles) or 'no key'}.\n"
+        f"One instance per service was expected: {sorted(SERVICES)}.\n\nThe "
+        "instances must be indexed by the service's NAME, not by a rank.",
+        fr=f"Le module est instancié pour {sorted(cles) or 'aucune clé'}.\n"
         f"Attendu une instance par service : {sorted(SERVICES)}.\n\nLes "
-        "instances doivent etre indexees par le NOM du service, pas par un rang."
+        "instances doivent être indexées par le NOM du service, pas par un rang.",
     )
 
 
@@ -198,20 +221,29 @@ def test_aucune_ressource_n_a_ete_recreee(joue: Path, etat: dict) -> None:
     apres = set(_adresses_et_identifiants(etat).values())
 
     perdus = avant - apres
-    assert not perdus, (
-        f"{len(perdus)} identifiant(s) d'origine ont disparu du state.\n\n"
-        "Ces ressources ont ete DETRUITES puis RECREEES par le refactor : il "
-        "manque les blocs `moved` qui declarent leur changement d'adresse.\n\n"
+    assert not perdus, message(
+        en=f"{len(perdus)} original identifier(s) have disappeared from the state.\n\n"
+        "Those resources were DESTROYED and then RECREATED by the refactor: the "
+        "`moved` blocks declaring their change of address are missing.\n\n"
+        f"Gone: {sorted(perdus)[:4]}\n\n"
+        "Reminder: a `moved` block carries two arguments, so it is written over "
+        "several lines. The compact single-line form answers \"The "
+        "argument \\\"to\\\" is required\".",
+        fr=f"{len(perdus)} identifiant(s) d'origine ont disparu du state.\n\n"
+        "Ces ressources ont été DÉTRUITES puis RECRÉÉES par le refactor : il "
+        "manque les blocs `moved` qui déclarent leur changement d'adresse.\n\n"
         f"Disparus : {sorted(perdus)[:4]}\n\n"
-        "Rappel : un bloc `moved` porte deux arguments, il s'ecrit donc en "
-        "plusieurs lignes. La forme compacte sur une ligne repond « The "
-        "argument \"to\" is required »."
+        "Rappel : un bloc `moved` porte deux arguments, il s'écrit donc en "
+        "plusieurs lignes. La forme compacte sur une ligne répond « The "
+        "argument \"to\" is required ».",
     )
 
     nouveaux = apres - avant
-    assert not nouveaux, (
-        f"Ces identifiants n'existaient pas avant : {sorted(nouveaux)[:4]}.\n\n"
-        "Des ressources ont ete creees en plus de celles qui existaient."
+    assert not nouveaux, message(
+        en=f"These identifiers did not exist before: {sorted(nouveaux)[:4]}.\n\n"
+        "Resources were created on top of those that existed.",
+        fr=f"Ces identifiants n'existaient pas avant : {sorted(nouveaux)[:4]}.\n\n"
+        "Des ressources ont été créées en plus de celles qui existaient.",
     )
 
 
@@ -226,32 +258,43 @@ def test_le_module_expose_une_interface_typee_et_documentee(joue: Path) -> None:
     reutilisable d'un copier-coller deplace.
     """
     plan = _tf("plan", "-out=interface.tfplan", "-input=false", "-no-color")
-    assert plan.returncode == 0, f"Le plan a echoue.\n{plan.stderr[-800:]}"
+    assert plan.returncode == 0, message(
+        en=f"The plan failed.\n{plan.stderr[-800:]}",
+        fr=f"Le plan a échoué.\n{plan.stderr[-800:]}",
+    )
 
     montre = _tf("show", "-json", "interface.tfplan")
     montre.check_returncode()
     racine = json.loads(montre.stdout)["configuration"]["root_module"]
 
     appels = racine.get("module_calls") or {}
-    assert appels, (
-        "La configuration racine n'appelle aucun module.\n\nLe refactor doit "
-        "extraire un module local et l'appeler."
+    assert appels, message(
+        en="The root configuration calls no module.\n\nThe refactor must "
+        "extract a local module and call it.",
+        fr="La configuration racine n'appelle aucun module.\n\nLe refactor doit "
+        "extraire un module local et l'appeler.",
     )
 
     nom_appel, appel = next(iter(appels.items()))
     module = appel.get("module", {})
 
     variables = module.get("variables") or {}
-    assert variables, f"Le module `{nom_appel}` ne declare aucune variable."
+    assert variables, message(
+        en=f"The module `{nom_appel}` declares no variable.",
+        fr=f"Le module `{nom_appel}` ne déclare aucune variable.",
+    )
     sans_description = [n for n, v in variables.items() if not (v.get("description") or "").strip()]
-    assert not sans_description, (
-        f"Ces variables du module n'ont pas de `description` : {sans_description}."
+    assert not sans_description, message(
+        en=f"These module variables have no `description`: {sans_description}.",
+        fr=f"Ces variables du module n'ont pas de `description` : {sans_description}.",
     )
 
     sorties = module.get("outputs") or {}
-    assert sorties, (
-        f"Le module `{nom_appel}` n'expose aucun output.\n\nUn module qui ne "
-        "rend rien ne peut pas etre compose : ses valeurs restent prisonnieres."
+    assert sorties, message(
+        en=f"The module `{nom_appel}` exposes no output.\n\nA module that returns "
+        "nothing cannot be composed: its values stay prisoners.",
+        fr=f"Le module `{nom_appel}` n'expose aucun output.\n\nUn module qui ne "
+        "rend rien ne peut pas être composé : ses valeurs restent prisonnières.",
     )
 
 
@@ -268,7 +311,10 @@ def test_le_module_ne_configure_aucun_provider(joue: Path) -> None:
     _exiger_refactor_fait(_etat_courant())
 
     plan = _tf("plan", "-out=providers.tfplan", "-input=false", "-no-color")
-    assert plan.returncode == 0, f"Le plan a echoue.\n{plan.stderr[-800:]}"
+    assert plan.returncode == 0, message(
+        en=f"The plan failed.\n{plan.stderr[-800:]}",
+        fr=f"Le plan a échoué.\n{plan.stderr[-800:]}",
+    )
 
     montre = _tf("show", "-json", "providers.tfplan")
     montre.check_returncode()
@@ -278,10 +324,13 @@ def test_le_module_ne_configure_aucun_provider(joue: Path) -> None:
         cle for cle, valeur in (configuration.get("provider_config") or {}).items()
         if (valeur.get("module_address") or "")
     ]
-    assert not dans_le_module, (
-        f"Ces configurations de provider vivent dans un module : "
-        f"{dans_le_module}.\n\nUn module appele plusieurs fois ne doit en porter "
-        "aucune : elles s'heritent de l'appelant."
+    assert not dans_le_module, message(
+        en=f"These provider configurations live inside a module: "
+        f"{dans_le_module}.\n\nA module called several times must carry "
+        "none: they are inherited from the caller.",
+        fr=f"Ces configurations de provider vivent dans un module : "
+        f"{dans_le_module}.\n\nUn module appelé plusieurs fois ne doit en porter "
+        "aucune : elles s'héritent de l'appelant.",
     )
 
 
@@ -297,23 +346,31 @@ def test_le_refactor_converge_et_les_fichiers_sont_inchanges(joue: Path) -> None
     _exiger_refactor_fait(_etat_courant())
 
     plan = _tf("plan", "-detailed-exitcode", "-input=false", "-no-color")
-    assert plan.returncode == 0, (
-        f"`plan -detailed-exitcode` rend {plan.returncode}, attendu 0.\n"
-        + plan.stdout[-1000:]
+    assert plan.returncode == 0, message(
+        en=f"`plan -detailed-exitcode` returns {plan.returncode}, expected 0.\n"
+        + plan.stdout[-1000:],
+        fr=f"`plan -detailed-exitcode` rend {plan.returncode}, attendu 0.\n"
+        + plan.stdout[-1000:],
     )
 
     for service, replicas in SERVICES.items():
         config = joue / "out" / f"{service}.json"
-        assert config.is_file(), (
-            f"`out/{service}.json` a disparu.\n\nLe refactor a deplace les "
-            "fichiers sur le disque : le module doit ecrire la ou ils etaient, "
-            "ce qui demande `path.root` et non `path.module`."
+        assert config.is_file(), message(
+            en=f"`out/{service}.json` has disappeared.\n\nThe refactor moved the "
+            "files on disk: the module must write where they were, "
+            "which requires `path.root` and not `path.module`.",
+            fr=f"`out/{service}.json` a disparu.\n\nLe refactor a déplacé les "
+            "fichiers sur le disque : le module doit écrire là où ils étaient, "
+            "ce qui demande `path.root` et non `path.module`.",
         )
         document = json.loads(config.read_text(encoding="utf-8"))
-        assert document["service"] == service, (
-            f"`out/{service}.json` annonce le service {document['service']!r}."
+        assert document["service"] == service, message(
+            en=f"`out/{service}.json` announces the service {document['service']!r}.",
+            fr=f"`out/{service}.json` annonce le service {document['service']!r}.",
         )
-        assert document["replicas"] == replicas, (
-            f"`out/{service}.json` annonce {document['replicas']} replicas, "
-            f"{replicas} attendus."
+        assert document["replicas"] == replicas, message(
+            en=f"`out/{service}.json` announces {document['replicas']} replicas, "
+            f"{replicas} expected.",
+            fr=f"`out/{service}.json` annonce {document['replicas']} replicas, "
+            f"{replicas} attendus.",
         )

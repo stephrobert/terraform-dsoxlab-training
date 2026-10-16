@@ -31,7 +31,7 @@ from pathlib import Path
 
 import pytest
 
-from conftest import exiger_workdir, workdir_lab
+from conftest import exiger_workdir, message, workdir_lab
 
 WORKDIR = workdir_lab(__file__)
 LAB_ID = "certifications-associate-essential-commands"
@@ -118,14 +118,19 @@ def joue() -> Path:
 
 def _charger(nom: str) -> dict:
     chemin = WORKDIR / nom
-    assert chemin.is_file(), (
-        f"`{nom}` est absent. Le lab demande de le produire : c'est la trace de "
-        "ce que vous avez observe, et elle ne se reconstitue pas apres coup."
+    assert chemin.is_file(), message(
+        en=f"`{nom}` is missing. The lab asks you to produce it: it is the trace of "
+        "what you observed, and it cannot be reconstituted afterwards.",
+        fr=f"`{nom}` est absent. Le lab demande de le produire : c'est la trace de "
+        "ce que vous avez observé, et elle ne se reconstitue pas après coup.",
     )
     try:
         return json.loads(chemin.read_text(encoding="utf-8"))
     except json.JSONDecodeError as erreur:
-        pytest.fail(f"`{nom}` n'est pas du JSON valide : {erreur}")
+        pytest.fail(message(
+            en=f"`{nom}` is not valid JSON: {erreur}",
+            fr=f"`{nom}` n'est pas du JSON valide : {erreur}",
+        ))
 
 
 def _gerees() -> dict[str, dict]:
@@ -228,35 +233,53 @@ def test_les_six_codes_de_retour_sont_ceux_observes(
         for geste, obtenu in codes_rejoues.items()
         if obtenu != CODES_ATTENDUS[geste]
     }
-    assert not derive, (
-        "Le rejeu ne retrouve plus les codes mesures en ecrivant ce lab :\n"
-        + "\n".join(f"  {g} : rejoue {o}, attendu {a}" for g, (o, a) in sorted(derive.items()))
+    assert not derive, message(
+        en="The replay no longer finds the codes measured while writing this lab:\n"
+        + "\n".join(f"  {g}: replayed {o}, expected {a}" for g, (o, a) in sorted(derive.items()))
+        + "\n\nTHIS IS NOT YOUR WORK'S FAULT. A version of "
+        "Terraform changed one of those behaviours; the lab must be measured again. "
+        f"Version in place: {_tf('version').stdout.splitlines()[0] if _tf('version').returncode == 0 else 'unknown'}.",
+        fr="Le rejeu ne retrouve plus les codes mesurés en écrivant ce lab :\n"
+        + "\n".join(f"  {g} : rejoué {o}, attendu {a}" for g, (o, a) in sorted(derive.items()))
         + "\n\nCE N'EST PAS VOTRE TRAVAIL QUI EST EN CAUSE. Une version de "
-        "Terraform a change un de ces comportements ; le lab doit etre remesure. "
-        f"Version en place : {_tf('version').stdout.splitlines()[0] if _tf('version').returncode == 0 else 'inconnue'}."
+        "Terraform a changé un de ces comportements ; le lab doit être remesuré. "
+        f"Version en place : {_tf('version').stdout.splitlines()[0] if _tf('version').returncode == 0 else 'inconnue'}.",
     )
 
     releves = _charger(CODES)
     manquants = set(CODES_ATTENDUS) - set(releves)
-    assert not manquants, (
-        f"Ces codes manquent a `{CODES}` : {sorted(manquants)}.\nRelevés : "
-        f"{sorted(releves)}."
+    assert not manquants, message(
+        en=f"These codes are missing from `{CODES}`: {sorted(manquants)}.\nRecorded: "
+        f"{sorted(releves)}.",
+        fr=f"Ces codes manquent a `{CODES}` : {sorted(manquants)}.\nRelevés : "
+        f"{sorted(releves)}.",
     )
 
     for geste, attendu in sorted(codes_rejoues.items()):
         obtenu = releves[geste]
-        assert obtenu == attendu, (
-            f"`{geste}` vaut {obtenu!r}, le rejeu donne {attendu}.\n\n"
+        assert obtenu == attendu, message(
+            en=f"`{geste}` is {obtenu!r}, the replay gives {attendu}.\n\n"
+            + (
+                "`fmt -check` returns 3, not 1. A script testing `-eq 1` "
+                "would let every badly indented file through."
+                if geste.startswith("fmt")
+                else "`validate` needs the providers' SCHEMAS: before "
+                "`init`, it can validate nothing, and fails for that reason "
+                "and not for a syntax error."
+                if geste == "validate_avant_init"
+                else "Record the code at the moment you run the command."
+            ),
+            fr=f"`{geste}` vaut {obtenu!r}, le rejeu donne {attendu}.\n\n"
             + (
                 "`fmt -check` rend 3, et non 1. Un script qui testerait `-eq 1` "
-                "laisserait passer tous les fichiers mal indentes."
+                "laisserait passer tous les fichiers mal indentés."
                 if geste.startswith("fmt")
-                else "`validate` a besoin des SCHEMAS des providers : avant "
-                "`init`, il ne peut rien valider, et echoue pour cette raison "
+                else "`validate` a besoin des SCHÉMAS des providers : avant "
+                "`init`, il ne peut rien valider, et échoue pour cette raison "
                 "et non pour une faute de syntaxe."
                 if geste == "validate_avant_init"
-                else "Relevez le code au moment ou vous lancez la commande."
-            )
+                else "Relevez le code au moment où vous lancez la commande."
+            ),
         )
 
 
@@ -266,14 +289,18 @@ def test_les_six_codes_de_retour_sont_ceux_observes(
 def test_chaque_marche_de_la_cascade_designe_son_gagnant(joue: Path) -> None:
     sorties = _sorties()
     for nom, attendu in CASCADE.items():
-        assert nom in sorties, (
-            f"L'output `{nom}` n'est pas declare. Presents : {sorted(sorties)}."
+        assert nom in sorties, message(
+            en=f"The output `{nom}` is not declared. Present: {sorted(sorties)}.",
+            fr=f"L'output `{nom}` n'est pas déclaré. Présents : {sorted(sorties)}.",
         )
         obtenu = sorties[nom]["value"]
-        assert obtenu == attendu, (
-            f"`{nom}` vaut {obtenu!r}, attendu {attendu!r}.\n\nChaque variable "
-            "est posee par PLUSIEURS sources a la fois : une seule gagne, et le "
-            "nom de la valeur dit laquelle."
+        assert obtenu == attendu, message(
+            en=f"`{nom}` is {obtenu!r}, expected {attendu!r}.\n\nEach variable "
+            "is set by SEVERAL sources at once: only one wins, and the "
+            "name of the value says which.",
+            fr=f"`{nom}` vaut {obtenu!r}, attendu {attendu!r}.\n\nChaque variable "
+            "est posée par PLUSIEURS sources à la fois : une seule gagne, et le "
+            "nom de la valeur dit laquelle.",
         )
 
 
@@ -282,12 +309,17 @@ def test_chaque_marche_de_la_cascade_designe_son_gagnant(joue: Path) -> None:
 # --------------------------------------------------------------------------
 def test_le_renommage_est_passe_par_un_moved_applique(joue: Path) -> None:
     gerees = _gerees()
-    assert ANCIENNE_ADRESSE not in gerees, (
-        f"`{ANCIENNE_ADRESSE}` figure encore dans le state.\n\nUn `plan` seul "
-        "n'ecrit rien : le bloc `moved` doit avoir ete APPLIQUE."
+    assert ANCIENNE_ADRESSE not in gerees, message(
+        en=f"`{ANCIENNE_ADRESSE}` still appears in the state.\n\nA `plan` alone "
+        "writes nothing: the `moved` block must have been APPLIED.",
+        fr=f"`{ANCIENNE_ADRESSE}` figure encore dans le state.\n\nUn `plan` seul "
+        "n'écrit rien : le bloc `moved` doit avoir été APPLIQUÉ.",
     )
     nouvelles = [a for a in gerees if a.startswith("random_pet.")]
-    assert nouvelles, f"Aucun `random_pet` dans le state : {sorted(gerees)}."
+    assert nouvelles, message(
+        en=f"No `random_pet` in the state: {sorted(gerees)}.",
+        fr=f"Aucun `random_pet` dans le state : {sorted(gerees)}.",
+    )
 
 
 # --------------------------------------------------------------------------
@@ -301,14 +333,18 @@ def test_la_ressource_preexistante_a_ete_importee(joue: Path) -> None:
     type de ressource change.
     """
     gerees = _gerees()
-    assert IMPORTEE in gerees, (
-        f"`{IMPORTEE}` n'est pas dans le state. Adresses : {sorted(gerees)}."
+    assert IMPORTEE in gerees, message(
+        en=f"`{IMPORTEE}` is not in the state. Addresses: {sorted(gerees)}.",
+        fr=f"`{IMPORTEE}` n'est pas dans le state. Adresses : {sorted(gerees)}.",
     )
     identifiant = gerees[IMPORTEE]["values"].get("id")
-    assert identifiant == "identifiant-connu", (
-        f"`{IMPORTEE}` porte l'identifiant {identifiant!r}, attendu "
-        "`identifiant-connu`.\n\nElle a ete CREEE et non importee : un import "
-        "reprend l'objet existant avec son identifiant."
+    assert identifiant == "identifiant-connu", message(
+        en=f"`{IMPORTEE}` carries the identifier {identifiant!r}, expected "
+        "`identifiant-connu`.\n\nIt was CREATED and not imported: an import "
+        "takes over the existing object with its identifier.",
+        fr=f"`{IMPORTEE}` porte l'identifiant {identifiant!r}, attendu "
+        "`identifiant-connu`.\n\nElle a été CRÉÉE et non importée : un import "
+        "reprend l'objet existant avec son identifiant.",
     )
 
 
@@ -323,17 +359,22 @@ def test_la_ressource_retiree_du_state_a_laisse_son_fichier(joue: Path) -> None:
     DETRUIRAIT : un mot d'ecart, et le fichier disparait.
     """
     gerees = _gerees()
-    assert ADOPTEE not in gerees, (
-        f"`{ADOPTEE}` figure encore dans le state : elle n'a pas ete retiree."
+    assert ADOPTEE not in gerees, message(
+        en=f"`{ADOPTEE}` still appears in the state: it was not removed.",
+        fr=f"`{ADOPTEE}` figure encore dans le state : elle n'a pas été retirée.",
     )
     fichier = joue / PREEXISTANT
-    assert fichier.is_file(), (
-        f"`{PREEXISTANT}` a DISPARU du disque.\n\nLe bloc `removed` l'a detruit "
+    assert fichier.is_file(), message(
+        en=f"`{PREEXISTANT}` has DISAPPEARED from disk.\n\nThe `removed` block destroyed it "
+        "instead of merely taking it out of the state. It is missing "
+        "`lifecycle { destroy = false }`: one word of difference, and the object is lost.",
+        fr=f"`{PREEXISTANT}` a DISPARU du disque.\n\nLe bloc `removed` l'a détruit "
         "au lieu de simplement le retirer du state. Il lui manque "
-        "`lifecycle { destroy = false }` : un mot d'ecart, et l'objet est perdu."
+        "`lifecycle { destroy = false }` : un mot d'écart, et l'objet est perdu.",
     )
-    assert fichier.read_text(encoding="utf-8").strip(), (
-        f"`{PREEXISTANT}` est vide : son contenu a ete reecrit."
+    assert fichier.read_text(encoding="utf-8").strip(), message(
+        en=f"`{PREEXISTANT}` is empty: its content was rewritten.",
+        fr=f"`{PREEXISTANT}` est vide : son contenu a été réécrit.",
     )
 
 
@@ -347,19 +388,27 @@ def test_le_plan_de_remplacement_vise_la_bonne_ressource(joue: Path) -> None:
         for c in plan.get("resource_changes", [])
         if c["change"]["actions"] != ["no-op"]
     }
-    assert A_REMPLACER in actions, (
-        f"Le plan ne vise pas `{A_REMPLACER}`. Il annonce {actions}.\n\n"
+    assert A_REMPLACER in actions, message(
+        en=f"The plan does not target `{A_REMPLACER}`. It announces {actions}.\n\n"
+        "`-replace=<address>` explicitly asks for the replacement of a "
+        "resource that nothing forced to move.",
+        fr=f"Le plan ne vise pas `{A_REMPLACER}`. Il annonce {actions}.\n\n"
         "`-replace=<adresse>` demande explicitement le remplacement d'une "
-        "ressource que rien n'obligeait a bouger."
+        "ressource que rien n'obligeait à bouger.",
     )
-    assert set(actions[A_REMPLACER]) == {"delete", "create"}, (
-        f"`{A_REMPLACER}` porte {actions[A_REMPLACER]}, attendu une destruction "
-        "suivie d'une creation."
+    assert set(actions[A_REMPLACER]) == {"delete", "create"}, message(
+        en=f"`{A_REMPLACER}` carries {actions[A_REMPLACER]}, a destruction "
+        "followed by a creation was expected.",
+        fr=f"`{A_REMPLACER}` porte {actions[A_REMPLACER]}, attendu une destruction "
+        "suivie d'une création.",
     )
-    assert set(actions) == {A_REMPLACER}, (
-        f"Le plan touche aussi {sorted(set(actions) - {A_REMPLACER})}.\n\n"
+    assert set(actions) == {A_REMPLACER}, message(
+        en=f"The plan also affects {sorted(set(actions) - {A_REMPLACER})}.\n\n"
+        "`-replace` targets ONLY ONE resource: if others move, the "
+        "configuration had not converged beforehand.",
+        fr=f"Le plan touche aussi {sorted(set(actions) - {A_REMPLACER})}.\n\n"
         "`-replace` ne vise QU'UNE ressource : si d'autres bougent, la "
-        "configuration n'avait pas converge avant."
+        "configuration n'avait pas convergé avant.",
     )
 
 
@@ -370,15 +419,20 @@ def test_la_sortie_sensible_est_masquee_mais_en_clair_dans_le_state(
     joue: Path,
 ) -> None:
     sorties = _sorties()
-    assert "identifiant_sensible" in sorties, (
-        f"L'output `identifiant_sensible` est absent : {sorted(sorties)}."
+    assert "identifiant_sensible" in sorties, message(
+        en=f"The `identifiant_sensible` output is missing: {sorted(sorties)}.",
+        fr=f"L'output `identifiant_sensible` est absent : {sorted(sorties)}.",
     )
-    assert sorties["identifiant_sensible"]["sensitive"] is True, (
-        "`identifiant_sensible` n'est pas marque sensible."
+    assert sorties["identifiant_sensible"]["sensitive"] is True, message(
+        en="`identifiant_sensible` is not marked sensitive.",
+        fr="`identifiant_sensible` n'est pas marqué sensible.",
     )
 
     humaine = _tf("output", "-no-color")
-    assert humaine.returncode == 0, f"`terraform output` a echoue.\n{humaine.stderr}"
+    assert humaine.returncode == 0, message(
+        en=f"`terraform output` failed.\n{humaine.stderr}",
+        fr=f"`terraform output` a échoué.\n{humaine.stderr}",
+    )
     ligne = next(
         (
             ligne
@@ -387,16 +441,21 @@ def test_la_sortie_sensible_est_masquee_mais_en_clair_dans_le_state(
         ),
         "",
     )
-    assert "<sensitive>" in ligne, f"L'affichage rend {ligne!r} : rien n'est masque."
+    assert "<sensitive>" in ligne, message(
+        en=f"The display returns {ligne!r}: nothing is hidden.",
+        fr=f"L'affichage rend {ligne!r} : rien n'est masqué.",
+    )
 
     # L'autre moitie, et c'est elle qui enseigne : le masquage s'arrete a
     # l'ecran. Le state porte la valeur en clair.
     etat = json.loads((joue / "terraform.tfstate").read_text(encoding="utf-8"))
     assert etat["outputs"]["identifiant_sensible"]["value"] == (
         sorties["identifiant_sensible"]["value"]
-    ), (
-        "La valeur sensible ne figure pas en clair dans `terraform.tfstate`. "
-        "Elle devrait : `sensitive` ne chiffre rien, il cache un affichage."
+    ), message(
+        en="The sensitive value does not appear in clear in `terraform.tfstate`. "
+        "It should: `sensitive` encrypts nothing, it hides a display.",
+        fr="La valeur sensible ne figure pas en clair dans `terraform.tfstate`. "
+        "Elle devrait : `sensitive` ne chiffre rien, il cache un affichage.",
     )
 
 
@@ -414,15 +473,21 @@ def test_la_configuration_converge_et_reste_au_format_canonique(
     """
     plan = _tf("plan", "-detailed-exitcode", "-input=false", "-no-color",
                "-var", "par_ligne_de_commande=gagnant-ligne-de-commande")
-    assert plan.returncode == 0, (
-        f"`plan -detailed-exitcode` rend {plan.returncode}, attendu 0.\n"
-        f"{plan.stdout[-1200:]}"
+    assert plan.returncode == 0, message(
+        en=f"`plan -detailed-exitcode` returns {plan.returncode}, expected 0.\n"
+        f"{plan.stdout[-1200:]}",
+        fr=f"`plan -detailed-exitcode` rend {plan.returncode}, attendu 0.\n"
+        f"{plan.stdout[-1200:]}",
     )
 
     format_ = _tf("fmt", "-check", "-recursive", "-no-color")
-    assert format_.returncode == 0, (
-        f"`fmt -check -recursive` rend {format_.returncode}, attendu 0.\n\n"
+    assert format_.returncode == 0, message(
+        en=f"`fmt -check -recursive` returns {format_.returncode}, expected 0.\n\n"
+        "Some files are outside the canonical format:\n"
+        f"{format_.stdout[-500:]}\n\nRun `terraform fmt -recursive` rather "
+        "than reindenting by hand.",
+        fr=f"`fmt -check -recursive` rend {format_.returncode}, attendu 0.\n\n"
         "Des fichiers sont hors format canonique :\n"
-        f"{format_.stdout[-500:]}\n\nLancez `terraform fmt -recursive` plutot "
-        "que de reindenter a la main."
+        f"{format_.stdout[-500:]}\n\nLancez `terraform fmt -recursive` plutôt "
+        "que de réindenter à la main.",
     )

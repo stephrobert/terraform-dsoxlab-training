@@ -31,7 +31,7 @@ from pathlib import Path
 
 import pytest
 
-from conftest import exiger_workdir, workdir_lab
+from conftest import exiger_workdir, message, workdir_lab
 
 WORKDIR = workdir_lab(__file__)
 LAB_ID = "first-infra-debug-apply"
@@ -83,18 +83,25 @@ def _exiger_reparation_faite() -> None:
     l'exige donc d'abord, par ce que le provisioner produit reellement.
     """
     produits = list(WORKDIR.rglob("rapport.txt"))
-    assert produits, (
-        "Le rapport n'existe pas : l'apply echoue encore.\n\nCe controle ne "
-        "peut se prononcer qu'une fois la cause corrigee dans la configuration. "
-        "Le state fourni porte deja les trois ressources, et les constater ne "
-        "prouverait rien."
+    assert produits, message(
+        en="The report does not exist: the apply still fails.\n\nThis check can "
+        "only decide once the cause is fixed in the configuration. "
+        "The state provided already carries the three resources, and observing them "
+        "would prove nothing.",
+        fr="Le rapport n'existe pas : l'apply échoue encore.\n\nCe contrôle ne "
+        "peut se prononcer qu'une fois la cause corrigée dans la configuration. "
+        "Le state fourni porte déjà les trois ressources, et les constater ne "
+        "prouverait rien.",
     )
 
     fautive = _gerees().get(RAPPORT)
-    assert fautive is not None and not fautive.get("tainted"), (
-        f"`{RAPPORT}` est encore marquee `tainted` dans le state.\n\nTerraform "
-        "sait qu'elle est dans un etat douteux et la remplacera au prochain "
-        "apply. Tant qu'elle l'est, la reparation n'a pas abouti."
+    assert fautive is not None and not fautive.get("tainted"), message(
+        en=f"`{RAPPORT}` is still marked `tainted` in the state.\n\nTerraform "
+        "knows it is in a doubtful state and will replace it at the next "
+        "apply. As long as it is, the repair has not succeeded.",
+        fr=f"`{RAPPORT}` est encore marquée `tainted` dans le state.\n\nTerraform "
+        "sait qu'elle est dans un état douteux et la remplacera au prochain "
+        "apply. Tant qu'elle l'est, la réparation n'a pas abouti.",
     )
 
 
@@ -114,7 +121,10 @@ def repare() -> Iterator[None]:
 
     init = _tf("init", "-input=false", "-no-color")
     if init.returncode != 0:
-        pytest.fail(f"`terraform init` a echoue.\n{init.stderr[-1200:]}")
+        pytest.fail(message(
+            en=f"`terraform init` failed.\n{init.stderr[-1200:]}",
+            fr=f"`terraform init` a échoué.\n{init.stderr[-1200:]}",
+        ))
 
     _tf("apply", "-auto-approve", "-input=false", "-no-color")
     yield
@@ -133,11 +143,15 @@ def test_la_ressource_fautive_existe_toujours(repare: None) -> None:
     _exiger_reparation_faite()
 
     gerees = _gerees()
-    assert RAPPORT in gerees, (
-        f"`{RAPPORT}` est absente du state. Adresses presentes : "
-        f"{sorted(gerees)}.\n\nSi vous l'avez supprimee ou commentee, l'echec a "
-        "disparu et le besoin aussi. La reparation consiste a corriger la CAUSE "
-        "dans la configuration, pas a retirer ce qui echoue."
+    assert RAPPORT in gerees, message(
+        en=f"`{RAPPORT}` is absent from the state. Addresses present: "
+        f"{sorted(gerees)}.\n\nIf you deleted or commented it out, the failure "
+        "disappeared and so did the need. The repair consists in fixing the CAUSE "
+        "in the configuration, not in removing what fails.",
+        fr=f"`{RAPPORT}` est absente du state. Adresses présentes : "
+        f"{sorted(gerees)}.\n\nSi vous l'avez supprimée ou commentée, l'échec a "
+        "disparu et le besoin aussi. La réparation consiste à corriger la CAUSE "
+        "dans la configuration, pas à retirer ce qui échoue.",
     )
 
 
@@ -151,9 +165,11 @@ def test_toutes_les_ressources_declarees_sont_dans_le_state(
 
     gerees = set(_gerees())
     manquantes = {IDENTIFIANT, INVENTAIRE, RAPPORT} - gerees
-    assert not manquantes, (
-        f"Ces ressources manquent au state : {sorted(manquantes)}.\nPresentes : "
-        f"{sorted(gerees)}."
+    assert not manquantes, message(
+        en=f"These resources are missing from the state: {sorted(manquantes)}.\nPresent: "
+        f"{sorted(gerees)}.",
+        fr=f"Ces ressources manquent au state : {sorted(manquantes)}.\nPrésentes : "
+        f"{sorted(gerees)}.",
     )
 
 
@@ -177,14 +193,22 @@ def test_les_ressources_deja_creees_n_ont_pas_ete_recreees(
 
     gerees = _gerees()
     for adresse, avant in IDENTIFIANTS_DE_DEPART.items():
-        assert adresse in gerees, f"`{adresse}` a disparu du state."
+        assert adresse in gerees, message(
+            en=f"`{adresse}` has disappeared from the state.",
+            fr=f"`{adresse}` a disparu du state.",
+        )
         apres = gerees[adresse]["values"].get("id")
-        assert apres == avant, (
-            f"`{adresse}` portait l'identifiant {avant!r} avant la reparation, "
-            f"et {apres!r} apres.\n\nElle a donc ete DETRUITE puis RECREEE. "
-            "L'etat final est peut-etre correct, mais le travail a ete refait "
-            "au lieu d'etre repris : un `destroy` global, ou un `-replace`, "
-            "emporte des ressources parfaitement saines."
+        assert apres == avant, message(
+            en=f"`{adresse}` carried the identifier {avant!r} before the repair, "
+            f"and {apres!r} after.\n\nIt was therefore DESTROYED and then RECREATED. "
+            "The final state may be correct, but the work was redone "
+            "instead of being taken over: a global teardown, or a `-replace`, "
+            "takes perfectly healthy resources away.",
+            fr=f"`{adresse}` portait l'identifiant {avant!r} avant la réparation, "
+            f"et {apres!r} après.\n\nElle a donc été DÉTRUITE puis RECRÉÉE. "
+            "L'état final est peut-être correct, mais le travail a été refait "
+            "au lieu d'être repris : un `destroy` global, ou un `-replace`, "
+            "emporte des ressources parfaitement saines.",
         )
 
 
@@ -199,18 +223,24 @@ def test_le_rapport_existe_reellement_sur_le_disque(repare: None) -> None:
     s'est passe sur le disque.
     """
     attendus = list(WORKDIR.rglob("rapport.txt"))
-    assert attendus, (
-        "Aucun `rapport.txt` sur le disque.\n\nLa ressource figure peut-etre au "
+    assert attendus, message(
+        en="No `rapport.txt` on disk.\n\nThe resource may appear in the "
+        "state, but its provisioner produced nothing: the state records what "
+        "Terraform decided, not what actually happened.",
+        fr="Aucun `rapport.txt` sur le disque.\n\nLa ressource figure peut-être au "
         "state, mais son provisioner n'a rien produit : le state enregistre ce "
-        "que Terraform a decide, pas ce qui s'est reellement passe."
+        "que Terraform a décidé, pas ce qui s'est réellement passé.",
     )
 
     contenu = attendus[0].read_text(encoding="utf-8")
     identifiant = _gerees()[IDENTIFIANT]["values"]["id"]
-    assert identifiant in contenu, (
-        f"Le rapport ne porte pas l'identifiant {identifiant!r}.\nIl contient :\n"
-        f"{contenu[:200]!r}\n\nIl doit etre la copie de l'inventaire, qui lui "
-        "derive de l'identifiant."
+    assert identifiant in contenu, message(
+        en=f"The report does not carry the identifier {identifiant!r}.\nIt contains:\n"
+        f"{contenu[:200]!r}\n\nIt must be a copy of the inventory, which itself "
+        "derives from the identifier.",
+        fr=f"Le rapport ne porte pas l'identifiant {identifiant!r}.\nIl contient :\n"
+        f"{contenu[:200]!r}\n\nIl doit être la copie de l'inventaire, qui lui "
+        "dérive de l'identifiant.",
     )
 
 
@@ -232,9 +262,11 @@ def test_la_configuration_converge_et_se_rejoue_sur_un_repertoire_neuf(
     elle etait dans un `mkdir`, elle echoue ici.
     """
     stable = _tf("plan", "-detailed-exitcode", "-input=false", "-no-color")
-    assert stable.returncode == 0, (
-        f"`plan -detailed-exitcode` rend {stable.returncode}, attendu 0.\n"
-        f"{stable.stdout[-1200:]}"
+    assert stable.returncode == 0, message(
+        en=f"`plan -detailed-exitcode` returns {stable.returncode}, expected 0.\n"
+        f"{stable.stdout[-1200:]}",
+        fr=f"`plan -detailed-exitcode` rend {stable.returncode}, attendu 0.\n"
+        f"{stable.stdout[-1200:]}",
     )
 
     neuf = tmp_path / "a-neuf"
@@ -243,15 +275,23 @@ def test_la_configuration_converge_et_se_rejoue_sur_un_repertoire_neuf(
         (neuf / source.name).write_bytes(source.read_bytes())
 
     init = _tf("init", "-input=false", "-no-color", cwd=neuf)
-    assert init.returncode == 0, f"`init` a echoue sur le rejeu :\n{init.stderr[-800:]}"
+    assert init.returncode == 0, message(
+        en=f"`init` failed on the replay:\n{init.stderr[-800:]}",
+        fr=f"`init` a échoué sur le rejeu :\n{init.stderr[-800:]}",
+    )
 
     rejeu = _tf("apply", "-auto-approve", "-input=false", "-no-color", cwd=neuf)
-    assert rejeu.returncode == 0, (
-        "La configuration ECHOUE sur un repertoire neuf, alors qu'elle converge "
-        "chez vous.\n\nLa reparation n'est donc pas dans le code : un `mkdir` "
-        "lance a la main fait passer l'apply ici et nulle part ailleurs. Le "
-        "repertoire manquant doit etre cree par une RESSOURCE.\n"
-        f"{(rejeu.stderr or rejeu.stdout)[-1500:]}"
+    assert rejeu.returncode == 0, message(
+        en="The configuration FAILS on a fresh directory, although it converges "
+        "on yours.\n\nThe repair is therefore not in the code: a `mkdir` "
+        "run by hand makes the apply pass here and nowhere else. The "
+        "missing directory must be created by a RESOURCE.\n"
+        f"{(rejeu.stderr or rejeu.stdout)[-1500:]}",
+        fr="La configuration ÉCHOUE sur un répertoire neuf, alors qu'elle converge "
+        "chez vous.\n\nLa réparation n'est donc pas dans le code : un `mkdir` "
+        "lancé à la main fait passer l'apply ici et nulle part ailleurs. Le "
+        "répertoire manquant doit être créé par une RESSOURCE.\n"
+        f"{(rejeu.stderr or rejeu.stdout)[-1500:]}",
     )
 
     _tf("destroy", "-auto-approve", "-input=false", "-no-color", cwd=neuf)

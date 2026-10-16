@@ -34,7 +34,7 @@ from pathlib import Path
 
 import pytest
 
-from conftest import exiger_workdir, workdir_lab
+from conftest import exiger_workdir, message, workdir_lab
 
 WORKDIR = workdir_lab(__file__)
 LAB_ID = "first-infra-clean-destroy"
@@ -64,14 +64,19 @@ def joue() -> Path:
 
 def _charger(nom: str) -> dict:
     chemin = WORKDIR / nom
-    assert chemin.is_file(), (
-        f"`{nom}` est absent. Le lab demande de le produire : c'est la trace de "
-        "ce que vous avez constate, et la seule que les tests puissent lire."
+    assert chemin.is_file(), message(
+        en=f"`{nom}` is missing. The lab asks you to produce it: it is the trace of "
+        "what you observed, and the only one the tests can read.",
+        fr=f"`{nom}` est absent. Le lab demande de le produire : c'est la trace de "
+        "ce que vous avez constaté, et la seule que les tests puissent lire.",
     )
     try:
         return json.loads(chemin.read_text(encoding="utf-8"))
     except json.JSONDecodeError as erreur:
-        pytest.fail(f"`{nom}` n'est pas du JSON valide : {erreur}")
+        pytest.fail(message(
+            en=f"`{nom}` is not valid JSON: {erreur}",
+            fr=f"`{nom}` n'est pas du JSON valide : {erreur}",
+        ))
 
 
 def _gerees() -> set[str]:
@@ -92,18 +97,28 @@ def test_le_destroy_global_a_ete_refuse(joue: Path) -> None:
     refuse plutot qu'accepte.
     """
     chemin = joue / RC_PREVENT
-    assert chemin.is_file(), (
-        f"`{RC_PREVENT}` est absent. Lancez le `destroy` global et conservez son "
-        "code de retour : c'est la preuve que le garde-fou a mordu."
+    assert chemin.is_file(), message(
+        en=f"`{RC_PREVENT}` is missing. Run the global teardown and keep its "
+        "return code: that is the proof that the guard bit.",
+        fr=f"`{RC_PREVENT}` est absent. Lancez le `destroy` global et conservez son "
+        "code de retour : c'est la preuve que le garde-fou a mordu.",
     )
     brut = chemin.read_text(encoding="utf-8").strip()
-    assert brut.isdigit(), f"`{RC_PREVENT}` contient {brut!r}, un code attendu."
-    assert int(brut) != 0, (
-        f"Le code de retour releve vaut {brut}, donc le `destroy` a REUSSI.\n\n"
-        "`prevent_destroy` devait le faire echouer. Ce n'est pas un verrou sur "
+    assert brut.isdigit(), message(
+        en=f"`{RC_PREVENT}` contains {brut!r}, a code was expected.",
+        fr=f"`{RC_PREVENT}` contient {brut!r}, un code attendu.",
+    )
+    assert int(brut) != 0, message(
+        en=f"The return code recorded is {brut}, so the teardown SUCCEEDED.\n\n"
+        "`prevent_destroy` was supposed to make it fail. It is not a lock on "
+        "the object: it is a refusal to PLAN, and it covers any plan that "
+        "would take the resource away, including a global teardown launched "
+        "without thinking.",
+        fr=f"Le code de retour relevé vaut {brut}, donc le `destroy` a RÉUSSI.\n\n"
+        "`prevent_destroy` devait le faire échouer. Ce n'est pas un verrou sur "
         "l'objet : c'est un refus de PLANIFIER, et il porte sur tout plan qui "
-        "emporterait la ressource, y compris un destroy global lance sans y "
-        "penser."
+        "emporterait la ressource, y compris un destroy global lancé sans y "
+        "penser.",
     )
 
 
@@ -122,16 +137,22 @@ def test_le_plan_de_destruction_annonce_les_quatre_suppressions(joue: Path) -> N
     actions = {
         c["address"]: c["change"]["actions"] for c in plan.get("resource_changes", [])
     }
-    assert set(actions) == TOUTES, (
-        f"Le plan porte {sorted(actions)}.\nAttendu les quatre : {sorted(TOUTES)}."
-        "\n\nUn plan pris AVANT la levee de `prevent_destroy` est incomplet : "
-        "il sort en erreur, ecrit quand meme un fichier, et omet la ressource "
-        "protegee ainsi que ce dont elle depend."
+    assert set(actions) == TOUTES, message(
+        en=f"The plan carries {sorted(actions)}.\nAll four were expected: {sorted(TOUTES)}."
+        "\n\nA plan taken BEFORE lifting `prevent_destroy` is incomplete: "
+        "it exits with an error, writes a file anyway, and omits the protected "
+        "resource as well as what it depends on.",
+        fr=f"Le plan porte {sorted(actions)}.\nAttendu les quatre : {sorted(TOUTES)}."
+        "\n\nUn plan pris AVANT la levée de `prevent_destroy` est incomplet : "
+        "il sort en erreur, écrit quand même un fichier, et omet la ressource "
+        "protégée ainsi que ce dont elle dépend.",
     )
     for adresse, verbe in actions.items():
-        assert verbe == ["delete"], (
-            f"{adresse} porte l'action {verbe}, attendu `['delete']` dans un "
-            "plan de destruction."
+        assert verbe == ["delete"], message(
+            en=f"{adresse} carries the action {verbe}, `['delete']` expected in a "
+            "teardown plan.",
+            fr=f"{adresse} porte l'action {verbe}, attendu `['delete']` dans un "
+            "plan de destruction.",
         )
 
 
@@ -147,16 +168,22 @@ def test_le_destroy_cible_n_a_retire_que_la_ressource_nommee(joue: Path) -> None
     """
     plan = _charger(PLAN_DESTROY)
     presentes = {c["address"] for c in plan.get("resource_changes", [])}
-    assert EMPREINTE in presentes, (
-        f"`{EMPREINTE}` n'apparait pas dans le plan de destruction : elle "
-        "n'existait donc plus au moment ou il a ete pris, et le ciblage a eu "
-        "lieu trop tot."
+    assert EMPREINTE in presentes, message(
+        en=f"`{EMPREINTE}` does not appear in the teardown plan: it therefore "
+        "no longer existed when the plan was taken, and the targeting happened "
+        "too early.",
+        fr=f"`{EMPREINTE}` n'apparaît pas dans le plan de destruction : elle "
+        "n'existait donc plus au moment où il a été pris, et le ciblage a eu "
+        "lieu trop tôt.",
     )
     autres = presentes - {EMPREINTE}
-    assert autres == TOUTES - {EMPREINTE}, (
-        f"Les trois autres ressources devraient figurer au plan, il porte "
+    assert autres == TOUTES - {EMPREINTE}, message(
+        en=f"The other three resources should appear in the plan; it carries "
+        f"{sorted(autres)}.\n\nA targeted teardown removes ONLY what is "
+        "named: the other three were supposed to stay managed.",
+        fr=f"Les trois autres ressources devraient figurer au plan, il porte "
         f"{sorted(autres)}.\n\nUn `destroy -target` ne retire QUE ce qu'on "
-        "nomme : les trois autres devaient rester gerees."
+        "nomme : les trois autres devaient rester gérées.",
     )
 
 
@@ -172,23 +199,31 @@ def test_le_state_est_vide_mais_son_fichier_subsiste(joue: Path) -> None:
     suppriment par reflexe « pour faire propre ».
     """
     restantes = _gerees()
-    assert not restantes, (
-        f"Le state porte encore {sorted(restantes)}. Le `destroy` complet n'a "
-        "pas eu lieu, ou il a echoue."
+    assert not restantes, message(
+        en=f"The state still carries {sorted(restantes)}. The full teardown did "
+        "not happen, or it failed.",
+        fr=f"Le state porte encore {sorted(restantes)}. Le `destroy` complet n'a "
+        "pas eu lieu, ou il a échoué.",
     )
 
     fichier = joue / "terraform.tfstate"
-    assert fichier.is_file(), (
-        "`terraform.tfstate` a disparu du disque.\n\nUn `destroy` vide le state, "
+    assert fichier.is_file(), message(
+        en="`terraform.tfstate` has disappeared from disk.\n\nA teardown empties the state, "
+        "it does not delete its file. That file carries the project's `lineage` "
+        "and its `serial`: deleting it makes Terraform start from zero, and "
+        "lose the link with anything that might have survived.",
+        fr="`terraform.tfstate` a disparu du disque.\n\nUn `destroy` vide le state, "
         "il ne supprime pas son fichier. Celui-ci porte le `lineage` du projet "
-        "et son `serial` : le supprimer fait repartir Terraform de zero, et lui "
-        "fait perdre le lien avec tout ce qui aurait survecu."
+        "et son `serial` : le supprimer fait repartir Terraform de zéro, et lui "
+        "fait perdre le lien avec tout ce qui aurait survécu.",
     )
 
     contenu = json.loads(fichier.read_text(encoding="utf-8"))
-    assert contenu.get("lineage"), (
-        "Le fichier de state ne porte plus de `lineage` : il a ete recree, pas "
-        "vide."
+    assert contenu.get("lineage"), message(
+        en="The state file no longer carries a `lineage`: it was recreated, not "
+        "emptied.",
+        fr="Le fichier de state ne porte plus de `lineage` : il a été recréé, pas "
+        "vidé.",
     )
 
 
@@ -215,7 +250,10 @@ def test_plus_rien_a_faire_et_aucun_artefact_de_terraform_ne_subsiste(
     # Ce qui compte est qu'il n'annonce plus AUCUNE destruction : s'il en
     # restait une, quelque chose aurait survecu au `destroy`.
     plan = _tf("plan", "-input=false", "-no-color", "-out=verification.tfplan")
-    assert plan.returncode == 0, f"Le plan a echoue :\n{plan.stderr[-800:]}"
+    assert plan.returncode == 0, message(
+        en=f"The plan failed:\n{plan.stderr[-800:]}",
+        fr=f"Le plan a échoué :\n{plan.stderr[-800:]}",
+    )
 
     montre = _tf("show", "-json", "verification.tfplan")
     montre.check_returncode()
@@ -224,22 +262,31 @@ def test_plus_rien_a_faire_et_aucun_artefact_de_terraform_ne_subsiste(
         for c in json.loads(montre.stdout).get("resource_changes", [])
         if "delete" in c["change"]["actions"]
     ]
-    assert not restent_a_detruire, (
-        f"Le plan annonce encore la destruction de {restent_a_detruire}.\n\n"
-        "Ces ressources ont survecu au `destroy` complet : elles sont toujours "
-        "dans le state."
+    assert not restent_a_detruire, message(
+        en=f"The plan still announces the removal of {restent_a_detruire}.\n\n"
+        "Those resources survived the full teardown: they are still "
+        "in the state.",
+        fr=f"Le plan annonce encore la destruction de {restent_a_detruire}.\n\n"
+        "Ces ressources ont survécu au `destroy` complet : elles sont toujours "
+        "dans le state.",
     )
 
     inventaires = list(joue.glob("inventaire-*.txt"))
-    assert not inventaires, (
-        f"Ces fichiers ont survecu au `destroy` : {[f.name for f in inventaires]}."
-        "\n\nTerraform les gerait : leur disparition fait partie de la "
-        "destruction. S'ils sont la, le `local_file` n'a jamais ete detruit."
+    assert not inventaires, message(
+        en=f"These files survived the teardown: {[f.name for f in inventaires]}."
+        "\n\nTerraform managed them: their disappearance is part of the "
+        "teardown. If they are there, the `local_file` was never removed.",
+        fr=f"Ces fichiers ont survécu au `destroy` : {[f.name for f in inventaires]}."
+        "\n\nTerraform les gérait : leur disparition fait partie de la "
+        "destruction. S'ils sont là, le `local_file` n'a jamais été détruit.",
     )
 
     for artefact in (RC_PREVENT, PLAN_DESTROY):
-        assert (joue / artefact).is_file(), (
-            f"`{artefact}` a disparu.\n\nLes artefacts sont des traces de ce que "
-            "vous avez constate, pas des ressources : ils doivent survivre au "
-            "`destroy`."
+        assert (joue / artefact).is_file(), message(
+            en=f"`{artefact}` has disappeared.\n\nThe artefacts are traces of what "
+            "you observed, not resources: they must survive the "
+            "teardown.",
+            fr=f"`{artefact}` a disparu.\n\nLes artefacts sont des traces de ce que "
+            "vous avez constaté, pas des ressources : ils doivent survivre au "
+            "`destroy`.",
         )

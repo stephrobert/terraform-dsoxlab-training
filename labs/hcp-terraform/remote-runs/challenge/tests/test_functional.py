@@ -47,7 +47,14 @@ from pathlib import Path
 
 import pytest
 
-from conftest import exiger_workdir, output_json, show_json, terraform, workdir_lab
+from conftest import (
+    exiger_workdir,
+    message,
+    output_json,
+    show_json,
+    terraform,
+    workdir_lab,
+)
 
 WORKDIR = workdir_lab(__file__)
 LAB_ID = "hcp-terraform-remote-runs"
@@ -112,17 +119,26 @@ def messages(joue: Path) -> list[dict]:
     C'est la reference a laquelle l'analyse de l'apprenant est comparee.
     """
     journal = joue / FLUX / JOURNAL
-    assert journal.is_file(), (
-        f"`{FLUX}/{JOURNAL}` n'existe pas.\n\nLe run doit etre joue en "
+    assert journal.is_file(), message(
+        en=f"`{FLUX}/{JOURNAL}` does not exist.\n\nThe run must be played while "
+        "recording its stream:\n\n"
+        "    terraform apply -auto-approve -json > run.jsonl\n\n"
+        "That is the stream the CLI receives from a remote run, one JSON message per "
+        "line. It will return a non-zero code: the third resource fails, and "
+        "that is the subject of the lab.",
+        fr=f"`{FLUX}/{JOURNAL}` n'existe pas.\n\nLe run doit être joué en "
         "enregistrant son flux :\n\n"
         "    terraform apply -auto-approve -json > run.jsonl\n\n"
-        "C'est ce flux que la CLI recoit d'un run distant, un message JSON par "
-        "ligne. Il rendra un code non nul : la troisieme ressource echoue, et "
-        "c'est le sujet du lab."
+        "C'est ce flux que la CLI reçoit d'un run distant, un message JSON par "
+        "ligne. Il rendra un code non nul : la troisième ressource échoue, et "
+        "c'est le sujet du lab.",
     )
 
     lignes = [ligne for ligne in journal.read_text(encoding="utf-8").splitlines() if ligne.strip()]
-    assert lignes, f"`{FLUX}/{JOURNAL}` est vide."
+    assert lignes, message(
+        en=f"`{FLUX}/{JOURNAL}` is empty.",
+        fr=f"`{FLUX}/{JOURNAL}` est vide.",
+    )
 
     decodes = []
     for rang, ligne in enumerate(lignes, start=1):
@@ -130,9 +146,14 @@ def messages(joue: Path) -> list[dict]:
             decodes.append(json.loads(ligne))
         except json.JSONDecodeError as erreur:
             pytest.fail(
-                f"La ligne {rang} de `{JOURNAL}` n'est pas du JSON : {erreur}\n\n"
+                message(
+                en=f"Line {rang} of `{JOURNAL}` is not JSON: {erreur}\n\n"
+                "The stream is obtained with `-json`, and the error output is not "
+                "redirected into it: `> run.jsonl` is enough.",
+                fr=f"La ligne {rang} de `{JOURNAL}` n'est pas du JSON : {erreur}\n\n"
                 "Le flux s'obtient avec `-json`, et la sortie d'erreur ne s'y "
-                "redirige pas : `> run.jsonl` suffit."
+                "redirige pas : `> run.jsonl` suffit.",
+            )
             )
     return decodes
 
@@ -143,15 +164,19 @@ def messages(joue: Path) -> list[dict]:
 def test_le_run_a_pose_deux_fichiers_et_pas_le_troisieme(joue: Path) -> None:
     """Sans cela, un `run.jsonl` ecrit a la main passerait tout le reste."""
     manquants = [f for f in POSES if not (joue / FLUX / f).is_file()]
-    assert not manquants, (
-        f"Ces fichiers n'ont pas ete poses : {manquants}\n\nLe run doit avoir "
-        f"ete APPLIQUE dans `{FLUX}/`, pas seulement planifie."
+    assert not manquants, message(
+        en=f"These files were not written: {manquants}\n\nThe run must have "
+        f"been APPLIED in `{FLUX}/`, not merely planned.",
+        fr=f"Ces fichiers n'ont pas été posés : {manquants}\n\nLe run doit avoir "
+        f"été APPLIQUÉ dans `{FLUX}/`, pas seulement planifié.",
     )
 
     impossible = joue / FLUX / "socle.txt" / "sonde.txt"
-    assert not impossible.exists(), (
-        f"`{impossible}` existe, ce qui ne devrait pas etre possible : "
-        "`socle.txt` est un fichier. La configuration fournie a ete modifiee."
+    assert not impossible.exists(), message(
+        en=f"`{impossible}` exists, which should not be possible: "
+        "`socle.txt` is a file. The provided configuration was modified.",
+        fr=f"`{impossible}` existe, ce qui ne devrait pas être possible : "
+        "`socle.txt` est un fichier. La configuration fournie a été modifiée.",
     )
 
 
@@ -161,10 +186,13 @@ def test_le_state_ne_porte_que_les_ressources_abouties(joue: Path) -> None:
         r["address"]
         for r in (etat.get("values") or {}).get("root_module", {}).get("resources", [])
     )
-    assert adresses == sorted(ABOUTIES), (
-        f"Le state de `{FLUX}/` porte {adresses}, attendu {sorted(ABOUTIES)}.\n\n"
-        "Une ressource qui a echoue n'entre pas dans le state : c'est bien "
-        "pourquoi le resume du plan ne dit pas ce qui a eu lieu."
+    assert adresses == sorted(ABOUTIES), message(
+        en=f"The state of `{FLUX}/` carries {adresses}, expected {sorted(ABOUTIES)}.\n\n"
+        "A resource that failed does not enter the state: that is exactly "
+        "why the plan's summary does not say what took place.",
+        fr=f"Le state de `{FLUX}/` porte {adresses}, attendu {sorted(ABOUTIES)}.\n\n"
+        "Une ressource qui a échoué n'entre pas dans le state : c'est bien "
+        "pourquoi le résumé du plan ne dit pas ce qui a eu lieu.",
     )
 
 
@@ -177,17 +205,24 @@ def test_le_flux_est_celui_d_un_run_interrompu(messages: list[dict]) -> None:
     types = Counter(m.get("type") for m in messages)
 
     for attendu in ("version", "planned_change", "change_summary", "apply_complete"):
-        assert types.get(attendu), (
-            f"Le flux ne porte aucun message `{attendu}`.\nTypes presents : "
+        assert types.get(attendu), message(
+            en=f"The stream carries no `{attendu}` message.\nTypes present: "
+            f"{dict(types)}\n\nThe expected stream is that of an `apply`, not that "
+            "of a `plan`.",
+            fr=f"Le flux ne porte aucun message `{attendu}`.\nTypes présents : "
             f"{dict(types)}\n\nLe flux attendu est celui d'un `apply`, pas celui "
-            "d'un `plan`."
+            "d'un `plan`.",
         )
 
-    assert types.get("apply_errored"), (
-        f"Le flux ne porte aucun message `apply_errored`.\nTypes presents : "
-        f"{dict(types)}\n\nLa troisieme ressource DOIT echouer : c'est ce qui "
+    assert types.get("apply_errored"), message(
+        en=f"The stream carries no `apply_errored` message.\nTypes present: "
+        f"{dict(types)}\n\nThe third resource MUST fail: that is what "
+        "makes what the plan announces diverge from what takes place. If your run "
+        "succeeds, the provided configuration was modified.",
+        fr=f"Le flux ne porte aucun message `apply_errored`.\nTypes présents : "
+        f"{dict(types)}\n\nLa troisième ressource DOIT échouer : c'est ce qui "
         "fait diverger ce que le plan annonce de ce qui a lieu. Si votre run "
-        "aboutit, la configuration fournie a ete modifiee."
+        "aboutit, la configuration fournie a été modifiée.",
     )
 
 
@@ -199,16 +234,23 @@ def sorties(joue: Path) -> dict:
     repertoire = joue / ANALYSE
 
     init = terraform("init", "-input=false", "-no-color", cwd=repertoire)
-    assert init.returncode == 0, f"`init` a echoue.\n{init.stderr[-800:]}"
+    assert init.returncode == 0, message(
+        en=f"`init` failed.\n{init.stderr[-800:]}",
+        fr=f"`init` a échoué.\n{init.stderr[-800:]}",
+    )
 
     applique = terraform(
         "apply", "-auto-approve", "-input=false", "-no-color", cwd=repertoire
     )
-    assert applique.returncode == 0, (
-        f"`apply` a echoue dans `{ANALYSE}/`.\n\nUn `???` subsiste, ou une "
-        "expression ne tient pas. Rappel : un fichier JSONL se decoupe en "
-        "lignes AVANT d'etre decode, et sa derniere ligne est vide.\n"
-        f"{applique.stderr[-1200:]}"
+    assert applique.returncode == 0, message(
+        en=f"`apply` failed in `{ANALYSE}/`.\n\nA `???` remains, or an "
+        "expression does not hold. Reminder: a JSONL file is split into "
+        "lines BEFORE being decoded, and its last line is empty.\n"
+        f"{applique.stderr[-1200:]}",
+        fr=f"`apply` a échoué dans `{ANALYSE}/`.\n\nUn `???` subsiste, ou une "
+        "expression ne tient pas. Rappel : un fichier JSONL se découpe en "
+        "lignes AVANT d'être décodé, et sa dernière ligne est vide.\n"
+        f"{applique.stderr[-1200:]}",
     )
 
     return {c: v["value"] for c, v in output_json(repertoire).items()}
@@ -224,16 +266,21 @@ def test_le_compte_par_type_est_celui_du_flux(
     attendu = dict(Counter(m.get("type") for m in messages))
     obtenu = sorties.get("par_type")
 
-    assert isinstance(obtenu, dict), (
-        f"`par_type` rend {type(obtenu).__name__}, une map attendue."
+    assert isinstance(obtenu, dict), message(
+        en=f"`par_type` returns {type(obtenu).__name__}, a map was expected.",
+        fr=f"`par_type` rend {type(obtenu).__name__}, une map attendue.",
     )
 
     obtenu_entier = {t: int(n) for t, n in obtenu.items()}
-    assert obtenu_entier == attendu, (
-        f"`par_type` ne correspond pas au flux.\nObtenu  : {obtenu_entier}\n"
-        f"Attendu : {attendu}\n\nCes chiffres sont recalcules depuis "
-        f"`{FLUX}/{JOURNAL}` par le test lui-meme : ils suivent votre flux, ils "
-        "ne sont pas geles."
+    assert obtenu_entier == attendu, message(
+        en=f"`par_type` does not match the stream.\nGot     : {obtenu_entier}\n"
+        f"Expected: {attendu}\n\nThose figures are recomputed from "
+        f"`{FLUX}/{JOURNAL}` by the test itself: they follow your stream, they "
+        "are not frozen.",
+        fr=f"`par_type` ne correspond pas au flux.\nObtenu  : {obtenu_entier}\n"
+        f"Attendu : {attendu}\n\nCes chiffres sont recalculés depuis "
+        f"`{FLUX}/{JOURNAL}` par le test lui-même : ils suivent votre flux, ils "
+        "ne sont pas gelés.",
     )
 
 
@@ -247,28 +294,37 @@ def test_le_resume_est_celui_que_le_flux_porte(
     `null`.
     """
     resumes = [m["changes"] for m in messages if m.get("type") == "change_summary"]
-    assert len(resumes) == 1, (
-        f"Le flux porte {len(resumes)} `change_summary`, un seul attendu sur un "
-        "run interrompu. La configuration fournie a-t-elle ete modifiee ?"
+    assert len(resumes) == 1, message(
+        en=f"The stream carries {len(resumes)} `change_summary`, a single one expected on an "
+        "interrupted run. Was the provided configuration modified?",
+        fr=f"Le flux porte {len(resumes)} `change_summary`, un seul attendu sur un "
+        "run interrompu. La configuration fournie a-t-elle été modifiée ?",
     )
     attendu = {c: _entier(v) for c, v in resumes[0].items()}
 
     obtenu = sorties.get("resume_annonce")
-    assert isinstance(obtenu, dict), (
-        f"`resume_annonce` rend {obtenu!r}.\n\nUn filtre sur l'operation "
+    assert isinstance(obtenu, dict), message(
+        en=f"`resume_annonce` returns {obtenu!r}.\n\nA filter on the `apply` "
+        "operation returns `null` here: the stream of an INTERRUPTED run carries no "
+        "apply summary. The only one it carries is the plan's.",
+        fr=f"`resume_annonce` rend {obtenu!r}.\n\nUn filtre sur l'opération "
         "`apply` rend `null` ici : le flux d'un run INTERROMPU ne porte pas de "
-        "resume d'apply. Le seul qu'il porte est celui du plan."
+        "résumé d'apply. Le seul qu'il porte est celui du plan.",
     )
 
     obtenu_normalise = {c: _entier(v) for c, v in obtenu.items()}
-    assert obtenu_normalise == attendu, (
-        f"`resume_annonce` ne correspond pas au flux.\nObtenu  : "
-        f"{obtenu_normalise}\nAttendu : {attendu}"
+    assert obtenu_normalise == attendu, message(
+        en=f"`resume_annonce` does not match the stream.\nGot     : "
+        f"{obtenu_normalise}\nExpected: {attendu}",
+        fr=f"`resume_annonce` ne correspond pas au flux.\nObtenu  : "
+        f"{obtenu_normalise}\nAttendu : {attendu}",
     )
 
-    assert obtenu.get("operation") == "plan", (
-        f"`resume_annonce.operation` vaut {obtenu.get('operation')!r}, `plan` "
-        "attendu."
+    assert obtenu.get("operation") == "plan", message(
+        en=f"`resume_annonce.operation` is {obtenu.get('operation')!r}, `plan` "
+        "expected.",
+        fr=f"`resume_annonce.operation` vaut {obtenu.get('operation')!r}, `plan` "
+        "attendu.",
     )
 
 
@@ -286,18 +342,25 @@ def test_les_adresses_abouties_et_en_echec(
         if m.get("type") == "apply_errored"
     )
 
-    assert sorties.get("adresses_abouties") == abouties, (
-        f"`adresses_abouties` vaut {sorties.get('adresses_abouties')}, attendu "
+    assert sorties.get("adresses_abouties") == abouties, message(
+        en=f"`adresses_abouties` is {sorties.get('adresses_abouties')}, expected "
+        f"{abouties}.\n\nThe message proving that a resource succeeded is "
+        "not the one announcing its change: between the two, it may "
+        "fail.",
+        fr=f"`adresses_abouties` vaut {sorties.get('adresses_abouties')}, attendu "
         f"{abouties}.\n\nLe message qui prouve qu'une ressource a abouti n'est "
         "pas celui qui annonce son changement : entre les deux, elle peut "
-        "echouer."
+        "échouer.",
     )
-    assert sorties.get("adresses_en_echec") == en_echec, (
-        f"`adresses_en_echec` vaut {sorties.get('adresses_en_echec')}, attendu "
-        f"{en_echec}."
+    assert sorties.get("adresses_en_echec") == en_echec, message(
+        en=f"`adresses_en_echec` is {sorties.get('adresses_en_echec')}, expected "
+        f"{en_echec}.",
+        fr=f"`adresses_en_echec` vaut {sorties.get('adresses_en_echec')}, attendu "
+        f"{en_echec}.",
     )
-    assert set(en_echec) == set(EN_ECHEC), (
-        f"Le flux declare en echec {en_echec}, attendu {sorted(EN_ECHEC)}."
+    assert set(en_echec) == set(EN_ECHEC), message(
+        en=f"The stream declares {en_echec} as failed, expected {sorted(EN_ECHEC)}.",
+        fr=f"Le flux déclare en échec {en_echec}, attendu {sorted(EN_ECHEC)}.",
     )
 
 
@@ -318,16 +381,25 @@ def test_l_ecart_entre_ce_qui_est_annonce_et_ce_qui_a_eu_lieu(
     attendu = int(annonce) - abouties
 
     obtenu = sorties.get("ecart_entre_annonce_et_abouti")
-    assert obtenu is not None, "`ecart_entre_annonce_et_abouti` n'est pas rendu."
-    assert int(obtenu) == attendu, (
-        f"`ecart_entre_annonce_et_abouti` vaut {obtenu}, attendu {attendu}.\n\n"
-        f"Le resume annonce {annonce} ajouts ; {abouties} ressources ont "
-        "abouti. L'ecart est ce que le flux ne dit nulle part, et c'est "
-        "pourtant ce qu'il faut savoir avant de relancer quoi que ce soit."
+    assert obtenu is not None, message(
+        en="`ecart_entre_annonce_et_abouti` is not returned.",
+        fr="`ecart_entre_annonce_et_abouti` n'est pas rendu.",
     )
-    assert attendu > 0, (
-        "L'ecart mesure est nul : le run a abouti entierement, alors que la "
-        "configuration fournie doit echouer sur sa troisieme ressource."
+    assert int(obtenu) == attendu, message(
+        en=f"`ecart_entre_annonce_et_abouti` is {obtenu}, expected {attendu}.\n\n"
+        f"The summary announces {annonce} additions; {abouties} resources "
+        "succeeded. The gap is what the stream says nowhere, and it is "
+        "nevertheless what must be known before relaunching anything.",
+        fr=f"`ecart_entre_annonce_et_abouti` vaut {obtenu}, attendu {attendu}.\n\n"
+        f"Le résumé annonce {annonce} ajouts ; {abouties} ressources ont "
+        "abouti. L'écart est ce que le flux ne dit nulle part, et c'est "
+        "pourtant ce qu'il faut savoir avant de relancer quoi que ce soit.",
+    )
+    assert attendu > 0, message(
+        en="The measured gap is zero: the run succeeded entirely, although the "
+        "provided configuration must fail on its third resource.",
+        fr="L'écart mesuré est nul : le run a abouti entièrement, alors que la "
+        "configuration fournie doit échouer sur sa troisième ressource.",
     )
 
 
@@ -339,15 +411,21 @@ def reponses(joue: Path) -> dict:
     repertoire = joue / QUESTIONNAIRE
 
     init = terraform("init", "-input=false", "-no-color", cwd=repertoire)
-    assert init.returncode == 0, f"`init` a echoue.\n{init.stderr[-800:]}"
+    assert init.returncode == 0, message(
+        en=f"`init` failed.\n{init.stderr[-800:]}",
+        fr=f"`init` a échoué.\n{init.stderr[-800:]}",
+    )
 
     applique = terraform(
         "apply", "-auto-approve", "-input=false", "-no-color", cwd=repertoire
     )
-    assert applique.returncode == 0, (
-        f"`apply` a echoue dans `{QUESTIONNAIRE}/`.\n\nUne reponse hors de "
-        "l'enumere est refusee AU PLAN, et le message dit quoi ecrire.\n"
-        f"{applique.stderr[-1200:]}"
+    assert applique.returncode == 0, message(
+        en=f"`apply` failed in `{QUESTIONNAIRE}/`.\n\nAn answer outside the "
+        "enumeration is refused AT PLAN TIME, and the message says what to write.\n"
+        f"{applique.stderr[-1200:]}",
+        fr=f"`apply` a échoué dans `{QUESTIONNAIRE}/`.\n\nUne réponse hors de "
+        "l'énuméré est refusée AU PLAN, et le message dit quoi écrire.\n"
+        f"{applique.stderr[-1200:]}",
     )
 
     return output_json(repertoire)["reponses"]["value"]
@@ -357,7 +435,9 @@ def reponses(joue: Path) -> dict:
 def test_chaque_reponse_sur_les_workflows(reponses: dict, question: str) -> None:
     attendue, pourquoi = REPONSES_ATTENDUES[question]
     obtenue = reponses.get(question)
-    assert obtenue == attendue, (
-        f"`{question}` vaut {obtenue!r}, {attendue!r} attendu.\n\n"
-        f"{pourquoi.capitalize()}.\n\nSource : {SOURCE_CLI}"
+    assert obtenue == attendue, message(
+        en=f"`{question}` is {obtenue!r}, {attendue!r} expected.\n\n"
+        f"{pourquoi.capitalize()}.\n\nSource: {SOURCE_CLI}",
+        fr=f"`{question}` vaut {obtenue!r}, {attendue!r} attendu.\n\n"
+        f"{pourquoi.capitalize()}.\n\nSource : {SOURCE_CLI}",
     )

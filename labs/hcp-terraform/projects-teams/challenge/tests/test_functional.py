@@ -43,7 +43,7 @@ from pathlib import Path
 
 import pytest
 
-from conftest import exiger_workdir, output_json, terraform, workdir_lab
+from conftest import exiger_workdir, message, output_json, terraform, workdir_lab
 
 WORKDIR = workdir_lab(__file__)
 LAB_ID = "hcp-terraform-projects-teams"
@@ -151,14 +151,19 @@ def joue() -> Path:
 
 def _applique(repertoire: Path, ou: str) -> dict:
     init = terraform("init", "-input=false", "-no-color", cwd=repertoire)
-    assert init.returncode == 0, f"`init` a echoue dans `{ou}/`.\n{init.stderr[-800:]}"
+    assert init.returncode == 0, message(
+        en=f"`init` failed in `{ou}/`.\n{init.stderr[-800:]}",
+        fr=f"`init` a échoué dans `{ou}/`.\n{init.stderr[-800:]}",
+    )
 
     applique = terraform(
         "apply", "-auto-approve", "-input=false", "-no-color", cwd=repertoire
     )
-    assert applique.returncode == 0, (
-        f"`apply` a echoue dans `{ou}/`.\n\nUn `???` subsiste, ou une expression "
-        f"ne tient pas.\n{applique.stderr[-1200:]}"
+    assert applique.returncode == 0, message(
+        en=f"`apply` failed in `{ou}/`.\n\nA `???` remains, or an expression "
+        f"does not hold.\n{applique.stderr[-1200:]}",
+        fr=f"`apply` a échoué dans `{ou}/`.\n\nUn `???` subsiste, ou une expression "
+        f"ne tient pas.\n{applique.stderr[-1200:]}",
     )
     return {c: v["value"] for c, v in output_json(repertoire).items()}
 
@@ -173,18 +178,23 @@ def sorties(joue: Path) -> dict:
 # --------------------------------------------------------------------------
 def test_les_six_equipes_sont_toutes_qualifiees(sorties: dict) -> None:
     acces = sorties.get("acces_effectif")
-    assert isinstance(acces, dict), (
-        f"`acces_effectif` rend {type(acces).__name__}, une map attendue."
+    assert isinstance(acces, dict), message(
+        en=f"`acces_effectif` returns {type(acces).__name__}, a map was expected.",
+        fr=f"`acces_effectif` rend {type(acces).__name__}, une map attendue.",
     )
-    assert set(acces) == set(ACCES_ATTENDUS), (
-        f"Equipes qualifiees : {sorted(acces)}.\nAttendu les six : "
-        f"{sorted(ACCES_ATTENDUS)}."
+    assert set(acces) == set(ACCES_ATTENDUS), message(
+        en=f"Teams classified: {sorted(acces)}.\nAll six were expected: "
+        f"{sorted(ACCES_ATTENDUS)}.",
+        fr=f"Équipes qualifiées : {sorted(acces)}.\nAttendu les six : "
+        f"{sorted(ACCES_ATTENDUS)}.",
     )
 
     hors_vocabulaire = {n: v for n, v in acces.items() if v not in NIVEAUX_ADMIS}
-    assert not hors_vocabulaire, (
-        f"Ces niveaux ne sont pas dans l'echelle : {hors_vocabulaire}.\n"
-        f"Admis : {sorted(NIVEAUX_ADMIS)}."
+    assert not hors_vocabulaire, message(
+        en=f"These levels are not on the scale: {hors_vocabulaire}.\n"
+        f"Accepted: {sorted(NIVEAUX_ADMIS)}.",
+        fr=f"Ces niveaux ne sont pas dans l'échelle : {hors_vocabulaire}.\n"
+        f"Admis : {sorted(NIVEAUX_ADMIS)}.",
     )
 
 
@@ -193,12 +203,17 @@ def test_chaque_equipe_recoit_le_bon_acces(sorties: dict, equipe: str) -> None:
     attendu, pourquoi = ACCES_ATTENDUS[equipe]
     obtenu = sorties["acces_effectif"].get(equipe)
 
-    assert obtenu == attendu, (
-        f"`{equipe}` vaut {obtenu!r}, attendu {attendu!r}.\n\n"
-        f"{pourquoi.capitalize()}.\n\nRappel de la regle : les permissions "
-        "s'ADDITIONNENT, et l'acces effectif est le plus permissif des trois "
-        "niveaux. Le niveau qui l'a pose n'entre pas en ligne de compte.\n\n"
-        f"Source : {SOURCE_PERMISSIONS}"
+    assert obtenu == attendu, message(
+        en=f"`{equipe}` is {obtenu!r}, expected {attendu!r}.\n\n"
+        f"{pourquoi.capitalize()}.\n\nA reminder of the rule: permissions "
+        "ADD UP, and the effective access is the most permissive of the three "
+        "levels. Which level set it does not come into play.\n\n"
+        f"Source: {SOURCE_PERMISSIONS}",
+        fr=f"`{equipe}` vaut {obtenu!r}, attendu {attendu!r}.\n\n"
+        f"{pourquoi.capitalize()}.\n\nRappel de la règle : les permissions "
+        "s'ADDITIONNENT, et l'accès effectif est le plus permissif des trois "
+        "niveaux. Le niveau qui l'a posé n'entre pas en ligne de compte.\n\n"
+        f"Source : {SOURCE_PERMISSIONS}",
     )
 
 
@@ -213,17 +228,24 @@ def test_seules_les_equipes_qui_ecrivent_peuvent_appliquer(sorties: dict) -> Non
     ecrit.
     """
     obtenu = sorties.get("equipes_qui_peuvent_appliquer")
-    assert isinstance(obtenu, list), (
-        f"`equipes_qui_peuvent_appliquer` rend {type(obtenu).__name__}, une "
-        "liste attendue."
+    assert isinstance(obtenu, list), message(
+        en=f"`equipes_qui_peuvent_appliquer` returns {type(obtenu).__name__}, a "
+        "list was expected.",
+        fr=f"`equipes_qui_peuvent_appliquer` rend {type(obtenu).__name__}, une "
+        "liste attendue.",
     )
 
-    assert sorted(obtenu) == sorted(PEUVENT_APPLIQUER), (
-        f"Equipes pouvant appliquer : {sorted(obtenu)}\n"
+    assert sorted(obtenu) == sorted(PEUVENT_APPLIQUER), message(
+        en=f"Teams able to apply: {sorted(obtenu)}\n"
+        f"Expected: {sorted(PEUVENT_APPLIQUER)}\n\n"
+        "Applying requires at least write. The `plan` role allows one to "
+        "propose a change, never to make it, and that is precisely what "
+        "makes it useful: it opens the review without opening production.",
+        fr=f"Équipes pouvant appliquer : {sorted(obtenu)}\n"
         f"Attendu : {sorted(PEUVENT_APPLIQUER)}\n\n"
-        "Appliquer demande au moins l'ecriture. Le role `plan` permet de "
-        "proposer un changement, jamais de le poser, et c'est precisement ce "
-        "qui le rend utile : il ouvre la revue sans ouvrir la production."
+        "Appliquer demande au moins l'écriture. Le rôle `plan` permet de "
+        "proposer un changement, jamais de le poser, et c'est précisément ce "
+        "qui le rend utile : il ouvre la revue sans ouvrir la production.",
     )
 
 
@@ -239,7 +261,9 @@ def reponses(joue: Path) -> dict:
 def test_chaque_reponse_sur_les_acces(reponses: dict, question: str) -> None:
     attendue, pourquoi = REPONSES_ATTENDUES[question]
     obtenue = reponses.get(question)
-    assert obtenue == attendue, (
-        f"`{question}` vaut {obtenue!r}, {attendue!r} attendu.\n\n"
-        f"{pourquoi.capitalize()}.\n\nSource : {SOURCE_PERMISSIONS}"
+    assert obtenue == attendue, message(
+        en=f"`{question}` is {obtenue!r}, {attendue!r} expected.\n\n"
+        f"{pourquoi.capitalize()}.\n\nSource: {SOURCE_PERMISSIONS}",
+        fr=f"`{question}` vaut {obtenue!r}, {attendue!r} attendu.\n\n"
+        f"{pourquoi.capitalize()}.\n\nSource : {SOURCE_PERMISSIONS}",
     )

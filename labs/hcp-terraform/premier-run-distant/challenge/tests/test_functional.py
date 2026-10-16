@@ -43,7 +43,7 @@ from typing import Any
 
 import pytest
 
-from conftest import exiger_workdir, workdir_lab
+from conftest import exiger_workdir, message, workdir_lab
 
 WORKDIR = workdir_lab(__file__)
 LAB_ID = "hcp-terraform-premier-run-distant"
@@ -265,10 +265,16 @@ def plateforme(jeton: str) -> Iterator[dict]:
     proc = _tf("output", "-json", cwd=repertoire)
     if proc.returncode != 0 or not proc.stdout.strip() or proc.stdout.strip() == "{}":
         pytest.fail(
-            f"`{PLATEFORME}/` n'a pas été appliqué.\n\nRenseignez votre "
+            message(
+            en=f"`{PLATEFORME}/` was not applied.\n\nFill in your "
+            "organisation in `organisation.auto.tfvars`, complete the `???`, "
+            "then:\n\n    cd plateforme && terraform init && terraform apply\n\n"
+            f"{proc.stderr[-600:]}",
+            fr=f"`{PLATEFORME}/` n'a pas été appliqué.\n\nRenseignez votre "
             "organisation dans `organisation.auto.tfvars`, complétez les `???`, "
             "puis :\n\n    cd plateforme && terraform init && terraform apply\n\n"
-            f"{proc.stderr[-600:]}"
+            f"{proc.stderr[-600:]}",
+        )
         )
 
     sorties = {c: v["value"] for c, v in json.loads(proc.stdout).items()}
@@ -284,8 +290,9 @@ def workspace(plateforme: dict, jeton: str) -> dict:
     """Le workspace, tel que l'API le décrit."""
     organisation = plateforme.get("organisation")
     nom = plateforme.get("workspace")
-    assert organisation and nom, (
-        f"`{PLATEFORME}/` ne rend pas les sorties attendues : {sorted(plateforme)}"
+    assert organisation and nom, message(
+        en=f"`{PLATEFORME}/` does not return the expected outputs: {sorted(plateforme)}",
+        fr=f"`{PLATEFORME}/` ne rend pas les sorties attendues : {sorted(plateforme)}",
     )
 
     try:
@@ -293,9 +300,14 @@ def workspace(plateforme: dict, jeton: str) -> dict:
     except urllib.error.HTTPError as erreur:
         if erreur.code == 404:
             pytest.fail(
-                f"Le workspace `{nom}` n'existe pas dans l'organisation "
+                message(
+                en=f"The workspace `{nom}` does not exist in organisation "
+                f"`{organisation}`.\n\nThe local outputs describe it, but "
+                "the API does not know it: did the apply really succeed?",
+                fr=f"Le workspace `{nom}` n'existe pas dans l'organisation "
                 f"`{organisation}`.\n\nLes sorties locales le décrivent, mais "
-                "l'API ne le connaît pas : l'apply a-t-il vraiment abouti ?"
+                "l'API ne le connaît pas : l'apply a-t-il vraiment abouti ?",
+            )
             )
         raise
     return reponse["data"]
@@ -309,9 +321,11 @@ def test_le_projet_existe_dans_l_organisation(plateforme: dict, jeton: str) -> N
     projets = _api(f"/organizations/{organisation}/projects", jeton)
     noms = [p["attributes"]["name"] for p in projets.get("data", [])]
 
-    assert PROJET_ATTENDU in noms, (
-        f"Le projet `{PROJET_ATTENDU}` n'existe pas dans `{organisation}`.\n"
-        f"Projets trouvés : {noms}"
+    assert PROJET_ATTENDU in noms, message(
+        en=f"The project `{PROJET_ATTENDU}` does not exist in `{organisation}`.\n"
+        f"Projects found: {noms}",
+        fr=f"Le projet `{PROJET_ATTENDU}` n'existe pas dans `{organisation}`.\n"
+        f"Projets trouvés : {noms}",
     )
 
 
@@ -322,22 +336,30 @@ def test_le_workspace_vit_dans_ce_projet(
 
     Rien ne le signale, et le lab demande explicitement le contraire.
     """
-    assert workspace["attributes"]["name"] == WORKSPACE_ATTENDU, (
-        f"Le workspace se nomme {workspace['attributes']['name']!r}, "
-        f"{WORKSPACE_ATTENDU!r} attendu."
+    assert workspace["attributes"]["name"] == WORKSPACE_ATTENDU, message(
+        en=f"The workspace is named {workspace['attributes']['name']!r}, "
+        f"{WORKSPACE_ATTENDU!r} expected.",
+        fr=f"Le workspace se nomme {workspace['attributes']['name']!r}, "
+        f"{WORKSPACE_ATTENDU!r} attendu.",
     )
 
     projet_id = (
         ((workspace.get("relationships") or {}).get("project") or {}).get("data") or {}
     ).get("id")
-    assert projet_id, "L'API ne rattache le workspace à aucun projet."
+    assert projet_id, message(
+        en="The API attaches the workspace to no project.",
+        fr="L'API ne rattache le workspace à aucun projet.",
+    )
 
     projet = _api(f"/projects/{projet_id}", jeton)
     nom = projet["data"]["attributes"]["name"]
-    assert nom == PROJET_ATTENDU, (
-        f"Le workspace vit dans le projet `{nom}`, et non dans "
+    assert nom == PROJET_ATTENDU, message(
+        en=f"The workspace lives in project `{nom}`, and not in "
+        f"`{PROJET_ATTENDU}`.\n\nA workspace created without a `project_id` lands "
+        "in the organisation's default project, and nothing reports it.",
+        fr=f"Le workspace vit dans le projet `{nom}`, et non dans "
         f"`{PROJET_ATTENDU}`.\n\nUn workspace créé sans `project_id` atterrit "
-        "dans le projet par défaut de l'organisation, et rien ne le signale."
+        "dans le projet par défaut de l'organisation, et rien ne le signale.",
     )
 
 
@@ -347,19 +369,28 @@ def test_le_workspace_execute_a_distance_et_attend_une_confirmation(
     """Les deux réglages qui font de ce lab autre chose qu'un backend distant."""
     attributs = workspace["attributes"]
 
-    assert attributs.get("execution-mode") == "remote", (
-        f"Le mode d'exécution vaut {attributs.get('execution-mode')!r}, "
+    assert attributs.get("execution-mode") == "remote", message(
+        en=f"The execution mode is {attributs.get('execution-mode')!r}, "
+        "`remote` expected.\n\nIn `local` mode, HCP Terraform would be no more "
+        "than state storage: no run would happen there, and this lab "
+        "would have no point.\n\nThat setting is placed in "
+        "`tfe_workspace_settings`: the `execution_mode` attribute of "
+        "`tfe_workspace` is deprecated and will disappear.",
+        fr=f"Le mode d'exécution vaut {attributs.get('execution-mode')!r}, "
         "`remote` attendu.\n\nEn mode `local`, HCP Terraform ne serait plus "
         "qu'un stockage d'état : aucun run ne tournerait chez lui, et ce lab "
         "n'aurait plus d'objet.\n\nCe réglage se pose dans "
         "`tfe_workspace_settings` : l'attribut `execution_mode` de "
-        "`tfe_workspace` est déprécié et disparaîtra."
+        "`tfe_workspace` est déprécié et disparaîtra.",
     )
 
-    assert attributs.get("auto-apply") is False, (
-        f"`auto-apply` vaut {attributs.get('auto-apply')!r}, `false` attendu.\n\n"
+    assert attributs.get("auto-apply") is False, message(
+        en=f"`auto-apply` is {attributs.get('auto-apply')!r}, `false` expected.\n\n"
+        "The lab wants a run that a human confirms, which is the default "
+        "and safest setting.",
+        fr=f"`auto-apply` vaut {attributs.get('auto-apply')!r}, `false` attendu.\n\n"
         "Le lab veut un run qu'un humain confirme, ce qui est le réglage par "
-        "défaut et le plus sûr."
+        "défaut et le plus sûr.",
     )
 
 
@@ -371,22 +402,31 @@ def test_la_variable_du_workspace_existe_et_est_sensible(
         v["attributes"]["key"]: v["attributes"] for v in variables.get("data", [])
     }
 
-    assert VARIABLE_ATTENDUE in par_nom, (
-        f"La variable `{VARIABLE_ATTENDUE}` n'existe pas dans le workspace.\n"
-        f"Variables trouvées : {sorted(par_nom)}"
+    assert VARIABLE_ATTENDUE in par_nom, message(
+        en=f"The variable `{VARIABLE_ATTENDUE}` does not exist in the workspace.\n"
+        f"Variables found: {sorted(par_nom)}",
+        fr=f"La variable `{VARIABLE_ATTENDUE}` n'existe pas dans le workspace.\n"
+        f"Variables trouvées : {sorted(par_nom)}",
     )
 
     variable = par_nom[VARIABLE_ATTENDUE]
-    assert variable["category"] == "terraform", (
-        f"`{VARIABLE_ATTENDUE}` est de catégorie {variable['category']!r}, "
+    assert variable["category"] == "terraform", message(
+        en=f"`{VARIABLE_ATTENDUE}` is of category {variable['category']!r}, "
+        "`terraform` expected.\n\nAn environment variable serves to configure "
+        "a provider; this one is an input of the configuration.",
+        fr=f"`{VARIABLE_ATTENDUE}` est de catégorie {variable['category']!r}, "
         "`terraform` attendu.\n\nUne variable d'environnement sert à configurer "
-        "un provider ; celle-ci est une entrée de la configuration."
+        "un provider ; celle-ci est une entrée de la configuration.",
     )
-    assert variable["sensitive"] is True, (
-        f"`{VARIABLE_ATTENDUE}` n'est pas marquée sensible.\n\nUne variable "
+    assert variable["sensitive"] is True, message(
+        en=f"`{VARIABLE_ATTENDUE}` is not marked sensitive.\n\nA "
+        "sensitive variable is no longer readable in the interface once saved, "
+        "which is the minimum for a value one refuses to put in the "
+        "repository.",
+        fr=f"`{VARIABLE_ATTENDUE}` n'est pas marquée sensible.\n\nUne variable "
         "sensible n'est plus lisible dans l'interface après son enregistrement, "
         "ce qui est le minimum pour une valeur qu'on refuse de mettre dans le "
-        "dépôt."
+        "dépôt.",
     )
 
 
@@ -405,19 +445,27 @@ def test_un_run_a_ete_applique_sur_ce_workspace(runs: list[dict]) -> None:
     `terraform apply` joué sur le poste, sans rattachement, n'y laisse aucune
     trace : seul un run distant en produit une.
     """
-    assert runs, (
-        "Aucun run n'a jamais tourné sur ce workspace.\n\nLe rattachement de "
+    assert runs, message(
+        en="No run has ever happened on this workspace.\n\nIs the attachment of "
+        f"`{APPLICATION}/` written, and was the `apply` launched?\n\n"
+        "    cd application && terraform init && terraform apply",
+        fr="Aucun run n'a jamais tourné sur ce workspace.\n\nLe rattachement de "
         f"`{APPLICATION}/` est-il écrit, et l'`apply` a-t-il été lancé ?\n\n"
-        "    cd application && terraform init && terraform apply"
+        "    cd application && terraform init && terraform apply",
     )
 
     etats = [r["attributes"]["status"] for r in runs]
-    assert "applied" in etats, (
-        f"Aucun run appliqué. États trouvés : {etats}\n\nUn run `planned` s'est "
+    assert "applied" in etats, message(
+        en=f"No applied run. States found: {etats}\n\nA `planned` run "
+        "stopped before the apply: that is the expected behaviour of a workspace "
+        "without auto-apply, and it has to be confirmed. `terraform apply` does it "
+        "from the CLI; the interface does it with the \"Confirm & "
+        "Apply\" button.",
+        fr=f"Aucun run appliqué. États trouvés : {etats}\n\nUn run `planned` s'est "
         "arrêté avant l'apply : c'est le comportement attendu d'un workspace "
         "sans auto-apply, et il faut le confirmer. `terraform apply` le fait "
         "depuis la CLI ; l'interface le fait avec le bouton « Confirm & "
-        "Apply »."
+        "Apply ».",
     )
 
 
@@ -444,20 +492,29 @@ def test_le_run_a_ete_execute_par_la_plateforme(runs: list[dict]) -> None:
     applique = next(
         (r for r in runs if r["attributes"]["status"] == "applied"), None
     )
-    assert applique is not None, "Aucun run appliqué à examiner."
+    assert applique is not None, message(
+        en="No applied run to examine.",
+        fr="Aucun run appliqué à examiner.",
+    )
 
     attributs = applique["attributes"]
     source = attributs.get("source")
-    assert source in SOURCES_ADMISES, (
-        f"Le run vient de {source!r}, ce qui n'est pas une source attendue.\n"
+    assert source in SOURCES_ADMISES, message(
+        en=f"The run comes from {source!r}, which is not an expected source.\n"
+        f"Accepted sources: {sorted(SOURCES_ADMISES)}\n\nA `terraform apply` "
+        "launched from a directory carrying a `cloud` block produces "
+        "`terraform+cloud`.",
+        fr=f"Le run vient de {source!r}, ce qui n'est pas une source attendue.\n"
         f"Sources admises : {sorted(SOURCES_ADMISES)}\n\nUn `terraform apply` "
         "lancé depuis un répertoire portant un bloc `cloud` produit "
-        "`terraform+cloud`."
+        "`terraform+cloud`.",
     )
 
-    assert attributs.get("plan-only") is not True, (
-        "Le run retenu est un plan spéculatif : il ne peut rien appliquer, et "
-        "ne prouve donc pas qu'un apply a eu lieu."
+    assert attributs.get("plan-only") is not True, message(
+        en="The run kept is a speculative plan: it can apply nothing, and "
+        "therefore does not prove that an apply took place.",
+        fr="Le run retenu est un plan spéculatif : il ne peut rien appliquer, et "
+        "ne prouve donc pas qu'un apply a eu lieu.",
     )
 
 
@@ -480,22 +537,32 @@ def test_le_state_distant_porte_la_ressource(
         o["attributes"]["name"]: o["attributes"] for o in inclus
     }
 
-    assert "preuve_du_run" in sorties, (
-        f"Le state distant ne porte pas la sortie `preuve_du_run`.\n"
+    assert "preuve_du_run" in sorties, message(
+        en=f"The remote state does not carry the `preuve_du_run` output.\n"
+        f"Outputs found: {sorted(sorties)}\n\nThe state of an attached "
+        "workspace lives AT HCP Terraform: if that output is not there, the run "
+        "did not produce what it should, or it ran elsewhere.",
+        fr=f"Le state distant ne porte pas la sortie `preuve_du_run`.\n"
         f"Sorties trouvées : {sorted(sorties)}\n\nLe state d'un workspace "
         "rattaché vit CHEZ HCP Terraform : si cette sortie n'y est pas, le run "
-        "n'a pas produit ce qu'il devait, ou il a tourné ailleurs."
+        "n'a pas produit ce qu'il devait, ou il a tourné ailleurs.",
     )
 
     valeur = sorties["preuve_du_run"].get("value")
-    assert isinstance(valeur, str) and "-" in valeur, (
-        f"`preuve_du_run` vaut {valeur!r} : un nom tiré au sort par "
-        "`random_pet` est attendu, de la forme `mot-mot-mot`."
+    assert isinstance(valeur, str) and "-" in valeur, message(
+        en=f"`preuve_du_run` is {valeur!r}: a name drawn at random by "
+        "`random_pet` is expected, in the form `word-word-word`.",
+        fr=f"`preuve_du_run` vaut {valeur!r} : un nom tiré au sort par "
+        "`random_pet` est attendu, de la forme `mot-mot-mot`.",
     )
 
-    assert sorties.get("empreinte_du_message", {}).get("sensitive") is True, (
-        "`empreinte_du_message` n'est pas marquée sensible côté HCP.\n\n"
+    assert sorties.get("empreinte_du_message", {}).get("sensitive") is True, message(
+        en="`empreinte_du_message` is not marked sensitive on the HCP side.\n\n"
+        "Terraform propagates sensitivity through functions without looking at "
+        "what they do: a fingerprint derived from a sensitive variable stays "
+        "sensitive, and the annotation is mandatory.",
+        fr="`empreinte_du_message` n'est pas marquée sensible côté HCP.\n\n"
         "Terraform propage la sensibilité à travers les fonctions sans regarder "
         "ce qu'elles font : une empreinte dérivée d'une variable sensible reste "
-        "sensible, et l'annotation est obligatoire."
+        "sensible, et l'annotation est obligatoire.",
     )

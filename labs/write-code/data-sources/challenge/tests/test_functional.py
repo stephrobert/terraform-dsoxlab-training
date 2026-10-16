@@ -22,7 +22,7 @@ from pathlib import Path
 
 import pytest
 
-from conftest import exiger_workdir, show_json, terraform, workdir_lab
+from conftest import exiger_workdir, message, show_json, terraform, workdir_lab
 
 WORKDIR = workdir_lab(__file__)
 LAB_ID = "write-code-data-sources"
@@ -66,11 +66,15 @@ def exiger_presente_au_plan(plan: dict, adresse: str) -> None:
     On exige donc d'abord la présence dans le `prior_state`, qui n'est peuplé
     qu'une fois la data source réellement déclarée et lue.
     """
-    assert dans_prior_state(plan, adresse), (
-        f"{adresse} n'apparaît pas dans l'état antérieur du plan : elle n'est "
+    assert dans_prior_state(plan, adresse), message(
+        en=f"{adresse} does not appear in the plan's prior state: it is "
+        "not declared, or was never read.\n\nThis check verifies that it is "
+        "NOT deferred to the apply: it must exist first, otherwise "
+        "the check would pass on an empty configuration.",
+        fr=f"{adresse} n'apparaît pas dans l'état antérieur du plan : elle n'est "
         "pas déclarée, ou n'a jamais été lue.\n\nCe contrôle vérifie qu'elle "
         "n'est PAS reportée à l'apply : il faut d'abord qu'elle existe, sans "
-        "quoi il passerait sur une configuration vide."
+        "quoi il passerait sur une configuration vide.",
     )
 
 
@@ -80,12 +84,19 @@ def applied() -> Path:
     init = terraform("init", "-input=false", "-no-color", cwd=WORKDIR)
     if init.returncode != 0:
         pytest.fail(
-            "`terraform init` a échoué. La configuration contient encore des "
-            f"expressions incomplètes.\n{init.stderr[-1200:]}"
+            message(
+            en="`terraform init` failed. The configuration still contains "
+            f"incomplete expressions.\n{init.stderr[-1200:]}",
+            fr="`terraform init` a échoué. La configuration contient encore des "
+            f"expressions incomplètes.\n{init.stderr[-1200:]}",
+        )
         )
     app = terraform("apply", "-auto-approve", "-input=false", "-no-color", cwd=WORKDIR)
     if app.returncode != 0:
-        pytest.fail(f"`terraform apply` a échoué.\n{app.stderr[-1500:]}")
+        pytest.fail(message(
+            en=f"`terraform apply` failed.\n{app.stderr[-1500:]}",
+            fr=f"`terraform apply` a échoué.\n{app.stderr[-1500:]}",
+        ))
     return WORKDIR
 
 
@@ -110,15 +121,21 @@ def test_a_l_arret_toutes_les_data_sources_sont_lues_au_plan(
     plan_stable: dict, adresse: str
 ) -> None:
     rc = change(plan_stable, adresse)
-    assert rc is None, (
-        f"{adresse} apparaît dans `resource_changes` alors que rien ne change "
+    assert rc is None, message(
+        en=f"{adresse} appears in `resource_changes` although nothing changes "
+        f"(actions = {rc['change']['actions']}). A data source is only deferred "
+        "if the resource it depends on is configured to change in "
+        "the current plan.",
+        fr=f"{adresse} apparaît dans `resource_changes` alors que rien ne change "
         f"(actions = {rc['change']['actions']}). Une data source n'est reportée "
         "que si la ressource dont elle dépend est configurée pour changer dans "
-        "le plan courant."
+        "le plan courant.",
     )
-    assert dans_prior_state(plan_stable, adresse), (
-        f"{adresse} est absente de `prior_state` : elle n'a pas été lue pendant "
-        "le plan, ou elle n'existe pas sous ce nom."
+    assert dans_prior_state(plan_stable, adresse), message(
+        en=f"{adresse} is absent from `prior_state`: it was not read during "
+        "the plan, or it does not exist under that name.",
+        fr=f"{adresse} est absente de `prior_state` : elle n'a pas été lue pendant "
+        "le plan, ou elle n'existe pas sous ce nom.",
     )
 
 
@@ -129,11 +146,15 @@ def test_depends_on_ne_reporte_pas_a_lui_seul(plan_stable: dict) -> None:
     gérée. Tant que cette ressource est stable, la lecture reste au plan.
     """
     exiger_presente_au_plan(plan_stable, ORDONNE)
-    assert change(plan_stable, ORDONNE) is None, (
-        "`catalogue_ordonne` est reportée alors que `random_pet.empreinte` est "
+    assert change(plan_stable, ORDONNE) is None, message(
+        en="`catalogue_ordonne` is deferred although `random_pet.empreinte` is "
+        "stable. If this test fails on a correct configuration, then "
+        "Terraform's behaviour has changed: `depends_on` alone does not defer "
+        "the read, only a pending change does.",
+        fr="`catalogue_ordonne` est reportée alors que `random_pet.empreinte` est "
         "stable. Si ce test échoue avec une configuration correcte, c'est que "
         "le comportement de Terraform a changé : `depends_on` seul ne reporte "
-        "pas la lecture, seul un changement en attente le fait."
+        "pas la lecture, seul un changement en attente le fait.",
     )
 
 
@@ -145,15 +166,23 @@ def test_la_data_qui_relit_une_ressource_en_mouvement_est_reportee(
     plan_mouvant: dict,
 ) -> None:
     rc = change(plan_mouvant, RELU)
-    assert rc is not None, (
-        "`rapport_relu` reste lue au plan alors que `local_file.rapport` change. "
+    assert rc is not None, message(
+        en="`rapport_relu` is still read at plan time although `local_file.rapport` changes. "
+        "Its `filename` argument must reference the managed resource's "
+        "attribute, and not recompose the path by hand.",
+        fr="`rapport_relu` reste lue au plan alors que `local_file.rapport` change. "
         "Son argument `filename` doit référencer l'attribut de la ressource "
-        "gérée, et non recomposer le chemin à la main."
+        "gérée, et non recomposer le chemin à la main.",
     )
-    assert rc.get("mode") == "data", f"mode = {rc.get('mode')!r}, attendu \"data\"."
-    assert rc["change"]["actions"] == ["read"], (
-        f"actions = {rc['change']['actions']}, attendu [\"read\"]. C'est la "
-        "signature d'une lecture reportée."
+    assert rc.get("mode") == "data", message(
+        en=f"mode = {rc.get('mode')!r}, expected \"data\".",
+        fr=f"mode = {rc.get('mode')!r}, attendu \"data\".",
+    )
+    assert rc["change"]["actions"] == ["read"], message(
+        en=f"actions = {rc['change']['actions']}, expected [\"read\"]. That is the "
+        "signature of a deferred read.",
+        fr=f"actions = {rc['change']['actions']}, attendu [\"read\"]. C'est la "
+        "signature d'une lecture reportée.",
     )
 
 
@@ -163,36 +192,48 @@ def test_le_catalogue_reste_lu_au_plan_meme_quand_le_reste_bouge(
     """Contrôle négatif : sans lui, un plan globalement décalé ferait passer le
     test précédent sans rien prouver de spécifique."""
     exiger_presente_au_plan(plan_mouvant, CATALOGUE)
-    assert change(plan_mouvant, CATALOGUE) is None, (
-        "`catalogue` est reportée alors que son argument ne dépend d'aucune "
-        "ressource gérée. Vérifiez qu'il n'utilise que `path.module`."
+    assert change(plan_mouvant, CATALOGUE) is None, message(
+        en="`catalogue` is deferred although its argument depends on no managed "
+        "resource. Check that it uses only `path.module`.",
+        fr="`catalogue` est reportée alors que son argument ne dépend d'aucune "
+        "ressource gérée. Vérifiez qu'il n'utilise que `path.module`.",
     )
 
 
 def test_l_output_derive_d_une_lecture_reportee_est_inconnu(plan_mouvant: dict) -> None:
     sortie = plan_mouvant.get("output_changes", {}).get("rapport", {})
-    assert sortie.get("after_unknown") is True, (
-        f"after_unknown = {sortie.get('after_unknown')!r}. L'output `rapport` "
+    assert sortie.get("after_unknown") is True, message(
+        en=f"after_unknown = {sortie.get('after_unknown')!r}. The `rapport` output "
+        "must derive from `data.local_file.rapport_relu`, whose value is "
+        "not known at plan time when the resource changes.",
+        fr=f"after_unknown = {sortie.get('after_unknown')!r}. L'output `rapport` "
         "doit dériver de `data.local_file.rapport_relu`, dont la valeur n'est "
-        "pas connue au plan quand la ressource change."
+        "pas connue au plan quand la ressource change.",
     )
 
 
 def test_l_output_derive_d_une_lecture_au_plan_est_connu(plan_mouvant: dict) -> None:
     sorties = plan_mouvant.get("output_changes", {})
-    assert "catalogue" in sorties, (
-        f"L'output `catalogue` n'est pas déclaré. Présents : {sorted(sorties)}."
+    assert "catalogue" in sorties, message(
+        en=f"The `catalogue` output is not declared. Present: {sorted(sorties)}."
+        "\n\nThis check verifies that its value is KNOWN at plan time: an output "
+        "that is missing is not an output that is known.",
+        fr=f"L'output `catalogue` n'est pas déclaré. Présents : {sorted(sorties)}."
         "\n\nCe contrôle vérifie que sa valeur est CONNUE au plan : un output "
-        "absent n'est pas un output connu."
+        "absent n'est pas un output connu.",
     )
     sortie = sorties["catalogue"]
-    assert sortie.get("after") not in (None, ""), (
-        "L'output `catalogue` est déclaré mais sa valeur planifiée est vide. "
-        "Il doit dériver de la data source dont l'argument est connu."
+    assert sortie.get("after") not in (None, ""), message(
+        en="The `catalogue` output is declared but its planned value is empty. "
+        "It must derive from the data source whose argument is known.",
+        fr="L'output `catalogue` est déclaré mais sa valeur planifiée est vide. "
+        "Il doit dériver de la data source dont l'argument est connu.",
     )
-    assert sortie.get("after_unknown") is not True, (
-        "L'output `catalogue` est inconnu au plan. Il doit dériver de la data "
-        "source dont l'argument est connu."
+    assert sortie.get("after_unknown") is not True, message(
+        en="The `catalogue` output is unknown at plan time. It must derive from the data "
+        "source whose argument is known.",
+        fr="L'output `catalogue` est inconnu au plan. Il doit dériver de la data "
+        "source dont l'argument est connu.",
     )
 
 
@@ -211,13 +252,17 @@ def test_le_state_distingue_ressources_gerees_et_data_resources(applied: Path) -
     modes = {r["address"]: r.get("mode") for r in module.get("resources", [])}
 
     for adresse in (CATALOGUE, ORDONNE, RELU):
-        assert modes.get(adresse) == "data", (
-            f"{adresse} porte mode = {modes.get(adresse)!r}. Une data resource "
+        assert modes.get(adresse) == "data", message(
+            en=f"{adresse} carries mode = {modes.get(adresse)!r}. A data resource "
+            "is \"data\"; \"managed\" means you declared a "
+            "resource where a read was asked for.",
+            fr=f"{adresse} porte mode = {modes.get(adresse)!r}. Une data resource "
             "vaut \"data\" ; \"managed\" signifie que vous avez déclaré une "
-            "ressource là où une lecture était demandée."
+            "ressource là où une lecture était demandée.",
         )
-    assert modes.get("local_file.rapport") == "managed", (
-        "`local_file.rapport` doit rester une ressource gérée."
+    assert modes.get("local_file.rapport") == "managed", message(
+        en="`local_file.rapport` must stay a managed resource.",
+        fr="`local_file.rapport` doit rester une ressource gérée.",
     )
 
 
@@ -243,30 +288,39 @@ def test_stable_au_repos_et_en_ecart_des_que_le_fichier_lu_change(
 
     repos = terraform("plan", "-input=false", "-detailed-exitcode", "-no-color",
                       cwd=applied)
-    assert repos.returncode == 0, (
-        f"`plan -detailed-exitcode` rend {repos.returncode} au repos (2 = des "
-        "changements restent planifiés). Un apply doit converger."
+    assert repos.returncode == 0, message(
+        en=f"`plan -detailed-exitcode` returns {repos.returncode} at rest (2 = some "
+        "changes remain planned). An apply must converge.",
+        fr=f"`plan -detailed-exitcode` rend {repos.returncode} au repos (2 = des "
+        "changements restent planifiés). Un apply doit converger.",
     )
 
     try:
         catalogue.write_text(original + "ajout=externe\n", encoding="utf-8")
         ecart = terraform("plan", "-input=false", "-detailed-exitcode", "-no-color",
                           cwd=applied)
-        assert ecart.returncode == 2, (
-            f"`plan -detailed-exitcode` rend {ecart.returncode}, attendu 2. "
+        assert ecart.returncode == 2, message(
+            en=f"`plan -detailed-exitcode` returns {ecart.returncode}, expected 2. "
+            "Modifying the file read by a data source must produce a non-empty "
+            "plan, with no `.tf` file having moved.\n\nA 0 "
+            "here means that the value read feeds nothing: the data source is "
+            "declared, but nobody uses it.",
+            fr=f"`plan -detailed-exitcode` rend {ecart.returncode}, attendu 2. "
             "Modifier le fichier lu par une data source doit produire un plan "
             "non vide, sans qu'aucun fichier `.tf` n'ait bougé.\n\nUn retour 0 "
             "ici signifie que la valeur lue n'irrigue rien : la data source est "
-            "déclarée, mais personne ne s'en sert."
+            "déclarée, mais personne ne s'en sert.",
         )
     finally:
         catalogue.write_text(original, encoding="utf-8")
 
     retour = terraform("plan", "-input=false", "-detailed-exitcode", "-no-color",
                        cwd=applied)
-    assert retour.returncode == 0, (
-        f"Le fichier remis à l'identique, le plan rend encore {retour.returncode}. "
-        "L'écart venait donc d'autre chose que de la lecture."
+    assert retour.returncode == 0, message(
+        en=f"With the file restored identically, the plan still returns {retour.returncode}. "
+        "The difference therefore came from something other than the read.",
+        fr=f"Le fichier remis à l'identique, le plan rend encore {retour.returncode}. "
+        "L'écart venait donc d'autre chose que de la lecture.",
     )
 
 
@@ -291,16 +345,22 @@ def test_le_plan_de_destruction_ignore_les_data_sources(applied: Path) -> None:
         r["address"] for r in module.get("resources", []) if r.get("mode") == "data"
     }
     manquantes = {CATALOGUE, ORDONNE, RELU} - lues
-    assert not manquantes, (
-        f"Ces data sources n'existent pas dans le state : {sorted(manquantes)}."
+    assert not manquantes, message(
+        en=f"These data sources do not exist in the state: {sorted(manquantes)}."
+        "\n\nThis check verifies that the destruction SPARES them: they must "
+        "be there first, otherwise it would pass on a "
+        "configuration declaring none.",
+        fr=f"Ces data sources n'existent pas dans le state : {sorted(manquantes)}."
         "\n\nCe contrôle vérifie que la destruction les ÉPARGNE : il faut "
         "d'abord qu'elles soient là, sans quoi il passerait sur une "
-        "configuration qui n'en déclare aucune."
+        "configuration qui n'en déclare aucune.",
     )
 
     data_detruites = [rc["address"] for rc in plan.get("resource_changes", [])
                       if rc.get("mode") == "data"]
-    assert not data_detruites, (
-        f"Le plan de destruction porte des entrées `mode: data` : {data_detruites}. "
-        "Terraform ne planifie aucune action de destruction sur une data source."
+    assert not data_detruites, message(
+        en=f"The destruction plan carries `mode: data` entries: {data_detruites}. "
+        "Terraform plans no destroy action on a data source.",
+        fr=f"Le plan de destruction porte des entrées `mode: data` : {data_detruites}. "
+        "Terraform ne planifie aucune action de destruction sur une data source.",
     )

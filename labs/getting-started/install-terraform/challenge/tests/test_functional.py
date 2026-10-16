@@ -21,7 +21,7 @@ from pathlib import Path
 
 import pytest
 
-from conftest import exiger_workdir, terraform, workdir_lab
+from conftest import exiger_workdir, message, terraform, workdir_lab
 
 WORKDIR = workdir_lab(__file__)
 LAB_ID = "getting-started-install-terraform"
@@ -47,9 +47,14 @@ def prepared() -> Path:
     init = terraform("init", "-input=false", "-no-color", cwd=WORKDIR)
     if init.returncode != 0:
         pytest.fail(
-            "`terraform init` a echoue dans challenge/work. Le bloc "
-            "`terraform {}` declare-t-il bien ses `required_providers` ?\n"
-            f"{init.stderr[-1200:]}"
+            message(
+            en="`terraform init` failed in challenge/work. Does the "
+            "`terraform {}` block declare its `required_providers`?\n"
+            f"{init.stderr[-1200:]}",
+            fr="`terraform init` a échoué dans challenge/work. Le bloc "
+            "`terraform {}` déclare-t-il bien ses `required_providers` ?\n"
+            f"{init.stderr[-1200:]}",
+        )
         )
     return WORKDIR
 
@@ -61,16 +66,21 @@ def applied(prepared: Path) -> Path:
     )
     if app.returncode != 0:
         pytest.fail(
-            "`terraform apply` a echoue : la configuration ne converge pas.\n"
-            f"{app.stderr[-1500:]}"
+            message(
+            en="`terraform apply` failed: the configuration does not converge.\n"
+            f"{app.stderr[-1500:]}",
+            fr="`terraform apply` a échoué : la configuration ne converge pas.\n"
+            f"{app.stderr[-1500:]}",
+        )
         )
     return prepared
 
 
 def _version_json(cwd: Path) -> dict:
     proc = terraform("version", "-json", cwd=cwd)
-    assert proc.returncode == 0, (
-        f"`terraform version -json` a echoue dans {cwd}. {proc.stderr.strip()}"
+    assert proc.returncode == 0, message(
+        en=f"`terraform version -json` failed in {cwd}. {proc.stderr.strip()}",
+        fr=f"`terraform version -json` a échoué dans {cwd}. {proc.stderr.strip()}",
     )
     return json.loads(proc.stdout)
 
@@ -83,20 +93,27 @@ def test_la_configuration_epingle_exactement_trois_providers(prepared: Path) -> 
     que la configuration s'initialise avec les trois providers attendus, sans
     quoi les preuves suivantes n'auraient rien a mesurer."""
     infos = _version_json(prepared)
-    assert infos.get("terraform_version"), (
-        "`terraform version -json` ne rend aucune version."
+    assert infos.get("terraform_version"), message(
+        en="`terraform version -json` returns no version.",
+        fr="`terraform version -json` ne rend aucune version.",
     )
 
     selections = infos.get("provider_selections") or {}
-    assert selections, (
-        "Aucun provider selectionne apres `init` : le bloc `terraform {}` "
-        "declare-t-il un `required_providers` ?"
+    assert selections, message(
+        en="No provider selected after `init`: does the `terraform {}` block "
+        "declare a `required_providers`?",
+        fr="Aucun provider sélectionné après `init` : le bloc `terraform {}` "
+        "déclare-t-il un `required_providers` ?",
     )
-    assert set(selections) == PROVIDERS_ATTENDUS, (
-        f"Providers retenus : {sorted(selections)}.\nAttendus : "
-        f"{sorted(PROVIDERS_ATTENDUS)}.\n\nles trois doivent etre declares "
-        "ET employes : un provider declare mais dont aucune ressource ne se "
-        "sert n'entre pas dans l'etat."
+    assert set(selections) == PROVIDERS_ATTENDUS, message(
+        en=f"Providers kept: {sorted(selections)}.\nExpected: "
+        f"{sorted(PROVIDERS_ATTENDUS)}.\n\nAll three must be declared "
+        "AND used: a provider that is declared but used by no resource "
+        "does not enter the state.",
+        fr=f"Providers retenus : {sorted(selections)}.\nAttendus : "
+        f"{sorted(PROVIDERS_ATTENDUS)}.\n\nles trois doivent être déclarés "
+        "ET employés : un provider déclaré mais dont aucune ressource ne se "
+        "sert n'entre pas dans l'état.",
     )
 
 
@@ -108,23 +125,31 @@ def test_une_contrainte_de_version_impossible_fait_echouer_init(prepared: Path) 
     repertoire principal reussit. Sans la seconde moitie, un environnement
     casse passerait pour une contrainte qui refuse."""
     echec = prepared / "echec-version"
-    assert echec.is_dir(), (
-        "Le sous-repertoire `echec-version/` est absent. Il porte le "
+    assert echec.is_dir(), message(
+        en="The `echec-version/` sub-directory is missing. It carries the "
+        "counter-example: a configuration whose `required_version` cannot "
+        "be satisfied by the installed CLI.",
+        fr="Le sous-répertoire `echec-version/` est absent. Il porte le "
         "contre-exemple : une configuration dont le `required_version` ne peut "
-        "pas etre satisfait par la CLI installee."
+        "pas être satisfait par la CLI installée.",
     )
 
     refuse = terraform("init", "-no-color", "-input=false", cwd=echec)
-    assert refuse.returncode != 0, (
-        "`terraform init` a REUSSI dans echec-version/, alors que sa contrainte "
-        "devait etre hors d'atteinte. Le `required_version` y est-il bien "
-        "impossible a satisfaire ?"
+    assert refuse.returncode != 0, message(
+        en="`terraform init` SUCCEEDED in echec-version/, although its constraint "
+        "was supposed to be out of reach. Is the `required_version` there really "
+        "impossible to satisfy?",
+        fr="`terraform init` a RÉUSSI dans echec-version/, alors que sa contrainte "
+        "devait être hors d'atteinte. Le `required_version` y est-il bien "
+        "impossible à satisfaire ?",
     )
 
     ok = terraform("init", "-no-color", "-input=false", cwd=prepared)
-    assert ok.returncode == 0, (
-        "`terraform init` echoue AUSSI dans le repertoire principal : ce n'est "
-        f"donc pas la contrainte qui refuse.\n{ok.stderr[-800:]}"
+    assert ok.returncode == 0, message(
+        en="`terraform init` fails in the main directory TOO: it is therefore "
+        f"not the constraint that refuses.\n{ok.stderr[-800:]}",
+        fr="`terraform init` échoue AUSSI dans le répertoire principal : ce n'est "
+        f"donc pas la contrainte qui refuse.\n{ok.stderr[-800:]}",
     )
 
 
@@ -133,31 +158,42 @@ def test_une_contrainte_de_version_impossible_fait_echouer_init(prepared: Path) 
 # --------------------------------------------------------------------------
 def test_le_verrou_couvre_les_trois_providers_sur_deux_plateformes(prepared: Path) -> None:
     verrou = prepared / ".terraform.lock.hcl"
-    assert verrou.is_file(), (
-        "`.terraform.lock.hcl` est absent : c'est `terraform init` qui le "
-        "produit, et il fige les versions resolues."
+    assert verrou.is_file(), message(
+        en="`.terraform.lock.hcl` is missing: it is `terraform init` that "
+        "produces it, and it freezes the resolved versions.",
+        fr="`.terraform.lock.hcl` est absent : c'est `terraform init` qui le "
+        "produit, et il fige les versions résolues.",
     )
 
     blocs = dict(BLOC_VERROU.findall(verrou.read_text(encoding="utf-8")))
-    assert set(blocs) == PROVIDERS_ATTENDUS, (
-        f"Le verrou couvre {sorted(blocs)}, et non les trois providers attendus."
+    assert set(blocs) == PROVIDERS_ATTENDUS, message(
+        en=f"The lock covers {sorted(blocs)}, and not the three expected providers.",
+        fr=f"Le verrou couvre {sorted(blocs)}, et non les trois providers attendus.",
     )
 
     for nom, corps in sorted(blocs.items()):
-        assert re.search(r'version\s*=\s*"', corps), (
-            f"Le bloc de {nom} ne porte pas de `version` resolue."
+        assert re.search(r'version\s*=\s*"', corps), message(
+            en=f"The block of {nom} carries no resolved `version`.",
+            fr=f"Le bloc de {nom} ne porte pas de `version` résolue.",
         )
-        assert re.search(r'constraints\s*=\s*"', corps), (
-            f"Le bloc de {nom} ne porte pas de `constraints`. Elle vient du "
-            "`required_providers` : sans contrainte declaree, le verrou ne "
-            "retient que la version du jour."
+        assert re.search(r'constraints\s*=\s*"', corps), message(
+            en=f"The block of {nom} carries no `constraints`. It comes from the "
+            "`required_providers`: with no declared constraint, the lock only "
+            "keeps the version of the day.",
+            fr=f"Le bloc de {nom} ne porte pas de `constraints`. Elle vient du "
+            "`required_providers` : sans contrainte déclarée, le verrou ne "
+            "retient que la version du jour.",
         )
         empreintes = re.findall(r'"h1:[^"]+"', corps)
-        assert len(empreintes) >= PLATEFORMES_MINIMUM, (
-            f"Le bloc de {nom} ne porte que {len(empreintes)} somme(s) `h1:`. "
+        assert len(empreintes) >= PLATEFORMES_MINIMUM, message(
+            en=f"The block of {nom} carries only {len(empreintes)} `h1:` checksum(s). "
+            "The lock must cover at least two platforms, otherwise a "
+            "colleague on another system will change it at the first `init`. "
+            "`terraform providers lock -platform=…` adds them.",
+            fr=f"Le bloc de {nom} ne porte que {len(empreintes)} somme(s) `h1:`. "
             "Le verrou doit couvrir au moins deux plateformes, sinon un "
-            "collegue sur un autre systeme le fera changer au premier `init`. "
-            "`terraform providers lock -platform=...` les ajoute."
+            "collègue sur un autre système le fera changer au premier `init`. "
+            "`terraform providers lock -platform=...` les ajoute.",
         )
 
 
@@ -173,28 +209,42 @@ def test_le_verrou_fait_autorite_et_l_etat_est_converge(applied: Path) -> None:
     configuration verrouillee d'une configuration qui marche par hasard.
     """
     avant = _version_json(applied).get("provider_selections") or {}
-    assert avant, "Aucun provider selectionne avant l'effacement de .terraform/."
+    assert avant, message(
+        en="No provider selected before deleting .terraform/.",
+        fr="Aucun provider sélectionné avant l'effacement de .terraform/.",
+    )
 
     shutil.rmtree(applied / ".terraform", ignore_errors=True)
     proc = terraform("init", "-no-color", "-input=false", cwd=applied)
-    assert proc.returncode == 0, (
-        f"`terraform init` echoue apres effacement de .terraform/.\n{proc.stderr[-800:]}"
+    assert proc.returncode == 0, message(
+        en=f"`terraform init` fails after deleting .terraform/.\n{proc.stderr[-800:]}",
+        fr=f"`terraform init` échoue après effacement de .terraform/.\n{proc.stderr[-800:]}",
     )
 
     apres = _version_json(applied).get("provider_selections") or {}
-    assert apres == avant, (
-        f"Les versions retenues ont change apres un nouvel `init`.\n"
-        f"  avant : {avant}\n  apres : {apres}\n\n"
-        "Le verrou ne fait donc pas autorite, et c'est exactement ce qu'il "
-        "existe pour empecher : sans lui, chaque poste resout la contrainte le "
-        "jour ou il initialise, et deux collegues n'ont pas le meme provider."
+    assert apres == avant, message(
+        en=f"The versions kept changed after a new `init`.\n"
+        f"  before: {avant}\n  after : {apres}\n\n"
+        "The lock therefore does not have authority, and that is exactly what it "
+        "exists to prevent: without it, each machine resolves the constraint on the "
+        "day it initialises, and two colleagues do not have the same provider.",
+        fr=f"Les versions retenues ont changé après un nouvel `init`.\n"
+        f"  avant : {avant}\n  après : {apres}\n\n"
+        "Le verrou ne fait donc pas autorité, et c'est exactement ce qu'il "
+        "existe pour empêcher : sans lui, chaque poste résout la contrainte le "
+        "jour où il initialise, et deux collègues n'ont pas le même provider.",
     )
 
     plan = terraform(
         "plan", "-no-color", "-input=false", "-detailed-exitcode", cwd=applied
     )
-    assert plan.returncode != 1, f"`terraform plan` a echoue.\n{plan.stderr[-800:]}"
-    assert plan.returncode == 0, (
-        "`terraform plan -detailed-exitcode` rend 2 : des changements restent "
-        "planifies, donc la configuration n'a pas converge."
+    assert plan.returncode != 1, message(
+        en=f"`terraform plan` failed.\n{plan.stderr[-800:]}",
+        fr=f"`terraform plan` a échoué.\n{plan.stderr[-800:]}",
+    )
+    assert plan.returncode == 0, message(
+        en="`terraform plan -detailed-exitcode` returns 2: changes remain "
+        "planned, so the configuration has not converged.",
+        fr="`terraform plan -detailed-exitcode` rend 2 : des changements restent "
+        "planifiés, donc la configuration n'a pas convergé.",
     )
