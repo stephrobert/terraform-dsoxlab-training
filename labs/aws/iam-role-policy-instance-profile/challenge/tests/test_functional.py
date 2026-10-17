@@ -234,7 +234,12 @@ def test_la_trust_policy_autorise_le_service_ec2_a_endosser_le_role() -> None:
 
     principal = statement.get("Principal") or {}
     services = _en_liste(principal.get("Service"))
-    assert "ec2.amazonaws.com" in services, message(
+    # Une ÉGALITÉ, et non un `in` : le service attendu doit être l'un des
+    # principaux, exactement. La forme `"un.domaine" in x` est par ailleurs
+    # celle d'une sanitisation d'URL à la sous-chaîne, et un analyseur
+    # statique s'en alarme à juste titre quand il ne peut pas prouver que `x`
+    # est une liste.
+    assert any(service == "ec2.amazonaws.com" for service in services), message(
         en=f"The `Principal` is {principal!r}, expected a `Service` of "
         "`ec2.amazonaws.com`.\n\nA `type = \"AWS\"` would name an account or a "
         "role, a `type = \"Federated\"` an identity provider: the document "
