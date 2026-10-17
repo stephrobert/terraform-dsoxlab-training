@@ -225,7 +225,7 @@ jobs:
         uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
 
       - name: Vérifier la structure et les leçons jumelées
-        run: uvx dsoxlab validate-structure --check-urls
+        run: uvx 'dsoxlab>=0.5.0' validate-structure --check-urls
 
       # Un verrou qui dérive de son pyproject ne verrouille plus rien : les
       # scanners de vulnérabilités continuent de lire uv.lock, qui ne décrit
