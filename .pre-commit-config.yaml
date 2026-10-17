@@ -211,7 +211,7 @@ repos:
       # README. Il attrape ce qu'aucun test local ne voit.
       - id: contrat-du-catalogue
         name: dsoxlab validate-structure
-        entry: uvx dsoxlab validate-structure
+        entry: uvx 'dsoxlab>=0.5.0' validate-structure
         language: system
         pass_filenames: false
         always_run: true
