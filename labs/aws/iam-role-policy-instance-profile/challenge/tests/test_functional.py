@@ -170,11 +170,20 @@ def _statements(document: dict) -> list[dict]:
     return statements if isinstance(statements, list) else [statements]
 
 
-def _en_liste(valeur) -> list:
-    """IAM rend tantot une chaine, tantot une liste, pour le meme champ."""
+def _en_liste(valeur: object) -> list[str]:
+    """IAM rend tantôt une chaîne, tantôt une liste, pour le même champ.
+
+    Le type de retour est annoncé jusqu'à son contenu, et ce n'est pas de la
+    décoration : sans lui, un analyseur statique ne peut pas savoir qu'un
+    `"ec2.amazonaws.com" in _en_liste(...)` teste l'appartenance exacte d'un
+    élément et non une sous-chaîne. CodeQL le signalait en haute sévérité comme
+    une sanitisation d'URL incomplète, ce qu'il n'était pas.
+    """
     if valeur is None:
         return []
-    return valeur if isinstance(valeur, list) else [valeur]
+    if isinstance(valeur, list):
+        return [str(element) for element in valeur]
+    return [str(valeur)]
 
 
 # --------------------------------------------------------------------------
