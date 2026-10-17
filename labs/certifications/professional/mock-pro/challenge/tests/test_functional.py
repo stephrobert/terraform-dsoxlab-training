@@ -50,7 +50,14 @@ from pathlib import Path
 
 import pytest
 
-from conftest import exiger_workdir, output_json, show_json, terraform, workdir_lab
+from conftest import (
+    exiger_workdir,
+    message,
+    output_json,
+    show_json,
+    terraform,
+    workdir_lab,
+)
 
 WORKDIR = workdir_lab(__file__)
 LAB_ID = "certifications-professional-mock-pro"
@@ -80,12 +87,16 @@ def joue() -> Path:
 
 def _appliquer(repertoire: Path, ou: str) -> None:
     init = terraform("init", "-input=false", "-no-color", cwd=repertoire)
-    assert init.returncode == 0, f"`init` a échoué dans `{ou}`.\n{init.stderr[-700:]}"
+    assert init.returncode == 0, message(
+        en=f"`init` failed in `{ou}`.\n{init.stderr[-700:]}",
+        fr=f"`init` a échoué dans `{ou}`.\n{init.stderr[-700:]}",
+    )
     applique = terraform(
         "apply", "-auto-approve", "-input=false", "-no-color", cwd=repertoire
     )
-    assert applique.returncode == 0, (
-        f"`apply` a échoué dans `{ou}`.\n{(applique.stderr or applique.stdout)[-1200:]}"
+    assert applique.returncode == 0, message(
+        en=f"`apply` failed in `{ou}`.\n{(applique.stderr or applique.stdout)[-1200:]}",
+        fr=f"`apply` a échoué dans `{ou}`.\n{(applique.stderr or applique.stdout)[-1200:]}",
     )
 
 
@@ -120,28 +131,38 @@ def test_t1_le_fichier_existant_n_a_pas_ete_ecrase(tache1: Path) -> None:
     aurait perdu la ligne que quelqu'un a corrigée à la main.
     """
     fichier = tache1 / "existant.txt"
-    assert fichier.is_file(), "`existant.txt` a disparu : il a été détruit."
+    assert fichier.is_file(), message(
+        en="`existant.txt` has disappeared: it was destroyed.",
+        fr="`existant.txt` a disparu : il a été détruit.",
+    )
 
     contenu = fichier.read_text(encoding="utf-8")
-    assert contenu == CONTENU_EXISTANT, (
-        f"`existant.txt` contient {contenu!r}.\n\nLe fichier avait été corrigé "
+    assert contenu == CONTENU_EXISTANT, message(
+        en=f"`existant.txt` contains {contenu!r}.\n\nThe file had been fixed "
+        "by hand, and the exam asks you to ADOPT that state, not to overwrite it. "
+        "Its contents must be unchanged.",
+        fr=f"`existant.txt` contient {contenu!r}.\n\nLe fichier avait été corrigé "
         "à la main, et l'examen demande d'ADOPTER cet état, pas de l'écraser. "
-        "Son contenu doit être inchangé."
+        "Son contenu doit être inchangé.",
     )
 
 
 def test_t1_la_ressource_est_geree_et_le_plan_est_stable(tache1: Path) -> None:
     etat = show_json(tache1)
     gerees = [r for r in _ressources(etat) if r.get("mode") == "managed"]
-    assert len(gerees) == 1, (
-        f"{len(gerees)} ressource(s) gérée(s), une attendue : {[r['address'] for r in gerees]}"
+    assert len(gerees) == 1, message(
+        en=f"{len(gerees)} managed resource(s), one expected: {[r['address'] for r in gerees]}",
+        fr=f"{len(gerees)} ressource(s) gérée(s), une attendue : {[r['address'] for r in gerees]}",
     )
 
     plan = terraform("plan", "-detailed-exitcode", "-input=false", "-no-color", cwd=tache1)
-    assert plan.returncode == 0, (
-        f"`plan -detailed-exitcode` rend {plan.returncode}, attendu 0.\n\nLe "
+    assert plan.returncode == 0, message(
+        en=f"`plan -detailed-exitcode` returns {plan.returncode}, expected 0.\n\nThe "
+        "file is managed, but the configuration does not describe its real state: "
+        "that is an unreconciled drift.\n" + plan.stdout[-600:],
+        fr=f"`plan -detailed-exitcode` rend {plan.returncode}, attendu 0.\n\nLe "
         "fichier est géré, mais la configuration ne décrit pas son état réel : "
-        "c'est une dérive non réconciliée.\n" + plan.stdout[-600:]
+        "c'est une dérive non réconciliée.\n" + plan.stdout[-600:],
     )
 
 
@@ -158,22 +179,31 @@ def tache2(joue: Path) -> Path:
 def test_t2_les_trois_fichiers_viennent_d_une_seule_ressource(tache2: Path) -> None:
     etat = show_json(tache2)
     fichiers = [r for r in _ressources(etat) if r["type"] == "local_file"]
-    assert len(fichiers) == 3, f"{len(fichiers)} fichier(s), trois attendus."
+    assert len(fichiers) == 3, message(
+        en=f"{len(fichiers)} file(s), three expected.",
+        fr=f"{len(fichiers)} fichier(s), trois attendus.",
+    )
 
     noms = {r.get("name") for r in fichiers}
-    assert len(noms) == 1, (
-        f"Les trois fichiers viennent de {len(noms)} ressources différentes : "
+    assert len(noms) == 1, message(
+        en=f"The three files come from {len(noms)} different resources: "
+        f"{sorted(noms)}.\n\nThe exam asks for ONE resource driven by "
+        "`for_each`, not three copies.",
+        fr=f"Les trois fichiers viennent de {len(noms)} ressources différentes : "
         f"{sorted(noms)}.\n\nL'examen demande UNE ressource portée par "
-        "`for_each`, pas trois copies."
+        "`for_each`, pas trois copies.",
     )
 
     index = [r.get("index") for r in fichiers]
-    assert all(isinstance(i, str) for i in index), (
-        f"Les index valent {index} : ce sont des entiers, donc `count`. "
-        "`for_each` produit des index nommés."
+    assert all(isinstance(i, str) for i in index), message(
+        en=f"The indexes are {index}: those are integers, so `count`. "
+        "`for_each` produces named indexes.",
+        fr=f"Les index valent {index} : ce sont des entiers, donc `count`. "
+        "`for_each` produit des index nommés.",
     )
-    assert set(index) == set(SERVICES), (
-        f"Index obtenus : {sorted(str(i) for i in index)}, attendu {sorted(SERVICES)}."
+    assert set(index) == set(SERVICES), message(
+        en=f"Indexes obtained: {sorted(str(i) for i in index)}, expected {sorted(SERVICES)}.",
+        fr=f"Index obtenus : {sorted(str(i) for i in index)}, attendu {sorted(SERVICES)}.",
     )
 
 
@@ -182,9 +212,11 @@ def test_t2_chaque_fichier_porte_son_port(tache2: Path) -> None:
     for ressource in (r for r in _ressources(etat) if r["type"] == "local_file"):
         nom = ressource["index"]
         contenu = ressource["values"]["content"]
-        assert str(SERVICES[nom]) in contenu, (
-            f"Le fichier `{nom}` contient {contenu!r} et ne cite pas son port "
-            f"{SERVICES[nom]}."
+        assert str(SERVICES[nom]) in contenu, message(
+            en=f"The file `{nom}` contains {contenu!r} and does not mention its port "
+            f"{SERVICES[nom]}.",
+            fr=f"Le fichier `{nom}` contient {contenu!r} et ne cite pas son port "
+            f"{SERVICES[nom]}.",
         )
 
 
@@ -202,10 +234,13 @@ def test_t2_un_port_hors_plage_est_refuse_au_plan(tache2: Path, tmp_path: Path) 
         "-var", 'services={"api":80}',
         cwd=copie,
     )
-    assert plan.returncode != 0, (
-        "Un port de 80 a été accepté au plan.\n\nLa variable doit porter une "
+    assert plan.returncode != 0, message(
+        en="A port of 80 was accepted at plan time.\n\nThe variable must carry a "
+        "`validation` refusing any port outside 1024-65535: without it, the "
+        "mistake only shows at apply time.",
+        fr="Un port de 80 a été accepté au plan.\n\nLa variable doit porter une "
         "`validation` qui refuse tout port hors de 1024-65535 : sans elle, la "
-        "faute ne se voit qu'à l'exécution."
+        "faute ne se voit qu'à l'exécution.",
     )
 
 
@@ -226,18 +261,22 @@ def test_t3_l_application_lit_l_etat_du_socle(tache3: Path) -> None:
         r for r in _ressources(etat)
         if r.get("mode") == "data" and r["type"] == "terraform_remote_state"
     ]
-    assert lues, (
-        "Aucune source de données `terraform_remote_state` dans l'état de "
+    assert lues, message(
+        en="No `terraform_remote_state` data source in the state of "
+        "`app`.\n\nThe two root modules must communicate through the state, not through a "
+        "copied value.",
+        fr="Aucune source de données `terraform_remote_state` dans l'état de "
         "`app`.\n\nLes deux racines doivent communiquer par l'état, pas par une "
-        "valeur recopiée."
+        "valeur recopiée.",
     )
 
 
 def test_t3_la_valeur_traverse_les_deux_etats(tache3: Path) -> None:
     socle = output_json(tache3 / "socle")
     app = output_json(tache3 / "app")
-    assert app["reseau_consomme"]["value"] == socle["identifiant_reseau"]["value"], (
-        "`app` n'expose pas la valeur du socle."
+    assert app["reseau_consomme"]["value"] == socle["identifiant_reseau"]["value"], message(
+        en="`app` does not expose the foundation's value.",
+        fr="`app` n'expose pas la valeur du socle.",
     )
 
 
@@ -256,15 +295,21 @@ def test_t3_la_valeur_n_est_pas_recopiee_en_dur(tache3: Path, tmp_path: Path) ->
         "-var", "zone=eu-west-1b",
         cwd=copie / "socle",
     )
-    assert rejoue.returncode == 0, f"Rejeu du socle : {rejoue.stderr[-500:]}"
+    assert rejoue.returncode == 0, message(
+        en=f"Replaying the foundation: {rejoue.stderr[-500:]}",
+        fr=f"Rejeu du socle : {rejoue.stderr[-500:]}",
+    )
 
     apres = output_json(copie / "socle")["identifiant_reseau"]["value"]
     terraform("apply", "-auto-approve", "-input=false", "-no-color", cwd=copie / "app")
 
-    assert output_json(copie / "app")["reseau_consomme"]["value"] == apres, (
-        "Après avoir rejoué le socle avec une autre zone, `app` n'expose plus "
+    assert output_json(copie / "app")["reseau_consomme"]["value"] == apres, message(
+        en="After replaying the foundation with another zone, `app` no longer exposes "
+        "the same value as it: the data was COPIED instead of being read "
+        "from the remote state.",
+        fr="Après avoir rejoué le socle avec une autre zone, `app` n'expose plus "
         "la même valeur que lui : la donnée a été RECOPIÉE au lieu d'être lue "
-        "dans l'état distant."
+        "dans l'état distant.",
     )
 
 
@@ -283,14 +328,19 @@ def test_t4_les_trois_environnements_passent_par_un_module(tache4: Path) -> None
     racine = (etat.get("values") or {}).get("root_module", {})
     modules = racine.get("child_modules", []) or []
 
-    assert len(modules) >= 3, (
-        f"{len(modules)} appel(s) de module, trois attendus.\n\nLes trois "
+    assert len(modules) >= 3, message(
+        en=f"{len(modules)} module call(s), three expected.\n\nThe three "
+        "environments must go through a local module, not stay three "
+        "copied blocks.",
+        fr=f"{len(modules)} appel(s) de module, trois attendus.\n\nLes trois "
         "environnements doivent passer par un module local, pas rester trois "
-        "blocs recopiés."
+        "blocs recopiés.",
     )
-    assert not [r for r in racine.get("resources", []) if r["type"] == "local_file"], (
-        "Des `local_file` subsistent à la racine : la factorisation est "
-        "incomplète."
+    assert not [r for r in racine.get("resources", []) if r["type"] == "local_file"], message(
+        en="Some `local_file` resources remain at the root: the factorisation is "
+        "incomplete.",
+        fr="Des `local_file` subsistent à la racine : la factorisation est "
+        "incomplète.",
     )
 
 
@@ -300,17 +350,22 @@ def test_t4_rien_n_a_ete_recree_et_le_plan_est_stable(tache4: Path) -> None:
     C'est ce que les blocs `moved` évitent, et c'est ce que l'examen vérifie.
     """
     plan = terraform("plan", "-detailed-exitcode", "-input=false", "-no-color", cwd=tache4)
-    assert plan.returncode == 0, (
-        f"`plan -detailed-exitcode` rend {plan.returncode}, attendu 0.\n\nSi le "
+    assert plan.returncode == 0, message(
+        en=f"`plan -detailed-exitcode` returns {plan.returncode}, expected 0.\n\nIf the "
+        "plan announces destructions and creations, the `moved` blocks are "
+        "missing: Terraform cannot guess where each resource has "
+        "moved to.\n" + plan.stdout[-800:],
+        fr=f"`plan -detailed-exitcode` rend {plan.returncode}, attendu 0.\n\nSi le "
         "plan annonce des destructions et des créations, les blocs `moved` "
         "manquent : Terraform ne peut pas deviner où chaque ressource a "
-        "déménagé.\n" + plan.stdout[-800:]
+        "déménagé.\n" + plan.stdout[-800:],
     )
 
     sorties = output_json(tache4)
     empreintes = sorties.get("empreintes", {}).get("value", {})
-    assert set(empreintes) == set(ENVIRONNEMENTS), (
-        f"`empreintes` porte {sorted(empreintes)}, attendu {sorted(ENVIRONNEMENTS)}."
+    assert set(empreintes) == set(ENVIRONNEMENTS), message(
+        en=f"`empreintes` carries {sorted(empreintes)}, expected {sorted(ENVIRONNEMENTS)}.",
+        fr=f"`empreintes` porte {sorted(empreintes)}, attendu {sorted(ENVIRONNEMENTS)}.",
     )
 
 
@@ -334,30 +389,43 @@ def test_t5_le_repertoire_prive_est_ferme(tache5: Path) -> None:
     """
     public = tache5 / "public"
     prive = tache5 / "prive"
-    assert public.is_dir() and prive.is_dir(), (
-        "Les deux répertoires n'ont pas été créés : l'apply n'est pas allé au "
-        "bout, ou les chemins ont été changés."
+    assert public.is_dir() and prive.is_dir(), message(
+        en="The two directories were not created: the apply did not go "
+        "through, or the paths were changed.",
+        fr="Les deux répertoires n'ont pas été créés : l'apply n'est pas allé au "
+        "bout, ou les chemins ont été changés.",
     )
 
     droits_prive = oct(prive.stat().st_mode)[-3:]
     droits_public = oct(public.stat().st_mode)[-3:]
-    assert droits_prive == "700", (
-        f"`prive/` est en {droits_prive}, attendu 700.\n\nLe répertoire que "
+    assert droits_prive == "700", message(
+        en=f"`prive/` is {droits_prive}, expected 700.\n\nThe directory that "
+        "Terraform creates along the way takes `directory_permission`, an argument of "
+        "the `local_file` resource.",
+        fr=f"`prive/` est en {droits_prive}, attendu 700.\n\nLe répertoire que "
         "Terraform crée au passage prend `directory_permission`, un argument de "
-        "la ressource `local_file`."
+        "la ressource `local_file`.",
     )
-    assert droits_public != droits_prive, (
-        f"`public/` et `prive/` sont tous deux en {droits_prive} : les droits "
-        "ont été posés des deux côtés, alors que `public/` garde le défaut."
+    assert droits_public != droits_prive, message(
+        en=f"`public/` and `prive/` are both {droits_prive}: the permissions "
+        "were set on both sides, whereas `public/` keeps the default.",
+        fr=f"`public/` et `prive/` sont tous deux en {droits_prive} : les droits "
+        "ont été posés des deux côtés, alors que `public/` garde le défaut.",
     )
 
     fichier = prive / "note.txt"
-    assert fichier.is_file(), "`prive/note.txt` manque."
+    assert fichier.is_file(), message(
+        en="`prive/note.txt` is missing.",
+        fr="`prive/note.txt` manque.",
+    )
     droits_fichier = oct(fichier.stat().st_mode)[-3:]
-    assert droits_fichier == "600", (
-        f"`prive/note.txt` est en {droits_fichier}, attendu 600. Le fichier a "
+    assert droits_fichier == "600", message(
+        en=f"`prive/note.txt` is {droits_fichier}, expected 600. The file has "
+        "its own argument, `file_permission`; closing the directory does not "
+        "close what it contains.",
+        fr=f"`prive/note.txt` est en {droits_fichier}, attendu 600. Le fichier a "
         "son propre argument, `file_permission` ; fermer le répertoire ne "
-        "ferme pas ce qu'il contient."
+        "ferme pas ce qu'il contient.",
     )
 
 
@@ -371,32 +439,48 @@ def test_t5_les_deux_fichiers_ne_sont_pas_rendus_par_la_meme_configuration(
     porte la clé complète, `provider["...local"].restreint`.
     """
     etat = tache5 / "terraform.tfstate"
-    assert etat.is_file(), "Aucun state : l'apply n'a pas abouti."
+    assert etat.is_file(), message(
+        en="No state: the apply did not succeed.",
+        fr="Aucun state : l'apply n'a pas abouti.",
+    )
 
     rattachements = {
         f"{r['type']}.{r['name']}": r["provider"]
         for r in json.loads(etat.read_text(encoding="utf-8"))["resources"]
     }
     manquantes = {"local_file.public", "local_file.prive"} - set(rattachements)
-    assert not manquantes, f"Absentes du state : {sorted(manquantes)}."
+    assert not manquantes, message(
+        en=f"Absent from the state: {sorted(manquantes)}.",
+        fr=f"Absentes du state : {sorted(manquantes)}.",
+    )
 
     prive = rattachements["local_file.prive"]
     public = rattachements["local_file.public"]
-    assert prive != public, (
-        "Les deux fichiers sont rendus par la même configuration de provider "
+    assert prive != public, message(
+        en="Both files are produced by the same provider configuration "
+        f"({public}).\n\n`local_file.prive` must carry a "
+        "`provider` argument, otherwise it takes the default configuration without "
+        "a word.",
+        fr="Les deux fichiers sont rendus par la même configuration de provider "
         f"({public}).\n\n`local_file.prive` doit porter un argument "
         "`provider`, sans quoi il prend la configuration par défaut sans rien "
-        "dire."
+        "dire.",
     )
-    assert "]." in prive, (
-        f"`local_file.prive` est rattaché à {prive}, qui ne nomme aucun alias. "
+    assert "]." in prive, message(
+        en=f"`local_file.prive` is attached to {prive}, which names no alias. "
+        "An aliased configuration is written `provider[\"…\"].<alias>` in the "
+        "state.",
+        fr=f"`local_file.prive` est rattaché à {prive}, qui ne nomme aucun alias. "
         "Une configuration aliasée s'écrit `provider[\"...\"].<alias>` dans le "
-        "state."
+        "state.",
     )
-    assert "]." not in public, (
-        f"`local_file.public` est rattaché à {public}, une configuration "
+    assert "]." not in public, message(
+        en=f"`local_file.public` is attached to {public}, an aliased "
+        "configuration. It is the other way round: the public one keeps the default "
+        "configuration, the private one takes the alias.",
+        fr=f"`local_file.public` est rattaché à {public}, une configuration "
         "aliasée. C'est l'inverse : le public garde la configuration par "
-        "défaut, le privé prend l'alias."
+        "défaut, le privé prend l'alias.",
     )
 
 
@@ -413,7 +497,10 @@ def test_t5_la_contrainte_encadre_la_serie_et_a_pilote_l_installation(
     2.5.x recalerait donc la bonne réponse.
     """
     verrou = tache5 / ".terraform.lock.hcl"
-    assert verrou.is_file(), "Aucun fichier de verrouillage : `init` n'a pas tourné."
+    assert verrou.is_file(), message(
+        en="No lock file: `init` has not run.",
+        fr="Aucun fichier de verrouillage : `init` n'a pas tourné.",
+    )
 
     lu = {}
     for ligne in verrou.read_text(encoding="utf-8").splitlines():
@@ -422,17 +509,23 @@ def test_t5_la_contrainte_encadre_la_serie_et_a_pilote_l_installation(
                 lu[cle] = ligne.split("=", 1)[1].strip().strip('"')
 
     contrainte = lu.get("constraints", "")
-    assert "~>" in contrainte, (
-        f"La contrainte enregistrée est `{contrainte}`.\n\n`>= 2.5` laisserait "
+    assert "~>" in contrainte, message(
+        en=f"The recorded constraint is `{contrainte}`.\n\n`>= 2.5` would let "
+        "3.0 through the day it is released, and an exact version "
+        "would forbid patches. The pessimistic operator says both at "
+        "once.",
+        fr=f"La contrainte enregistrée est `{contrainte}`.\n\n`>= 2.5` laisserait "
         "passer la 3.0 le jour où elle sortira, et une version exacte "
         "interdirait les correctifs. L'opérateur pessimiste dit les deux à la "
-        "fois."
+        "fois.",
     )
 
     version = tuple(int(n) for n in lu.get("version", "0").split("."))
-    assert (2, 5, 0) <= version < (3, 0, 0), (
-        f"Le provider installé est en {lu.get('version')}, hors de la série "
-        "attendue. La contrainte écrite n'encadre pas ce qui a été résolu."
+    assert (2, 5, 0) <= version < (3, 0, 0), message(
+        en=f"The installed provider is {lu.get('version')}, outside the expected "
+        "series. The constraint written does not bracket what was resolved.",
+        fr=f"Le provider installé est en {lu.get('version')}, hors de la série "
+        "attendue. La contrainte écrite n'encadre pas ce qui a été résolu.",
     )
 
 
@@ -448,9 +541,11 @@ def tache6(joue: Path) -> dict:
 
 def test_t6_aucune_question_n_est_laissee_sans_reponse(tache6: dict) -> None:
     sans = tache6.get("sans_reponse", [])
-    assert sans == [], (
-        f"{len(sans)} question(s) sans réponse : {sans}\n\nÀ l'examen, une "
-        "question laissée vide est une question perdue."
+    assert sans == [], message(
+        en=f"{len(sans)} unanswered question(s): {sans}\n\nIn an exam, a "
+        "question left blank is a question lost.",
+        fr=f"{len(sans)} question(s) sans réponse : {sans}\n\nÀ l'examen, une "
+        "question laissée vide est une question perdue.",
     )
 
 
@@ -467,30 +562,43 @@ def test_t6_le_score_atteint_le_seuil_avec_un_bareme_intact(tache6: dict) -> Non
     remplacé les empreintes par celles de ses propres réponses.
     """
     empreintes = tache6.get("empreintes", {})
-    assert len(empreintes) == 12, f"{len(empreintes)} empreintes, douze attendues."
+    assert len(empreintes) == 12, message(
+        en=f"{len(empreintes)} fingerprints, twelve expected.",
+        fr=f"{len(empreintes)} empreintes, douze attendues.",
+    )
     for question, valeur in empreintes.items():
-        assert len(valeur) == 64 and all(c in "0123456789abcdef" for c in valeur), (
-            f"L'empreinte de `{question}` n'est pas un sha256 : le barème a été "
-            "modifié, et un score obtenu ainsi ne mesure plus rien."
+        assert len(valeur) == 64 and all(c in "0123456789abcdef" for c in valeur), message(
+            en=f"The fingerprint of `{question}` is not a sha256: the marking scheme was "
+            "modified, and a score obtained that way no longer measures anything.",
+            fr=f"L'empreinte de `{question}` n'est pas un sha256 : le barème a été "
+            "modifié, et un score obtenu ainsi ne mesure plus rien.",
         )
 
     score = tache6.get("score")
-    assert score >= SCORE_MINIMAL_T6, (
-        f"Le QCM rend {score}/100, {SCORE_MINIMAL_T6} attendus.\n\n"
+    assert score >= SCORE_MINIMAL_T6, message(
+        en=f"The quiz returns {score}/100, {SCORE_MINIMAL_T6} expected.\n\n"
+        f"Detail: {tache6.get('score_par_sous_objectif')}\n"
+        "The wrong answers can be read in the `corrige` output.",
+        fr=f"Le QCM rend {score}/100, {SCORE_MINIMAL_T6} attendus.\n\n"
         f"Détail : {tache6.get('score_par_sous_objectif')}\n"
-        "Les questions fausses se lisent dans l'output `corrige`."
+        "Les questions fausses se lisent dans l'output `corrige`.",
     )
 
 
 def test_t6_les_quatre_sous_objectifs_sont_couverts(tache6: dict) -> None:
     par_objectif = tache6.get("score_par_sous_objectif", {})
-    assert set(par_objectif) == SOUS_OBJECTIFS, (
-        f"Sous-objectifs notés : {sorted(par_objectif)}, attendu "
-        f"{sorted(SOUS_OBJECTIFS)}."
+    assert set(par_objectif) == SOUS_OBJECTIFS, message(
+        en=f"Sub-objectives graded: {sorted(par_objectif)}, expected "
+        f"{sorted(SOUS_OBJECTIFS)}.",
+        fr=f"Sous-objectifs notés : {sorted(par_objectif)}, attendu "
+        f"{sorted(SOUS_OBJECTIFS)}.",
     )
     faibles = {o: s for o, s in par_objectif.items() if s < 50}
-    assert not faibles, (
-        f"Ces sous-objectifs sont sous 50 % : {faibles}.\n\nUn score global "
+    assert not faibles, message(
+        en=f"These sub-objectives are below 50%: {faibles}.\n\nA correct overall "
+        "score can hide an objective that is not mastered: that is precisely "
+        "what a mock exam must reveal.",
+        fr=f"Ces sous-objectifs sont sous 50 % : {faibles}.\n\nUn score global "
         "correct peut masquer un objectif non maîtrisé : c'est précisément ce "
-        "qu'un examen blanc doit faire voir."
+        "qu'un examen blanc doit faire voir.",
     )

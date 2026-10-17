@@ -32,7 +32,7 @@ import subprocess
 
 import pytest
 
-from conftest import exiger_workdir, workdir_lab
+from conftest import exiger_workdir, message, workdir_lab
 
 WORKDIR = workdir_lab(__file__)
 LAB_ID = "hcp-terraform-variable-sets"
@@ -132,12 +132,17 @@ def sorties() -> dict:
     exiger_workdir(WORKDIR, LAB_ID)
 
     init = _tf("init", "-input=false", "-no-color")
-    assert init.returncode == 0, f"`terraform init` a echoue.\n{init.stderr[-1000:]}"
+    assert init.returncode == 0, message(
+        en=f"`terraform init` failed.\n{init.stderr[-1000:]}",
+        fr=f"`terraform init` a échoué.\n{init.stderr[-1000:]}",
+    )
 
     applique = _tf("apply", "-auto-approve", "-input=false", "-no-color")
-    assert applique.returncode == 0, (
-        f"`terraform apply` a echoue : un `???` subsiste, ou une expression ne "
-        f"tient pas.\n{applique.stderr[-1200:]}"
+    assert applique.returncode == 0, message(
+        en=f"`terraform apply` failed: a `???` remains, or an expression does not "
+        f"hold.\n{applique.stderr[-1200:]}",
+        fr=f"`terraform apply` a échoué : un `???` subsiste, ou une expression ne "
+        f"tient pas.\n{applique.stderr[-1200:]}",
     )
 
     proc = _tf("output", "-json")
@@ -155,10 +160,13 @@ def _resolutions_avec(cas: dict) -> dict:
         "plan", "-input=false", "-no-color", "-out=controle.tfplan",
         "-var", f"cas={json.dumps(cas)}",
     )
-    assert plan.returncode == 0, (
-        f"Le plan de controle a echoue.\n\nUne resolution qui suppose qu'un cas "
+    assert plan.returncode == 0, message(
+        en=f"The control plan failed.\n\nA resolution assuming that every case "
+        f"carries at least one source falls over here: the empty case is one of them.\n"
+        f"{plan.stderr[-1200:]}",
+        fr=f"Le plan de contrôle a échoué.\n\nUne résolution qui suppose qu'un cas "
         f"porte au moins une source tombe ici : le cas vide en fait partie.\n"
-        f"{plan.stderr[-1200:]}"
+        f"{plan.stderr[-1200:]}",
     )
     montre = _tf("show", "-json", "controle.tfplan")
     montre.check_returncode()
@@ -170,20 +178,26 @@ def _resolutions_avec(cas: dict) -> dict:
 # --------------------------------------------------------------------------
 def test_la_table_de_precedence_est_complete_et_sans_doublon(sorties: dict) -> None:
     ordre = sorties.get("ordre_precedence")
-    assert isinstance(ordre, list), (
-        f"`ordre_precedence` rend {type(ordre).__name__}, une liste attendue."
+    assert isinstance(ordre, list), message(
+        en=f"`ordre_precedence` returns {type(ordre).__name__}, a list was expected.",
+        fr=f"`ordre_precedence` rend {type(ordre).__name__}, une liste attendue.",
     )
-    assert len(ordre) == 15, (
-        f"La table porte {len(ordre)} entrees, quinze attendues."
+    assert len(ordre) == 15, message(
+        en=f"The table carries {len(ordre)} entries, fifteen expected.",
+        fr=f"La table porte {len(ordre)} entrées, quinze attendues.",
     )
-    assert len(set(ordre)) == 15, (
-        f"La table porte des doublons : "
-        f"{sorted({s for s in ordre if ordre.count(s) > 1})}."
+    assert len(set(ordre)) == 15, message(
+        en=f"The table carries duplicates: "
+        f"{sorted({s for s in ordre if ordre.count(s) > 1})}.",
+        fr=f"La table porte des doublons : "
+        f"{sorted({s for s in ordre if ordre.count(s) > 1})}.",
     )
     inconnus = set(ordre) - set(ORDRE_OFFICIEL)
-    assert not inconnus, (
-        f"Ces identifiants ne figurent pas dans `VOCABULAIRE.md` : "
-        f"{sorted(inconnus)}."
+    assert not inconnus, message(
+        en=f"These identifiers do not appear in `VOCABULAIRE.md`: "
+        f"{sorted(inconnus)}.",
+        fr=f"Ces identifiants ne figurent pas dans `VOCABULAIRE.md` : "
+        f"{sorted(inconnus)}.",
     )
 
 
@@ -200,13 +214,19 @@ def test_la_table_est_dans_l_ordre_officiel(sorties: dict) -> None:
     for rang, (obtenu, attendu) in enumerate(
         zip(ordre, ORDRE_OFFICIEL, strict=True), start=1
     ):
-        assert obtenu == attendu, (
-            f"Au rang {rang}, la table porte {obtenu!r}, {attendu!r} attendu.\n\n"
+        assert obtenu == attendu, message(
+            en=f"At rank {rang}, the table carries {obtenu!r}, {attendu!r} expected.\n\n"
+            "A reminder of the inversion: with PRIORITY sets the BROADEST "
+            "scope wins (global, then project, then workspace), whereas with "
+            "normal sets it is the NARROWEST (workspace, then project, "
+            "then global).\n\n"
+            f"Source: {SOURCE}",
+            fr=f"Au rang {rang}, la table porte {obtenu!r}, {attendu!r} attendu.\n\n"
             "Rappel de l'inversion : chez les sets PRIORITY le scope le plus "
             "LARGE gagne (global, puis projet, puis workspace), alors que chez "
-            "les sets normaux c'est le plus ETROIT (workspace, puis projet, "
+            "les sets normaux c'est le plus ÉTROIT (workspace, puis projet, "
             "puis global).\n\n"
-            f"Source : {SOURCE}"
+            f"Source : {SOURCE}",
         )
 
 
@@ -215,16 +235,20 @@ def test_la_table_est_dans_l_ordre_officiel(sorties: dict) -> None:
 # --------------------------------------------------------------------------
 def test_chaque_cas_fourni_est_resolu(sorties: dict) -> None:
     resolutions = sorties.get("resolutions")
-    assert isinstance(resolutions, dict) and resolutions, (
-        "`resolutions` est vide ou n'est pas une map."
+    assert isinstance(resolutions, dict) and resolutions, message(
+        en="`resolutions` is empty or is not a map.",
+        fr="`resolutions` est vide ou n'est pas une map.",
     )
     for nom, resolu in resolutions.items():
-        assert set(resolu) >= {"source", "valeur"}, (
-            f"`{nom}` rend {sorted(resolu)}, attendu au moins `source` et "
-            "`valeur`."
+        assert set(resolu) >= {"source", "valeur"}, message(
+            en=f"`{nom}` returns {sorted(resolu)}, at least `source` and "
+            "`valeur` were expected.",
+            fr=f"`{nom}` rend {sorted(resolu)}, attendu au moins `source` et "
+            "`valeur`.",
         )
-        assert resolu["source"] in [*ORDRE_OFFICIEL, SENTINELLE], (
-            f"`{nom}` designe la source {resolu['source']!r}, qui n'existe pas."
+        assert resolu["source"] in [*ORDRE_OFFICIEL, SENTINELLE], message(
+            en=f"`{nom}` names the source {resolu['source']!r}, which does not exist.",
+            fr=f"`{nom}` désigne la source {resolu['source']!r}, qui n'existe pas.",
         )
 
 
@@ -240,21 +264,28 @@ def test_la_resolution_tient_sur_des_cas_inconnus(sorties: dict) -> None:
     cas = {nom: sources for nom, (sources, _, _) in CAS_DE_CONTROLE.items()}
     obtenu = _resolutions_avec(cas)
 
-    assert set(obtenu) == set(CAS_DE_CONTROLE), (
-        f"La resolution rend {sorted(obtenu)}, attendu {sorted(CAS_DE_CONTROLE)}."
-        "\n\nElle ne suit donc pas la variable : des cas sont nommes en dur."
+    assert set(obtenu) == set(CAS_DE_CONTROLE), message(
+        en=f"The resolution returns {sorted(obtenu)}, expected {sorted(CAS_DE_CONTROLE)}."
+        "\n\nIt therefore does not follow the variable: some cases are named by hand.",
+        fr=f"La résolution rend {sorted(obtenu)}, attendu {sorted(CAS_DE_CONTROLE)}."
+        "\n\nElle ne suit donc pas la variable : des cas sont nommés en dur.",
     )
 
     for nom, (sources, attendue, pourquoi) in CAS_DE_CONTROLE.items():
-        assert obtenu[nom]["source"] == attendue, (
-            f"`{nom}` resout sur {obtenu[nom]['source']!r}, {attendue!r} "
-            f"attendu.\n\nSources renseignees : {sorted(sources) or 'aucune'}\n"
-            f"Parce que {pourquoi}.\n\nSource : {SOURCE}"
+        assert obtenu[nom]["source"] == attendue, message(
+            en=f"`{nom}` resolves on {obtenu[nom]['source']!r}, {attendue!r} "
+            f"expected.\n\nSources filled in: {sorted(sources) or 'none'}\n"
+            f"Because {pourquoi}.\n\nSource: {SOURCE}",
+            fr=f"`{nom}` résout sur {obtenu[nom]['source']!r}, {attendue!r} "
+            f"attendu.\n\nSources renseignées : {sorted(sources) or 'aucune'}\n"
+            f"Parce que {pourquoi}.\n\nSource : {SOURCE}",
         )
         if sources:
-            assert obtenu[nom]["valeur"] == sources[attendue], (
-                f"`{nom}` designe la bonne source mais rend la valeur "
-                f"{obtenu[nom]['valeur']!r}, {sources[attendue]!r} attendue."
+            assert obtenu[nom]["valeur"] == sources[attendue], message(
+                en=f"`{nom}` names the right source but returns the value "
+                f"{obtenu[nom]['valeur']!r}, {sources[attendue]!r} expected.",
+                fr=f"`{nom}` désigne la bonne source mais rend la valeur "
+                f"{obtenu[nom]['valeur']!r}, {sources[attendue]!r} attendue.",
             )
 
 
@@ -265,10 +296,13 @@ def test_un_cas_sans_source_resout_sur_la_sentinelle(sorties: dict) -> None:
     configuration entiere qui s'arrete, pas seulement ce cas.
     """
     obtenu = _resolutions_avec({"seul_cas_vide": {}})
-    assert obtenu["seul_cas_vide"]["source"] == SENTINELLE, (
-        f"Un cas vide resout sur {obtenu['seul_cas_vide']['source']!r}, "
+    assert obtenu["seul_cas_vide"]["source"] == SENTINELLE, message(
+        en=f"An empty case resolves on {obtenu['seul_cas_vide']['source']!r}, "
+        f"{SENTINELLE!r} expected.\n\nNeither `null` nor a plan error: a "
+        "sentinel says \"nothing filled in\" instead of interrupting.",
+        fr=f"Un cas vide résout sur {obtenu['seul_cas_vide']['source']!r}, "
         f"{SENTINELLE!r} attendu.\n\nNi `null`, ni une erreur de plan : une "
-        "sentinelle dit « rien de renseigne » au lieu d'interrompre."
+        "sentinelle dit « rien de renseigné » au lieu d'interrompre.",
     )
 
 
@@ -282,9 +316,11 @@ def test_le_duel_se_tranche_par_points_de_code(sorties: dict) -> None:
     jeu ou majuscules et chiffres precedent les minuscules en Unicode, ce qui
     ne correspond a aucun ordre d'ecriture naturel.
     """
-    assert sorties.get("gagnant_lexical") == "equipe-donnees", (
-        f"`gagnant_lexical` vaut {sorties.get('gagnant_lexical')!r}, "
-        "`equipe-donnees` attendu sur le jeu par defaut."
+    assert sorties.get("gagnant_lexical") == "equipe-donnees", message(
+        en=f"`gagnant_lexical` is {sorties.get('gagnant_lexical')!r}, "
+        "`equipe-donnees` expected on the default set.",
+        fr=f"`gagnant_lexical` vaut {sorties.get('gagnant_lexical')!r}, "
+        "`equipe-donnees` attendu sur le jeu par défaut.",
     )
 
     duel = {"zeta": "z", "Alpha": "A", "9beta": "9"}
@@ -292,17 +328,25 @@ def test_le_duel_se_tranche_par_points_de_code(sorties: dict) -> None:
         "plan", "-input=false", "-no-color", "-out=lexical.tfplan",
         "-var", f"duel_lexical={json.dumps(duel)}",
     )
-    assert plan.returncode == 0, f"Le plan lexical a echoue.\n{plan.stderr[-800:]}"
+    assert plan.returncode == 0, message(
+        en=f"The lexical plan failed.\n{plan.stderr[-800:]}",
+        fr=f"Le plan lexical a échoué.\n{plan.stderr[-800:]}",
+    )
 
     montre = _tf("show", "-json", "lexical.tfplan")
     montre.check_returncode()
     gagnant = json.loads(montre.stdout)["planned_values"]["outputs"]["gagnant_lexical"]["value"]
-    assert gagnant == "9beta", (
-        f"Sur `zeta`, `Alpha` et `9beta`, le gagnant annonce est {gagnant!r}, "
+    assert gagnant == "9beta", message(
+        en=f"On `zeta`, `Alpha` and `9beta`, the announced winner is {gagnant!r}, "
+        "`9beta` expected.\n\nThe ordering is by Unicode CODE POINTS: "
+        "digits come before capitals, which come before lower case. "
+        "A sort ignoring case, or the writing order in the map, gives "
+        "something else.",
+        fr=f"Sur `zeta`, `Alpha` et `9beta`, le gagnant annoncé est {gagnant!r}, "
         "`9beta` attendu.\n\nLe classement se fait par POINTS DE CODE Unicode : "
-        "les chiffres precedent les majuscules, qui precedent les minuscules. "
-        "Un tri qui ignore la casse, ou l'ordre d'ecriture dans la map, donne "
-        "autre chose."
+        "les chiffres précèdent les majuscules, qui précèdent les minuscules. "
+        "Un tri qui ignore la casse, ou l'ordre d'écriture dans la map, donne "
+        "autre chose.",
     )
 
 
@@ -310,20 +354,28 @@ def test_le_duel_se_tranche_par_points_de_code(sorties: dict) -> None:
 def test_chaque_affirmation_est_tranchee(sorties: dict, affirmation: str) -> None:
     attendue, pourquoi = REPONSES_ATTENDUES[affirmation]
     reponses = sorties.get("reponses")
-    assert isinstance(reponses, dict), "`reponses` n'est pas une map."
-
-    assert affirmation in reponses, (
-        f"`{affirmation}` n'est pas tranchee. Presentes : {sorted(reponses)}."
+    assert isinstance(reponses, dict), message(
+        en="`reponses` is not a map.",
+        fr="`reponses` n'est pas une map.",
     )
-    assert reponses[affirmation] is attendue, (
-        f"`{affirmation}` vaut {reponses[affirmation]!r}, {attendue!r} "
-        f"attendu.\n\nParce que {pourquoi}.\n\nSource : {SOURCE}"
+
+    assert affirmation in reponses, message(
+        en=f"`{affirmation}` is not settled. Present: {sorted(reponses)}.",
+        fr=f"`{affirmation}` n'est pas tranchée. Présentes : {sorted(reponses)}.",
+    )
+    assert reponses[affirmation] is attendue, message(
+        en=f"`{affirmation}` is {reponses[affirmation]!r}, {attendue!r} "
+        f"expected.\n\nBecause {pourquoi}.\n\nSource: {SOURCE}",
+        fr=f"`{affirmation}` vaut {reponses[affirmation]!r}, {attendue!r} "
+        f"attendu.\n\nParce que {pourquoi}.\n\nSource : {SOURCE}",
     )
 
 
 def test_la_configuration_converge(sorties: dict) -> None:
     plan = _tf("plan", "-detailed-exitcode", "-input=false", "-no-color")
-    assert plan.returncode == 0, (
-        f"`plan -detailed-exitcode` rend {plan.returncode}, attendu 0.\n"
-        + plan.stdout[-800:]
+    assert plan.returncode == 0, message(
+        en=f"`plan -detailed-exitcode` returns {plan.returncode}, expected 0.\n"
+        + plan.stdout[-800:],
+        fr=f"`plan -detailed-exitcode` rend {plan.returncode}, attendu 0.\n"
+        + plan.stdout[-800:],
     )

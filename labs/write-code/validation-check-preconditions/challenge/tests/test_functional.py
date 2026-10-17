@@ -21,7 +21,7 @@ from pathlib import Path
 
 import pytest
 
-from conftest import exiger_workdir, show_json, terraform, workdir_lab
+from conftest import exiger_workdir, message, show_json, terraform, workdir_lab
 
 WORKDIR = workdir_lab(__file__)
 LAB_ID = "write-code-validation-check-preconditions"
@@ -37,14 +37,22 @@ def applied() -> Iterator[Path]:
     exiger_workdir(WORKDIR, LAB_ID)
     init = terraform("init", "-input=false", "-no-color", cwd=WORKDIR)
     if init.returncode != 0:
-        pytest.fail(f"`terraform init` a echoue.\n{init.stderr[-1200:]}")
+        pytest.fail(message(
+            en=f"`terraform init` failed.\n{init.stderr[-1200:]}",
+            fr=f"`terraform init` a échoué.\n{init.stderr[-1200:]}",
+        ))
     # L'apply DOIT reussir malgre le bloc check en echec : un check ne bloque pas.
     app = terraform("apply", "-auto-approve", "-input=false", "-no-color", cwd=WORKDIR)
     if app.returncode != 0:
         pytest.fail(
-            "`terraform apply` a echoue. Un `???` restant, ou une condition "
-            "(validation/precondition/postcondition) fausse sur l'etat par defaut ?"
-            f"\n{app.stderr[-1500:]}"
+            message(
+            en="`terraform apply` failed. A leftover `???`, or a condition "
+            "(validation/precondition/postcondition) false on the default state?"
+            f"\n{app.stderr[-1500:]}",
+            fr="`terraform apply` a échoué. Un `???` restant, ou une condition "
+            "(validation/precondition/postcondition) fausse sur l'état par défaut ?"
+            f"\n{app.stderr[-1500:]}",
+        )
         )
     yield WORKDIR
     terraform("destroy", "-auto-approve", "-input=false", "-no-color", cwd=WORKDIR)
@@ -57,10 +65,13 @@ def applied() -> Iterator[Path]:
 def test_les_quatre_niveaux_presents(applied: Path) -> None:
     kinds = _kinds(applied)
     attendus = {"var", "resource", "output_value", "check"}
-    assert attendus <= set(kinds), (
-        f"Le tableau checks ne porte pas les 4 niveaux. Vu : {kinds}. Attendu au "
+    assert attendus <= set(kinds), message(
+        en=f"The checks array does not carry the 4 levels. Seen: {kinds}. At "
+        "least var (validation), resource (pre/postcondition), output_value "
+        "(an output precondition) and check were expected.",
+        fr=f"Le tableau checks ne porte pas les 4 niveaux. Vu : {kinds}. Attendu au "
         "moins var (validation), resource (pre/postcondition), output_value "
-        "(precondition d'output) et check."
+        "(precondition d'output) et check.",
     )
 
 
@@ -70,11 +81,22 @@ def test_les_quatre_niveaux_presents(applied: Path) -> None:
 
 def test_check_echoue_les_autres_passent(applied: Path) -> None:
     kinds = _kinds(applied)
-    assert kinds.get("var") == "pass"
-    assert kinds.get("resource") == "pass"
-    assert kinds.get("output_value") == "pass"
-    assert kinds.get("check") == "fail", (
-        f"Le bloc check devrait etre en fail (assert volontairement faux) : {kinds}."
+    # Seul le bloc `check` doit echouer sur l'etat par defaut : les trois
+    # autres niveaux gardent des invariants qui, eux, doivent tenir.
+    doit_passer = message(
+        en=f"On the default state, only the `check` block is supposed to fail. "
+        f"Statuses recorded: {kinds}. A failing var, resource or output_value "
+        "means a condition that is too strict, or one that covers the wrong value.",
+        fr=f"Sur l'état par défaut, seul le bloc `check` doit échouer. "
+        f"Statuts relevés : {kinds}. Un var, resource ou output_value en échec "
+        "signale une condition trop stricte, ou qui porte sur la mauvaise valeur.",
+    )
+    assert kinds.get("var") == "pass", doit_passer
+    assert kinds.get("resource") == "pass", doit_passer
+    assert kinds.get("output_value") == "pass", doit_passer
+    assert kinds.get("check") == "fail", message(
+        en=f"The check block should be failing (a deliberately false assert): {kinds}.",
+        fr=f"Le bloc check devrait être en fail (assert volontairement faux) : {kinds}.",
     )
     # Le message redige par l'apprenant remonte dans instances[].problems[].
     checks = show_json(applied)["checks"]
@@ -84,8 +106,9 @@ def test_check_echoue_les_autres_passent(applied: Path) -> None:
         for inst in check.get("instances", [])
         for p in inst.get("problems", [])
     ]
-    assert messages and all(isinstance(m, str) and m for m in messages), (
-        f"Le check en echec doit porter un error_message non vide : {messages}."
+    assert messages and all(isinstance(m, str) and m for m in messages), message(
+        en=f"The failing check must carry a non-empty error_message: {messages}.",
+        fr=f"Le check en échec doit porter un error_message non vide : {messages}.",
     )
 
 
@@ -96,12 +119,15 @@ def test_check_echoue_les_autres_passent(applied: Path) -> None:
 def test_precondition_bloque_le_plan(applied: Path) -> None:
     # taille_max=20 viole la precondition (garde-fou <= 10), instances presentes.
     p = terraform("plan", "-input=false", "-no-color", "-var", "taille_max=20", cwd=applied)
-    assert p.returncode != 0, (
-        "Un plan qui viole la precondition doit echouer. Il a reussi : la "
-        "precondition ne garde pas le bon invariant."
+    assert p.returncode != 0, message(
+        en="A plan violating the precondition must fail. It succeeded: the "
+        "precondition does not guard the right invariant.",
+        fr="Un plan qui viole la precondition doit échouer. Il a réussi : la "
+        "precondition ne garde pas le bon invariant.",
     )
-    assert "recondition" in (p.stdout + p.stderr), (
-        "L'echec attendu est une precondition de ressource."
+    assert "recondition" in (p.stdout + p.stderr), message(
+        en="The expected failure is a resource precondition.",
+        fr="L'échec attendu est une precondition de ressource.",
     )
 
 
@@ -113,15 +139,19 @@ def test_validate_permissif_plan_strict(applied: Path) -> None:
     import json
     v = terraform("validate", "-json", cwd=applied)
     v.check_returncode()
-    assert json.loads(v.stdout)["valid"] is True, (
-        "terraform validate -json devrait rendre valid: true : il ne connait pas "
-        "les valeurs des variables et ne joue pas les validations croisees."
+    assert json.loads(v.stdout)["valid"] is True, message(
+        en="terraform validate -json should return valid: true: it does not know "
+        "the variables' values and does not run the cross validations.",
+        fr="terraform validate -json devrait rendre valid: true : il ne connaît pas "
+        "les valeurs des variables et ne joue pas les validations croisées.",
     )
     # taille_lot=10 > taille_max=5 : le plan, lui, refuse.
     p = terraform("plan", "-input=false", "-no-color", "-var", "taille_lot=10", cwd=applied)
-    assert p.returncode != 0, (
-        "Le plan doit refuser taille_lot=10 (validation croisee taille_lot <= "
-        "taille_max), la ou validate le declarait valide."
+    assert p.returncode != 0, message(
+        en="The plan must refuse taille_lot=10 (the cross validation taille_lot <= "
+        "taille_max), where validate declared it valid.",
+        fr="Le plan doit refuser taille_lot=10 (validation croisée taille_lot <= "
+        "taille_max), là où validate le déclarait valide.",
     )
 
 
@@ -134,9 +164,11 @@ def test_check_data_source_relu_chaque_plan(applied: Path) -> None:
     code = terraform(
         "plan", "-input=false", "-detailed-exitcode", "-no-color", cwd=applied
     ).returncode
-    assert code == 2, (
-        f"`plan -detailed-exitcode` rend {code}, attendu 2. Le data source scope "
-        "dans le check est relu a chaque plan : il produit toujours un diff."
+    assert code == 2, message(
+        en=f"`plan -detailed-exitcode` returns {code}, expected 2. The data source scope "
+        "inside the check is re-read at every plan: it always produces a diff.",
+        fr=f"`plan -detailed-exitcode` rend {code}, attendu 2. Le data source scope "
+        "dans le check est relu à chaque plan : il produit toujours un diff.",
     )
     # La preuve : la seule entree non no-op du plan est ce data source, en read.
     terraform("plan", "-input=false", "-no-color", "-out=tfplan", cwd=applied).check_returncode()
@@ -146,7 +178,9 @@ def test_check_data_source_relu_chaque_plan(applied: Path) -> None:
     non_noop = [r for r in changes if r["change"]["actions"] != ["no-op"]]
     assert non_noop and all(
         r["mode"] == "data" and r["change"]["actions"] == ["read"] for r in non_noop
-    ), (
-        "La seule entree non no-op du plan doit etre le data source du check, en "
-        f"action read : {[(r['address'], r['change']['actions']) for r in non_noop]}."
+    ), message(
+        en="The plan's only non-no-op entry must be the check's data source, with "
+        f"action read: {[(r['address'], r['change']['actions']) for r in non_noop]}.",
+        fr="La seule entrée non no-op du plan doit être le data source du check, en "
+        f"action read : {[(r['address'], r['change']['actions']) for r in non_noop]}.",
     )

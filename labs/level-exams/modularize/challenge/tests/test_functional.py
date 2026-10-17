@@ -33,7 +33,7 @@ from pathlib import Path
 
 import pytest
 
-from conftest import exiger_workdir, workdir_lab
+from conftest import exiger_workdir, message, workdir_lab
 
 pytestmark = pytest.mark.no_replay
 
@@ -49,9 +49,15 @@ VERSIONS = ("v1.0.0", "v1.1.0", "v2.0.0")
 
 def _epreuve() -> dict:
     etat = os.environ.get("LAB_STATE_DIR")
-    assert etat, "LAB_STATE_DIR absent : lancez l'épreuve par `dsoxlab run`, puis notez par `dsoxlab check`."
+    assert etat, message(
+        en="LAB_STATE_DIR missing: start the exam with `dsoxlab run`, then grade it with `dsoxlab check`.",
+        fr="LAB_STATE_DIR absent : lancez l'épreuve par `dsoxlab run`, puis notez par `dsoxlab check`.",
+    )
     fichier = Path(etat) / "epreuve.json"
-    assert fichier.is_file(), f"{fichier} absent : la préparation n'a pas tourné (`dsoxlab run`)."
+    assert fichier.is_file(), message(
+        en=f"{fichier} missing: the preparation did not run (`dsoxlab run`).",
+        fr=f"{fichier} absent : la préparation n'a pas tourné (`dsoxlab run`).",
+    )
     return json.loads(fichier.read_text())
 
 
@@ -96,9 +102,15 @@ def _boote(nom: str) -> bool:
 def _module(equipe: str) -> dict:
     """Le module de l'équipe, tel que Terraform l'a installé : source, ref, sous-dossier, clone."""
     fichier = WORKDIR / equipe / ".terraform" / "modules" / "modules.json"
-    assert fichier.is_file(), f"{equipe} : aucun module installé (terraform init n'a pas tourné, ou pas de module)."
+    assert fichier.is_file(), message(
+        en=f"{equipe}: no module installed (terraform init did not run, or there is no module).",
+        fr=f"{equipe} : aucun module installé (terraform init n'a pas tourné, ou pas de module).",
+    )
     modules = [m for m in json.loads(fichier.read_text())["Modules"] if m["Key"] and "depot-modules.git" in m["Source"]]
-    assert modules, f"{equipe} : aucun module tiré du dépôt depot-modules.git."
+    assert modules, message(
+        en=f"{equipe}: no module pulled from the depot-modules.git repository.",
+        fr=f"{equipe} : aucun module tiré du dépôt depot-modules.git.",
+    )
     m = modules[0]
     source = m["Source"]
     ref = re.search(r"[?&]ref=([^&]+)", source)
@@ -123,9 +135,15 @@ def _extraire(depot: str, ref: str) -> Path:
     """Le module tel qu'il est à `ref`, dans un clone jetable."""
     t = Path(tempfile.mkdtemp(prefix="epreuve-c-"))
     r = _run(["git", "clone", "-q", depot, str(t / "depot")])
-    assert r.returncode == 0, f"Clone du dépôt impossible : {r.stderr}"
+    assert r.returncode == 0, message(
+        en=f"Cannot clone the repository: {r.stderr}",
+        fr=f"Clone du dépôt impossible : {r.stderr}",
+    )
     r = _git(str(t / "depot"), "checkout", "-q", ref)
-    assert r.returncode == 0, f"{ref} introuvable dans le dépôt."
+    assert r.returncode == 0, message(
+        en=f"{ref} cannot be found in the repository.",
+        fr=f"{ref} introuvable dans le dépôt.",
+    )
     return t / "depot" / _sous_dossier() if _sous_dossier() else t / "depot"
 
 
@@ -185,31 +203,54 @@ def test_modularize_le_depot_publie_les_trois_versions() -> None:
     e = _epreuve()
     sous = _sous_dossier()
     for v in VERSIONS:
-        assert _commit(e["depot"], v), f"Le dépôt n'a pas de tag {v}."
+        assert _commit(e["depot"], v), message(
+            en=f"The repository has no {v} tag.",
+            fr=f"Le dépôt n'a pas de tag {v}.",
+        )
         r = _git(e["depot"], "ls-tree", "--name-only", v, *([f"{sous}/"] if sous else []))
-        assert any(n.endswith(".tf") for n in r.stdout.split()), f"{v} : aucun fichier .tf dans « {sous or '/'} »."
+        assert any(n.endswith(".tf") for n in r.stdout.split()), message(
+            en=f"{v}: no .tf file in \"{sous or '/'}\".",
+            fr=f"{v} : aucun fichier .tf dans « {sous or '/'} ».",
+        )
 
 
 def test_modularize_le_module_n_embarque_pas_son_provider() -> None:
     appelant = _appelant(_source("v1.1.0"), '  taille        = "petite"')
     init = _terraform(appelant, "init", "-input=false")
-    assert init.returncode == 0, (
-        f"Le module en v1.1.0 ne s'appelle pas en for_each : il embarque sans doute son bloc provider.\n"
-        f"{(init.stdout + init.stderr)[-500:]}")
+    assert init.returncode == 0, message(
+        en=f"The module at v1.1.0 cannot be called with for_each: it probably embeds its own provider block.\n"
+        f"{(init.stdout + init.stderr)[-500:]}",
+        fr=f"Le module en v1.1.0 ne s'appelle pas en for_each : il embarque sans doute son bloc provider.\n"
+        f"{(init.stdout + init.stderr)[-500:]}",
+    )
     valide = _terraform(appelant, "validate")
-    assert valide.returncode == 0, f"Le module en v1.1.0 ne se valide pas : {(valide.stdout + valide.stderr)[-400:]}"
+    assert valide.returncode == 0, message(
+        en=f"The module at v1.1.0 does not validate: {(valide.stdout + valide.stderr)[-400:]}",
+        fr=f"Le module en v1.1.0 ne se valide pas : {(valide.stdout + valide.stderr)[-400:]}",
+    )
     providers = _terraform(appelant, "providers").stdout
     contrainte = re.search(r"module\.m.*?\n\s*└── provider\[registry\.terraform\.io/dmacvicar/libvirt\]\s*(.*)", providers, re.S)
-    assert contrainte and contrainte.group(1).strip().startswith(">="), (
-        f"Le module doit contraindre seulement le plancher du provider libvirt (« >= … ») :\n{providers}")
+    assert contrainte and contrainte.group(1).strip().startswith(">="), message(
+        en=f"The module must constrain only the floor of the libvirt provider (\">= …\"):\n{providers}",
+        fr=f"Le module doit contraindre seulement le plancher du provider libvirt (« >= … ») :\n{providers}",
+    )
 
 
 def test_modularize_les_tests_du_module_passent() -> None:
     module = _extraire(_epreuve()["depot"], "v1.1.0")
-    assert list(module.rglob("*.tftest.hcl")), "Le module en v1.1.0 n'a aucun fichier .tftest.hcl."
-    assert _terraform(module, "init", "-input=false").returncode == 0, "init du module en v1.1.0 impossible."
+    assert list(module.rglob("*.tftest.hcl")), message(
+        en="The module at v1.1.0 has no .tftest.hcl file.",
+        fr="Le module en v1.1.0 n'a aucun fichier .tftest.hcl.",
+    )
+    assert _terraform(module, "init", "-input=false").returncode == 0, message(
+        en="Cannot init the module at v1.1.0.",
+        fr="init du module en v1.1.0 impossible.",
+    )
     r = _terraform(module, "test", timeout=900)
-    assert r.returncode == 0, f"terraform test échoue sur le module en v1.1.0 :\n{(r.stdout + r.stderr)[-600:]}"
+    assert r.returncode == 0, message(
+        en=f"terraform test fails on the module at v1.1.0:\n{(r.stdout + r.stderr)[-600:]}",
+        fr=f"terraform test échoue sur le module en v1.1.0 :\n{(r.stdout + r.stderr)[-600:]}",
+    )
 
 
 @pytest.mark.parametrize("regression", ["tailles-changees", "validation-retiree"])
@@ -223,10 +264,19 @@ def test_modularize_les_tests_voient_une_regression(regression: str) -> None:
         if n != t:
             f.write_text(n)
             touche = True
-    assert touche, f"Régression « {regression} » : rien à abîmer, le module ne porte pas le contrat (tailles 512 et 768, validation de taille)."
-    assert _terraform(module, "init", "-input=false").returncode == 0, "init du module abîmé impossible."
+    assert touche, message(
+        en=f"Regression \"{regression}\": nothing to break, the module does not carry the contract (sizes 512 and 768, size validation).",
+        fr=f"Régression « {regression} » : rien à abîmer, le module ne porte pas le contrat (tailles 512 et 768, validation de taille).",
+    )
+    assert _terraform(module, "init", "-input=false").returncode == 0, message(
+        en="Cannot init the damaged module.",
+        fr="init du module abîmé impossible.",
+    )
     r = _terraform(module, "test", timeout=900)
-    assert r.returncode != 0, f"Régression « {regression} » injectée dans le module : terraform test passe encore, il ne la voit pas."
+    assert r.returncode != 0, message(
+        en=f"Regression \"{regression}\" injected into the module: terraform test still passes, it does not see it.",
+        fr=f"Régression « {regression} » injectée dans le module : terraform test passe encore, il ne la voit pas.",
+    )
 
 
 def test_modularize_le_projet_en_service_garde_ses_machines() -> None:
@@ -234,12 +284,24 @@ def test_modularize_le_projet_en_service_garde_ses_machines() -> None:
     for cote, uuid in e["uuid_web"].items():
         nom = f"{e['prefixe']}-web-{cote}"
         actuel = _virsh("domuuid", nom).stdout.strip()
-        assert actuel == uuid, f"{nom} a été RECRÉÉE (UUID {uuid} devenu {actuel or 'absent'})."
-        assert _boote(nom), f"{nom} ne tourne plus."
+        assert actuel == uuid, message(
+            en=f"{nom} was RECREATED (UUID {uuid} became {actuel or 'absent'}).",
+            fr=f"{nom} a été RECRÉÉE (UUID {uuid} devenu {actuel or 'absent'}).",
+        )
+        assert _boote(nom), message(
+            en=f"{nom} is no longer running.",
+            fr=f"{nom} ne tourne plus.",
+        )
     etat = _terraform(WORKDIR / "equipe-web", "state", "list").stdout
-    assert re.search(r"^module\..*libvirt_domain\.", etat, re.M), "equipe-web ne gère pas ses machines par un module."
+    assert re.search(r"^module\..*libvirt_domain\.", etat, re.M), message(
+        en="equipe-web does not manage its machines through a module.",
+        fr="equipe-web ne gère pas ses machines par un module.",
+    )
     plan = _terraform(WORKDIR / "equipe-web", "plan", "-input=false", "-detailed-exitcode")
-    assert plan.returncode == 0, f"Plan de equipe-web : {plan.returncode} (0 attendu).\n{(plan.stdout + plan.stderr)[-400:]}"
+    assert plan.returncode == 0, message(
+        en=f"Plan of equipe-web: {plan.returncode} (0 expected).\n{(plan.stdout + plan.stderr)[-400:]}",
+        fr=f"Plan de equipe-web : {plan.returncode} (0 attendu).\n{(plan.stdout + plan.stderr)[-400:]}",
+    )
 
 
 # ── reuse ────────────────────────────────────────────────────────────────────
@@ -247,27 +309,52 @@ def test_modularize_le_projet_en_service_garde_ses_machines() -> None:
 def test_reuse_l_equipe_data_est_figee_au_contenu() -> None:
     e = _epreuve()
     m = _module("equipe-data")
-    assert m["ref"] and re.fullmatch(r"[0-9a-f]{40}", m["ref"]), (
-        f"equipe-data doit épingler le module par un SHA-1 complet (ref=…), source : {m['source']}")
-    assert m["ref"] == _commit(e["depot"], "v1.0.0"), "equipe-data doit être figée sur le contenu de v1.0.0."
+    assert m["ref"] and re.fullmatch(r"[0-9a-f]{40}", m["ref"]), message(
+        en=f"equipe-data must pin the module by a full SHA-1 (ref=…), source: {m['source']}",
+        fr=f"equipe-data doit épingler le module par un SHA-1 complet (ref=…), source : {m['source']}",
+    )
+    assert m["ref"] == _commit(e["depot"], "v1.0.0"), message(
+        en="equipe-data must be frozen on the contents of v1.0.0.",
+        fr="equipe-data doit être figée sur le contenu de v1.0.0.",
+    )
     for cote, taille in e["tailles_data"].items():
         nom = f"{e['prefixe']}-data-{cote}"
-        assert _boote(nom), f"{nom} n'existe pas ou ne démarre pas."
+        assert _boote(nom), message(
+            en=f"{nom} does not exist or does not start.",
+            fr=f"{nom} n'existe pas ou ne démarre pas.",
+        )
         memoire = int(re.search(r"Max memory:\s+(\d+)", _virsh("dominfo", nom).stdout).group(1))
-        assert memoire == MEMOIRE_KIB[taille], f"{nom} : {memoire} KiB, {MEMOIRE_KIB[taille]} attendus ({taille})."
+        assert memoire == MEMOIRE_KIB[taille], message(
+            en=f"{nom}: {memoire} KiB, {MEMOIRE_KIB[taille]} expected ({taille}).",
+            fr=f"{nom} : {memoire} KiB, {MEMOIRE_KIB[taille]} attendus ({taille}).",
+        )
     plan = _terraform(WORKDIR / "equipe-data", "plan", "-input=false", "-detailed-exitcode")
-    assert plan.returncode == 0, f"Plan de equipe-data : {plan.returncode} (0 attendu)."
+    assert plan.returncode == 0, message(
+        en=f"Plan of equipe-data: {plan.returncode} (0 expected).",
+        fr=f"Plan de equipe-data : {plan.returncode} (0 attendu).",
+    )
 
 
 def test_reuse_l_equipe_web_suit_les_versions_publiees() -> None:
     e = _epreuve()
     m = _module("equipe-web")
-    assert m["ref"], "equipe-web tire le module sans ref : elle suivrait la branche, pas les versions publiées."
-    assert m["ref"] not in VERSIONS and not re.fullmatch(r"[0-9a-f]{7,40}", m["ref"]), (
-        f"equipe-web pointe « {m['ref']} » : figée, elle ne suit pas les versions publiées.")
-    assert _commit(e["depot"], f"refs/tags/{m['ref']}"), f"« {m['ref']} » n'est pas un tag du dépôt."
+    assert m["ref"], message(
+        en="equipe-web pulls the module with no ref: it would follow the branch, not the published versions.",
+        fr="equipe-web tire le module sans ref : elle suivrait la branche, pas les versions publiées.",
+    )
+    assert m["ref"] not in VERSIONS and not re.fullmatch(r"[0-9a-f]{7,40}", m["ref"]), message(
+        en=f"equipe-web points at \"{m['ref']}\": frozen, it does not follow the published versions.",
+        fr=f"equipe-web pointe « {m['ref']} » : figée, elle ne suit pas les versions publiées.",
+    )
+    assert _commit(e["depot"], f"refs/tags/{m['ref']}"), message(
+        en=f"\"{m['ref']}\" is not a tag of the repository.",
+        fr=f"« {m['ref']} » n'est pas un tag du dépôt.",
+    )
     obtenu = _git(str(m["clone"]), "rev-parse", "HEAD").stdout.strip()
-    assert obtenu == _commit(e["depot"], "v1.1.0"), "equipe-web n'a pas obtenu la version mineure v1.1.0."
+    assert obtenu == _commit(e["depot"], "v1.1.0"), message(
+        en="equipe-web did not get the minor version v1.1.0.",
+        fr="equipe-web n'a pas obtenu la version mineure v1.1.0.",
+    )
 
 
 def test_reuse_la_majeure_exige_d_adapter_le_consommateur() -> None:
@@ -275,11 +362,17 @@ def test_reuse_la_majeure_exige_d_adapter_le_consommateur() -> None:
     ancien = _appelant(source, '  taille        = "petite"', for_each=False)
     _terraform(ancien, "init", "-input=false")
     r = _terraform(ancien, "validate")
-    assert r.returncode != 0, "Un consommateur de la v1 passe tel quel en v2.0.0 : ce n'est pas une version majeure."
+    assert r.returncode != 0, message(
+        en="A consumer of v1 moves to v2.0.0 as it is: that is not a major version.",
+        fr="Un consommateur de la v1 passe tel quel en v2.0.0 : ce n'est pas une version majeure.",
+    )
     adapte = _appelant(source, "  memoire_mib   = 512", for_each=False)
     _terraform(adapte, "init", "-input=false")
     r = _terraform(adapte, "validate")
-    assert r.returncode == 0, f"En v2.0.0, memoire_mib doit remplacer taille :\n{(r.stdout + r.stderr)[-400:]}"
+    assert r.returncode == 0, message(
+        en=f"In v2.0.0, memoire_mib must replace taille:\n{(r.stdout + r.stderr)[-400:]}",
+        fr=f"En v2.0.0, memoire_mib doit remplacer taille :\n{(r.stdout + r.stderr)[-400:]}",
+    )
 
 
 def test_reuse_un_tag_deplace_ne_touche_pas_l_equipe_figee() -> None:
@@ -301,8 +394,10 @@ def test_reuse_un_tag_deplace_ne_touche_pas_l_equipe_figee() -> None:
         _git(travail, "push", "-q", "--force", "origin", "--tags")
         _terraform(copie, "init", "-input=false", "-upgrade")
         plan = _terraform(copie, "plan", "-input=false", "-detailed-exitcode")
-        assert plan.returncode == 0, (
-            f"Tags déplacés : le plan de equipe-data rend {plan.returncode} (0 attendu), elle n'est pas figée au contenu.")
+        assert plan.returncode == 0, message(
+            en=f"Tags moved: the plan of equipe-data returns {plan.returncode} (0 expected), it is not frozen to the contents.",
+            fr=f"Tags déplacés : le plan de equipe-data rend {plan.returncode} (0 attendu), elle n'est pas figée au contenu.",
+        )
     finally:
         for tag, commit in tags.items():
             if commit:

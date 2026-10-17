@@ -31,7 +31,7 @@ from pathlib import Path
 
 import pytest
 
-from conftest import exiger_workdir, workdir_lab
+from conftest import exiger_workdir, message, workdir_lab
 
 WORKDIR = workdir_lab(__file__)
 LAB_ID = "aws-provider-aws-first-ec2"
@@ -68,13 +68,20 @@ def _json(*args: str, cwd: Path | None = None) -> dict:
     res = _tf(*args, cwd=cwd)
     if res.returncode != 0:
         pytest.fail(
-            f"`terraform {' '.join(args)}` a echoue (code {res.returncode}) :\n"
-            f"{(res.stderr or res.stdout).strip()[:1500]}"
+            message(
+            en=f"`terraform {' '.join(args)}` failed (code {res.returncode}):\n"
+            f"{(res.stderr or res.stdout).strip()[:1500]}",
+            fr=f"`terraform {' '.join(args)}` a échoué (code {res.returncode}) :\n"
+            f"{(res.stderr or res.stdout).strip()[:1500]}",
+        )
         )
     try:
         return json.loads(res.stdout or "{}")
     except json.JSONDecodeError as err:  # pragma: no cover - diagnostic
-        pytest.fail(f"sortie JSON illisible pour `{' '.join(args)}` : {err}")
+        pytest.fail(message(
+            en=f"unreadable JSON output for `{' '.join(args)}`: {err}",
+            fr=f"sortie JSON illisible pour `{' '.join(args)}` : {err}",
+        ))
 
 
 
@@ -106,17 +113,23 @@ def _exiger_floci() -> None:
     """
     if _floci_joignable():
         return
-    message = (
-        f"Floci n'est pas joignable sur {FLOCI_HOST}:{FLOCI_PORT}. Ce lab en a "
-        "besoin : Floci emule l'API AWS en local, sans compte ni carte "
-        "bancaire.\n\n"
-        "Lancez le lab avec `dsoxlab run aws-provider-aws-first-ec2`, qui le demarre tout "
-        "seul, et faites votre `dsoxlab check` DEPUIS cette session : le "
-        "service s'arrete quand vous la quittez."
+    explication = message(
+        en=f"Floci cannot be reached on {FLOCI_HOST}:{FLOCI_PORT}. This lab needs "
+        "it: Floci emulates the AWS API locally, with no account and no credit "
+        "card.\n\n"
+        "Start the lab with `dsoxlab run aws-provider-aws-first-ec2`, which starts "
+        "it on its own, and run your `dsoxlab check` FROM that session: the "
+        "service stops when you leave it.",
+        fr=f"Floci n'est pas joignable sur {FLOCI_HOST}:{FLOCI_PORT}. Ce lab en a "
+            "besoin : Floci émule l'API AWS en local, sans compte ni carte "
+            "bancaire.\n\n"
+            "Lancez le lab avec `dsoxlab run aws-provider-aws-first-ec2`, qui le démarre tout "
+            "seul, et faites votre `dsoxlab check` DEPUIS cette session : le "
+            "service s'arrête quand vous la quittez.",
     )
     if os.environ.get("LAB_WORKDIR"):
-        pytest.fail(message)
-    pytest.skip(message)
+        pytest.fail(explication)
+    pytest.skip(explication)
 
 @pytest.fixture(scope="module", autouse=True)
 def applique() -> Iterator[None]:
@@ -133,16 +146,25 @@ def applique() -> Iterator[None]:
     init = _tf("init", "-input=false", "-no-color")
     if init.returncode != 0:
         pytest.fail(
-            "`terraform init` a echoue. Le `source` ou la `version` du provider "
-            f"est-il encore a `???` ?\n{(init.stderr or init.stdout).strip()[:1500]}"
+            message(
+            en="`terraform init` failed. Is the provider's `source` or `version` "
+            f"still set to `???`?\n{(init.stderr or init.stdout).strip()[:1500]}",
+            fr="`terraform init` a échoué. Le `source` ou la `version` du provider "
+            f"est-il encore à `???` ?\n{(init.stderr or init.stdout).strip()[:1500]}",
+        )
         )
 
     app = _tf("apply", "-auto-approve", "-input=false", "-no-color")
     if app.returncode != 0:
         pytest.fail(
-            "`terraform apply` a echoue. Configuration du provider incomplete "
-            "(identifiants, endpoints, skip_*) ou outputs encore a `???` ?\n"
-            f"{(app.stderr or app.stdout).strip()[:1500]}"
+            message(
+            en="`terraform apply` failed. Incomplete provider configuration "
+            "(credentials, endpoints, skip_*) or outputs still set to `???`?\n"
+            f"{(app.stderr or app.stdout).strip()[:1500]}",
+            fr="`terraform apply` a échoué. Configuration du provider incomplète "
+            "(identifiants, endpoints, skip_*) ou outputs encore à `???` ?\n"
+            f"{(app.stderr or app.stdout).strip()[:1500]}",
+        )
         )
 
     yield
@@ -165,9 +187,11 @@ def _plan_json() -> dict:
 
 def _provider_config() -> dict:
     conf = _plan_json().get("configuration", {}).get("provider_config", {})
-    assert "aws" in conf, (
-        "aucune configuration de provider `aws` dans le plan : le bloc "
-        "`provider \"aws\"` a-t-il disparu ?"
+    assert "aws" in conf, message(
+        en="no `aws` provider configuration in the plan: has the "
+        "`provider \"aws\"` block disappeared?",
+        fr="aucune configuration de provider `aws` dans le plan : le bloc "
+        "`provider \"aws\"` a-t-il disparu ?",
     )
     return conf["aws"]
 
@@ -192,15 +216,19 @@ def _borne(contrainte: str) -> tuple[bool, bool]:
 def test_le_provider_installe_est_la_majeure_6() -> None:
     """La 5.x que trainent les vieux exemples ne doit pas passer."""
     selections = _json("version", "-json").get("provider_selections", {})
-    assert PROVIDER in selections, (
-        f"le provider installe n'est pas {PROVIDER} : {selections}. "
-        "Le `source` doit valoir `hashicorp/aws`."
+    assert PROVIDER in selections, message(
+        en=f"the installed provider is not {PROVIDER}: {selections}. "
+        "The `source` must be `hashicorp/aws`.",
+        fr=f"le provider installé n'est pas {PROVIDER} : {selections}. "
+        "Le `source` doit valoir `hashicorp/aws`.",
     )
     version = selections[PROVIDER]
     majeure = int(version.split(".")[0])
-    assert majeure == 6, (
-        f"version installee {version} : le lab vise la majeure 6, "
-        "ni la 5.x ni une majeure future non testee."
+    assert majeure == 6, message(
+        en=f"version installed {version}: the lab targets major 6, "
+        "neither 5.x nor an untested future major.",
+        fr=f"version installée {version} : le lab vise la majeure 6, "
+        "ni la 5.x ni une majeure future non testée.",
     )
 
 
@@ -211,19 +239,28 @@ def test_la_contrainte_borne_la_version_des_deux_cotes() -> None:
     preparation de ce lab : c'est exactement ce qu'une borne haute encadre.
     """
     contrainte = _provider_config().get("version_constraint", "")
-    assert contrainte, (
-        "aucune contrainte de version : `version` est-il encore a `???` ?"
+    assert contrainte, message(
+        en="no version constraint: is `version` still set to `???`?",
+        fr="aucune contrainte de version : `version` est-il encore à `???` ?",
     )
     basse, haute = _borne(contrainte)
-    assert basse, f"contrainte `{contrainte}` : la borne basse ne vise pas la 6.x"
-    assert haute, (
-        f"contrainte `{contrainte}` : rien n'empeche la majeure 7 de s'installer. "
-        "Bornez en haut (`< 7.0`, ou `~> 6.0` qui l'implique)."
+    assert basse, message(
+        en=f"constraint `{contrainte}`: the lower bound does not target 6.x",
+        fr=f"contrainte `{contrainte}` : la borne basse ne vise pas la 6.x",
+    )
+    assert haute, message(
+        en=f"constraint `{contrainte}`: nothing stops major 7 from being installed. "
+        "Bound it above (`< 7.0`, or `~> 6.0`, which implies it).",
+        fr=f"contrainte `{contrainte}` : rien n'empêche la majeure 7 de s'installer. "
+        "Bornez en haut (`< 7.0`, ou `~> 6.0` qui l'implique).",
     )
 
 
 def test_le_provider_est_bien_celui_du_registre_officiel() -> None:
-    assert _provider_config().get("full_name") == PROVIDER
+    assert _provider_config().get("full_name") == PROVIDER, message(
+        en=f"the provider configured is not {PROVIDER}.",
+        fr=f"le provider configuré n'est pas {PROVIDER}.",
+    )
 
 
 # ── 2. Authentification et redirection ──────────────────────────────────────
@@ -239,10 +276,13 @@ def test_les_identifiants_sont_dans_la_configuration() -> None:
     exprs = _provider_config().get("expressions", {})
     for cle in ("access_key", "secret_key"):
         valeur = exprs.get(cle, {}).get("constant_value")
-        assert valeur, (
-            f"`{cle}` absent ou vide du bloc provider. Sans lui, le plan rend "
-            "`No valid credential sources found` des que l'environnement ne "
-            "porte pas d'identifiants."
+        assert valeur, message(
+            en=f"`{cle}` missing or empty from the provider block. Without it, the plan returns "
+            "`No valid credential sources found` as soon as the environment "
+            "carries no credentials.",
+            fr=f"`{cle}` absent ou vide du bloc provider. Sans lui, le plan rend "
+            "`No valid credential sources found` dès que l'environnement ne "
+            "porte pas d'identifiants.",
         )
 
 
@@ -251,22 +291,30 @@ def test_les_trois_validations_distantes_sont_desactivees() -> None:
     exprs = _provider_config().get("expressions", {})
     for cle in ("skip_credentials_validation", "skip_metadata_api_check",
                 "skip_requesting_account_id"):
-        assert exprs.get(cle, {}).get("constant_value") is True, (
-            f"`{cle}` doit valoir true : sinon le provider interroge AWS avant "
-            "meme de planifier."
+        assert exprs.get(cle, {}).get("constant_value") is True, message(
+            en=f"`{cle}` must be true: otherwise the provider queries AWS before "
+            "even planning.",
+            fr=f"`{cle}` doit valoir true : sinon le provider interroge AWS avant "
+            "même de planifier.",
         )
 
 
 def test_le_service_ec2_est_redirige_vers_l_emulateur() -> None:
     exprs = _provider_config().get("expressions", {})
-    assert "endpoints" in exprs, (
-        "aucun bloc `endpoints` : le provider appelle donc le vrai AWS."
+    assert "endpoints" in exprs, message(
+        en="no `endpoints` block: the provider therefore calls the real AWS.",
+        fr="aucun bloc `endpoints` : le provider appelle donc le vrai AWS.",
     )
     rendu = json.dumps(exprs["endpoints"])
-    assert "ec2" in rendu, "le bloc `endpoints` ne redirige pas le service `ec2`"
-    assert "floci_endpoint" in rendu or ENDPOINT in rendu, (
-        "l'endpoint `ec2` doit pointer vers l'API locale, via "
-        "`var.floci_endpoint` de preference."
+    assert "ec2" in rendu, message(
+        en="the `endpoints` block does not redirect the `ec2` service",
+        fr="le bloc `endpoints` ne redirige pas le service `ec2`",
+    )
+    assert "floci_endpoint" in rendu or ENDPOINT in rendu, message(
+        en="the `ec2` endpoint must point at the local API, preferably through "
+        "`var.floci_endpoint`.",
+        fr="l'endpoint `ec2` doit pointer vers l'API locale, via "
+        "`var.floci_endpoint` de préférence.",
     )
 
 
@@ -281,26 +329,35 @@ def test_les_tags_sont_poses_par_le_provider_pas_par_la_ressource() -> None:
     manque meme si `tags_all` a l'air correct.
     """
     exprs = _provider_config().get("expressions", {})
-    assert "default_tags" in exprs, (
-        "aucun bloc `default_tags` dans le provider : les tags doivent venir "
-        "de la, pas d'un `tags` recopie sur chaque ressource."
+    assert "default_tags" in exprs, message(
+        en="no `default_tags` block in the provider: the tags must come from "
+        "there, not from a `tags` copied onto every resource.",
+        fr="aucun bloc `default_tags` dans le provider : les tags doivent venir "
+        "de là, pas d'un `tags` recopié sur chaque ressource.",
     )
 
     instances = [r for r in _ressources_etat() if r.get("type") == "aws_instance"]
-    assert instances, "aucune `aws_instance` dans l'etat"
+    assert instances, message(
+        en="no `aws_instance` in the state",
+        fr="aucune `aws_instance` dans l'état",
+    )
     valeurs = instances[0]["values"]
 
     tags_all = valeurs.get("tags_all") or {}
     manquants = TAGS_ATTENDUS - set(tags_all)
-    assert not manquants, (
-        f"`tags_all` ne porte pas {sorted(manquants)} : les tags de "
-        f"`var.common_tags` ne sont pas appliques. Obtenu : {tags_all}"
+    assert not manquants, message(
+        en=f"`tags_all` does not carry {sorted(manquants)}: the tags from "
+        f"`var.common_tags` are not applied. Got: {tags_all}",
+        fr=f"`tags_all` ne porte pas {sorted(manquants)} : les tags de "
+        f"`var.common_tags` ne sont pas appliqués. Obtenu : {tags_all}",
     )
 
     tags = valeurs.get("tags") or {}
-    assert not tags, (
-        f"la ressource declare ses propres `tags` ({tags}). `main.tf` ne doit "
-        "pas etre modifie : les tags arrivent par `default_tags`."
+    assert not tags, message(
+        en=f"the resource declares its own `tags` ({tags}). `main.tf` must "
+        "not be modified: the tags arrive through `default_tags`.",
+        fr=f"la ressource déclare ses propres `tags` ({tags}). `main.tf` ne doit "
+        "pas être modifié : les tags arrivent par `default_tags`.",
     )
 
 
@@ -315,13 +372,21 @@ def test_l_instance_est_geree_et_atteint_l_etat_running() -> None:
     emulateur lance sans acces au moteur de conteneurs.
     """
     ressources = _ressources_etat()
-    assert len(ressources) == 1, (
-        f"l'etat doit contenir exactement une ressource, il en contient "
-        f"{len(ressources)} : {[r.get('address') for r in ressources]}"
+    assert len(ressources) == 1, message(
+        en=f"the state must contain exactly one resource, it contains "
+        f"{len(ressources)}: {[r.get('address') for r in ressources]}",
+        fr=f"l'état doit contenir exactement une ressource, il en contient "
+        f"{len(ressources)} : {[r.get('address') for r in ressources]}",
     )
     unique = ressources[0]
-    assert unique.get("mode") == "managed"
-    assert unique.get("type") == "aws_instance"
+    assert unique.get("mode") == "managed", message(
+        en=f"the only resource is in `{unique.get('mode')}` mode, `managed` expected.",
+        fr=f"la seule ressource est en mode `{unique.get('mode')}`, `managed` attendu.",
+    )
+    assert unique.get("type") == "aws_instance", message(
+        en=f"the resource is of type `{unique.get('type')}`, `aws_instance` expected.",
+        fr=f"la ressource est de type `{unique.get('type')}`, `aws_instance` attendu.",
+    )
 
     etat = unique["values"].get("instance_state")
     limite = time.monotonic() + 120
@@ -331,23 +396,36 @@ def test_l_instance_est_geree_et_atteint_l_etat_running() -> None:
         courant = _ressources_etat()
         etat = courant[0]["values"].get("instance_state") if courant else etat
 
-    assert etat == "running", (
-        f"l'instance est restee en `{etat}` au bout de 120 s. Si tout le reste "
-        "passe, c'est l'emulateur qui n'a pas pu creer son conteneur de "
-        "support, pas votre configuration."
+    assert etat == "running", message(
+        en=f"the instance stayed `{etat}` after 120 s. If everything else "
+        "passes, it is the emulator that could not create its support "
+        "container, not your configuration.",
+        fr=f"l'instance est restée en `{etat}` au bout de 120 s. Si tout le reste "
+        "passe, c'est l'émulateur qui n'a pas pu créer son conteneur de "
+        "support, pas votre configuration.",
     )
 
 
 def test_les_trois_outputs_sont_renseignes() -> None:
     sorties = _json("output", "-json")
     for nom in ("instance_id", "instance_state", "instance_private_ip"):
-        assert nom in sorties, f"output `{nom}` absent"
+        assert nom in sorties, message(
+            en=f"output `{nom}` missing",
+            fr=f"output `{nom}` absent",
+        )
         valeur = sorties[nom].get("value")
-        assert valeur, f"output `{nom}` vide : sa `value` est-elle encore a `???` ?"
+        assert valeur, message(
+            en=f"output `{nom}` empty: is its `value` still set to `???`?",
+            fr=f"output `{nom}` vide : sa `value` est-elle encore à `???` ?",
+        )
 
-    assert sorties["instance_state"]["value"] == "running"
-    assert sorties["instance_id"]["value"].startswith("i-"), (
-        f"identifiant inattendu : {sorties['instance_id']['value']}"
+    assert sorties["instance_state"]["value"] == "running", message(
+        en=f"instance_state is {sorties['instance_state']['value']!r}, `running` expected.",
+        fr=f"instance_state vaut {sorties['instance_state']['value']!r}, `running` attendu.",
+    )
+    assert sorties["instance_id"]["value"].startswith("i-"), message(
+        en=f"unexpected identifier: {sorties['instance_id']['value']}",
+        fr=f"identifiant inattendu : {sorties['instance_id']['value']}",
     )
 
 
@@ -357,9 +435,11 @@ def test_les_trois_outputs_sont_renseignes() -> None:
 def test_un_plan_relance_n_annonce_aucun_changement() -> None:
     """Idempotence : `-detailed-exitcode` rend 0 sans changement, 2 avec."""
     res = _tf("plan", "-input=false", "-detailed-exitcode", "-no-color")
-    assert res.returncode == 0, (
-        f"`plan -detailed-exitcode` a rendu {res.returncode} (2 = des "
-        f"changements restent a appliquer) :\n{(res.stdout or res.stderr)[:900]}"
+    assert res.returncode == 0, message(
+        en=f"`plan -detailed-exitcode` returned {res.returncode} (2 = some "
+        f"changes remain to be applied):\n{(res.stdout or res.stderr)[:900]}",
+        fr=f"`plan -detailed-exitcode` a rendu {res.returncode} (2 = des "
+        f"changements restent à appliquer) :\n{(res.stdout or res.stderr)[:900]}",
     )
 
 
@@ -375,19 +455,25 @@ def test_la_configuration_se_detruit_entierement(tmp_path: Path) -> None:
     for fichier in WORKDIR.glob("*.tf"):
         shutil.copy2(fichier, copie / fichier.name)
 
-    assert _tf("init", "-input=false", "-no-color", cwd=copie).returncode == 0
+    assert _tf("init", "-input=false", "-no-color", cwd=copie).returncode == 0, message(
+        en="`terraform init` fails on the copy: this step belongs to the harness.",
+        fr="`terraform init` échoue sur la copie : cette étape appartient au harnais.",
+    )
     applique = _tf("apply", "-auto-approve", "-input=false", "-no-color", cwd=copie)
-    assert applique.returncode == 0, (
-        f"apply en echec sur la copie :\n{(applique.stderr or applique.stdout)[:900]}"
+    assert applique.returncode == 0, message(
+        en=f"apply failed on the copy:\n{(applique.stderr or applique.stdout)[:900]}",
+        fr=f"apply en échec sur la copie :\n{(applique.stderr or applique.stdout)[:900]}",
     )
 
     detruit = _tf("destroy", "-auto-approve", "-input=false", "-no-color", cwd=copie)
-    assert detruit.returncode == 0, (
-        f"destroy en echec :\n{(detruit.stderr or detruit.stdout)[:900]}"
+    assert detruit.returncode == 0, message(
+        en=f"destroy failed:\n{(detruit.stderr or detruit.stdout)[:900]}",
+        fr=f"destroy en échec :\n{(detruit.stderr or detruit.stdout)[:900]}",
     )
 
     restant = _json("show", "-json", cwd=copie).get("values", {})
     ressources = restant.get("root_module", {}).get("resources", [])
-    assert not ressources, (
-        f"apres destroy, il reste {len(ressources)} ressource(s) dans l'etat"
+    assert not ressources, message(
+        en=f"after the destroy, {len(ressources)} resource(s) remain in the state",
+        fr=f"après destroy, il reste {len(ressources)} ressource(s) dans l'état",
     )

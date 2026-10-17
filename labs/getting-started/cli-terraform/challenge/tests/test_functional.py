@@ -18,7 +18,14 @@ from pathlib import Path
 
 import pytest
 
-from conftest import exiger_workdir, output_json, show_json, terraform, workdir_lab
+from conftest import (
+    exiger_workdir,
+    message,
+    output_json,
+    show_json,
+    terraform,
+    workdir_lab,
+)
 
 WORKDIR = workdir_lab(__file__)
 LAB_ID = "getting-started-cli-terraform"
@@ -36,7 +43,10 @@ def prepared() -> Path:
     exiger_workdir(WORKDIR, LAB_ID)
     init = terraform("init", "-input=false", "-no-color", cwd=WORKDIR)
     if init.returncode != 0:
-        pytest.fail(f"`terraform init` a echoue.\n{init.stderr[-1200:]}")
+        pytest.fail(message(
+            en=f"`terraform init` failed.\n{init.stderr[-1200:]}",
+            fr=f"`terraform init` a échoué.\n{init.stderr[-1200:]}",
+        ))
     return WORKDIR
 
 
@@ -45,8 +55,12 @@ def applied(prepared: Path) -> Path:
     app = terraform("apply", "-auto-approve", "-input=false", "-no-color", cwd=prepared)
     if app.returncode != 0:
         pytest.fail(
-            "`terraform apply` a echoue. Une reference orpheline subsiste-t-elle ?"
-            f"\n{app.stderr[-1500:]}"
+            message(
+            en="`terraform apply` failed. Does an orphan reference remain?"
+            f"\n{app.stderr[-1500:]}",
+            fr="`terraform apply` a échoué. Une référence orpheline subsiste-t-elle ?"
+            f"\n{app.stderr[-1500:]}",
+        )
         )
     return prepared
 
@@ -56,11 +70,15 @@ def applied(prepared: Path) -> Path:
 # --------------------------------------------------------------------------
 def test_tous_les_fichiers_sont_au_format_canonique(prepared: Path) -> None:
     proc = terraform("fmt", "-check", "-recursive", "-no-color", cwd=prepared)
-    assert proc.returncode == 0, (
-        "`terraform fmt -check -recursive` sort en code non nul : un fichier "
-        "reste hors format canonique.\nFichiers concernes :\n"
-        f"{proc.stdout.strip() or '(aucun nomme, voir stderr)'}\n"
-        f"{proc.stderr.strip()}\n\n`terraform fmt` reecrit ces fichiers."
+    assert proc.returncode == 0, message(
+        en="`terraform fmt -check -recursive` exits with a non-zero code: a file "
+        "is outside the canonical format.\nFiles concerned:\n"
+        f"{proc.stdout.strip() or '(none named, see stderr)'}\n"
+        f"{proc.stderr.strip()}\n\n`terraform fmt` rewrites those files.",
+        fr="`terraform fmt -check -recursive` sort en code non nul : un fichier "
+        "reste hors format canonique.\nFichiers concernés :\n"
+        f"{proc.stdout.strip() or '(aucun nommé, voir stderr)'}\n"
+        f"{proc.stderr.strip()}\n\n`terraform fmt` réécrit ces fichiers.",
     )
 
 
@@ -74,13 +92,19 @@ def test_la_configuration_est_valide(prepared: Path) -> None:
         d for d in rapport.get("diagnostics", [])
         if d.get("severity") == "error"
     ]
-    assert rapport.get("valid") is True and rapport.get("error_count") == 0, (
-        f"`terraform validate` rend valid={rapport.get('valid')} et "
+    assert rapport.get("valid") is True and rapport.get("error_count") == 0, message(
+        en=f"`terraform validate` returns valid={rapport.get('valid')} and "
+        f"error_count={rapport.get('error_count')}.\n"
+        + "\n".join(f"  - {d.get('summary')}" for d in erreurs)
+        + "\n\n`validate` does not judge what the configuration produces, it judges "
+        "that it holds together: a reference to a variable that is never declared is an "
+        "error, not a warning.",
+        fr=f"`terraform validate` rend valid={rapport.get('valid')} et "
         f"error_count={rapport.get('error_count')}.\n"
         + "\n".join(f"  - {d.get('summary')}" for d in erreurs)
         + "\n\n`validate` ne juge pas ce que la configuration produit, il juge "
-        "qu'elle se tient : une reference a une variable jamais declaree est une "
-        "erreur, pas un avertissement."
+        "qu'elle se tient : une référence à une variable jamais déclarée est une "
+        "erreur, pas un avertissement.",
     )
 
 
@@ -89,13 +113,20 @@ def test_la_configuration_est_valide(prepared: Path) -> None:
 # --------------------------------------------------------------------------
 def test_le_state_porte_les_trois_ressources(applied: Path) -> None:
     liste = terraform("state", "list", cwd=applied)
-    assert liste.returncode == 0, f"`terraform state list` a echoue.\n{liste.stderr}"
+    assert liste.returncode == 0, message(
+        en=f"`terraform state list` failed.\n{liste.stderr}",
+        fr=f"`terraform state list` a échoué.\n{liste.stderr}",
+    )
     adresses = {a.strip() for a in liste.stdout.splitlines() if a.strip()}
-    assert adresses == ADRESSES_ATTENDUES, (
-        f"Le state porte {sorted(adresses)}.\nAttendu : "
-        f"{sorted(ADRESSES_ATTENDUES)}.\n\nLes trois ressources de depart "
-        "doivent subsister : corriger la forme et la coherence ne change pas ce "
-        "que la configuration produit."
+    assert adresses == ADRESSES_ATTENDUES, message(
+        en=f"The state carries {sorted(adresses)}.\nExpected: "
+        f"{sorted(ADRESSES_ATTENDUES)}.\n\nThe three starting resources "
+        "must remain: fixing the form and the consistency does not change what "
+        "the configuration produces.",
+        fr=f"Le state porte {sorted(adresses)}.\nAttendu : "
+        f"{sorted(ADRESSES_ATTENDUES)}.\n\nLes trois ressources de départ "
+        "doivent subsister : corriger la forme et la cohérence ne change pas ce "
+        "que la configuration produit.",
     )
 
     # `state list` lit le meme fichier, `show -json` le RESOUT : on confirme la
@@ -105,8 +136,9 @@ def test_le_state_porte_les_trois_ressources(applied: Path) -> None:
         r["address"]
         for r in etat.get("values", {}).get("root_module", {}).get("resources", [])
     }
-    assert ressources >= ADRESSES_ATTENDUES, (
-        f"`terraform show -json` ne confirme pas les adresses : {sorted(ressources)}"
+    assert ressources >= ADRESSES_ATTENDUES, message(
+        en=f"`terraform show -json` does not confirm the addresses: {sorted(ressources)}",
+        fr=f"`terraform show -json` ne confirme pas les adresses : {sorted(ressources)}",
     )
 
 
@@ -116,23 +148,31 @@ def test_le_state_porte_les_trois_ressources(applied: Path) -> None:
 def test_les_outputs_exposent_les_valeurs_calculees(applied: Path) -> None:
     outputs = output_json(applied)
     manquants = OUTPUTS_ATTENDUS - set(outputs)
-    assert not manquants, (
-        f"Outputs manquants : {sorted(manquants)}. Ils sont le SEUL canal par "
-        "lequel la configuration expose ses valeurs a un script : sans eux, il "
-        "faudrait lire le state, qui n'est pas un contrat."
+    assert not manquants, message(
+        en=f"Missing outputs: {sorted(manquants)}. They are the ONLY channel through "
+        "which the configuration exposes its values to a script: without them, "
+        "one would have to read the state, which is not a contract.",
+        fr=f"Outputs manquants : {sorted(manquants)}. Ils sont le SEUL canal par "
+        "lequel la configuration expose ses valeurs à un script : sans eux, il "
+        "faudrait lire le state, qui n'est pas un contrat.",
     )
 
     nom = outputs["nom_animal"]["value"]
-    assert nom and "-" in nom, (
-        f"`nom_animal` vaut « {nom} » : on attend le nom tire par random_pet."
+    assert nom and "-" in nom, message(
+        en=f"`nom_animal` is \"{nom}\": the name drawn by random_pet is expected.",
+        fr=f"`nom_animal` vaut « {nom} » : on attend le nom tiré par random_pet.",
     )
-    assert outputs["nom_majuscule"]["value"] == nom.upper(), (
-        f"`nom_majuscule` vaut « {outputs['nom_majuscule']['value']} » alors que "
-        f"`nom_animal` vaut « {nom} ». L'un doit etre l'autre en majuscules."
+    assert outputs["nom_majuscule"]["value"] == nom.upper(), message(
+        en=f"`nom_majuscule` is \"{outputs['nom_majuscule']['value']}\" while "
+        f"`nom_animal` is \"{nom}\". One must be the other in upper case.",
+        fr=f"`nom_majuscule` vaut « {outputs['nom_majuscule']['value']} » alors que "
+        f"`nom_animal` vaut « {nom} ». L'un doit être l'autre en majuscules.",
     )
-    assert outputs["chemin_rapport"]["value"].endswith("rapport.txt"), (
-        f"`chemin_rapport` vaut « {outputs['chemin_rapport']['value']} » : on "
-        "attend le chemin du rapport ecrit par local_file."
+    assert outputs["chemin_rapport"]["value"].endswith("rapport.txt"), message(
+        en=f"`chemin_rapport` is \"{outputs['chemin_rapport']['value']}\": the "
+        "path of the report written by local_file is expected.",
+        fr=f"`chemin_rapport` vaut « {outputs['chemin_rapport']['value']} » : on "
+        "attend le chemin du rapport écrit par local_file.",
     )
 
 
@@ -163,21 +203,30 @@ def test_l_expression_se_recalcule_et_la_configuration_ne_derive_plus(
         text=True,
         check=False,
     )
-    assert console.returncode == 0, (
-        f"`terraform console` a echoue.\n{console.stderr[-800:]}"
+    assert console.returncode == 0, message(
+        en=f"`terraform console` failed.\n{console.stderr[-800:]}",
+        fr=f"`terraform console` a échoué.\n{console.stderr[-800:]}",
     )
     evalue = console.stdout.strip().strip('"')
-    assert evalue == nom.upper(), (
-        f"`terraform console` evalue upper(random_pet.nom.id) a « {evalue} », "
+    assert evalue == nom.upper(), message(
+        en=f"`terraform console` evaluates upper(random_pet.nom.id) to \"{evalue}\", "
+        f"while the `nom_animal` output is \"{nom}\". Both must "
+        "agree: otherwise the output does not say what the configuration computes.",
+        fr=f"`terraform console` évalue upper(random_pet.nom.id) à « {evalue} », "
         f"alors que l'output `nom_animal` vaut « {nom} ». Les deux doivent "
-        "concorder : sinon l'output ne dit pas ce que la configuration calcule."
+        "concorder : sinon l'output ne dit pas ce que la configuration calcule.",
     )
 
     plan = terraform(
         "plan", "-no-color", "-input=false", "-detailed-exitcode", cwd=applied
     )
-    assert plan.returncode != 1, f"`terraform plan` a echoue.\n{plan.stderr[-800:]}"
-    assert plan.returncode == 0, (
-        "`terraform plan -detailed-exitcode` rend 2 : des changements restent "
-        "planifies apres l'apply, donc la configuration n'a pas converge."
+    assert plan.returncode != 1, message(
+        en=f"`terraform plan` failed.\n{plan.stderr[-800:]}",
+        fr=f"`terraform plan` a échoué.\n{plan.stderr[-800:]}",
+    )
+    assert plan.returncode == 0, message(
+        en="`terraform plan -detailed-exitcode` returns 2: changes remain "
+        "planned after the apply, so the configuration has not converged.",
+        fr="`terraform plan -detailed-exitcode` rend 2 : des changements restent "
+        "planifiés après l'apply, donc la configuration n'a pas convergé.",
     )

@@ -37,7 +37,14 @@ from pathlib import Path
 
 import pytest
 
-from conftest import exiger_workdir, output_json, show_json, terraform, workdir_lab
+from conftest import (
+    exiger_workdir,
+    message,
+    output_json,
+    show_json,
+    terraform,
+    workdir_lab,
+)
 
 WORKDIR = workdir_lab(__file__)
 LAB_ID = "state-state-locking"
@@ -91,7 +98,10 @@ def _entier(valeur: object, ou: str) -> int:
     try:
         return int(valeur)  # type: ignore[arg-type]
     except (TypeError, ValueError):
-        pytest.fail(f"{ou} vaut {valeur!r} : attendu un code de retour entier.")
+        pytest.fail(message(
+            en=f"{ou} is {valeur!r}: an integer return code was expected.",
+            fr=f"{ou} vaut {valeur!r} : attendu un code de retour entier.",
+        ))
 
 
 def _booleen(valeur: object, ou: str) -> bool:
@@ -99,15 +109,22 @@ def _booleen(valeur: object, ou: str) -> bool:
         return valeur
     if isinstance(valeur, str) and valeur.lower() in ("true", "false"):
         return valeur.lower() == "true"
-    pytest.fail(f"{ou} vaut {valeur!r} : attendu true ou false.")
+    pytest.fail(message(
+        en=f"{ou} is {valeur!r}: true or false was expected.",
+        fr=f"{ou} vaut {valeur!r} : attendu true ou false.",
+    ))
 
 
 def _declare(cwd: Path, nom: str) -> object:
     sorties = output_json(cwd)
     if nom not in sorties:
         pytest.fail(
-            f"L'output `{nom}` est absent. observations.tf doit declarer les "
-            "quatre outputs du fichier fourni, sans en retirer aucun."
+            message(
+            en=f"The output `{nom}` is missing. observations.tf must declare the "
+            "four outputs of the provided file, without removing any.",
+            fr=f"L'output `{nom}` est absent. observations.tf doit déclarer les "
+            "quatre outputs du fichier fourni, sans en retirer aucun.",
+        )
         )
     return sorties[nom]["value"]
 
@@ -122,12 +139,19 @@ def applied() -> Iterator[Path]:
     init = terraform("init", "-input=false", "-no-color", cwd=WORKDIR)
     if init.returncode != 0:
         pytest.fail(
-            "`terraform init` a echoue. Un `???` restant dans le bloc backend ?"
-            f"\n{init.stderr[-1200:]}"
+            message(
+            en="`terraform init` failed. A leftover `???` in the backend block?"
+            f"\n{init.stderr[-1200:]}",
+            fr="`terraform init` a échoué. Un `???` restant dans le bloc backend ?"
+            f"\n{init.stderr[-1200:]}",
+        )
         )
     app = terraform("apply", "-auto-approve", "-input=false", "-no-color", cwd=WORKDIR)
     if app.returncode != 0:
-        pytest.fail(f"`terraform apply` a echoue.\n{app.stderr[-1500:]}")
+        pytest.fail(message(
+            en=f"`terraform apply` failed.\n{app.stderr[-1500:]}",
+            fr=f"`terraform apply` a échoué.\n{app.stderr[-1500:]}",
+        ))
     yield WORKDIR
     terraform("destroy", "-auto-approve", "-input=false", "-no-color", cwd=WORKDIR)
 
@@ -147,9 +171,14 @@ def mesures(applied: Path) -> dict:
     if verrou is None:
         proc.kill()
         pytest.fail(
-            "Aucun fichier de verrou n'est apparu : l'apply se termine trop vite "
+            message(
+            en="No lock file appeared: the apply finishes too fast "
+            "for a lock to be observable. The provisioner's command must "
+            f"hold the apply for at least {DUREE_MINIMALE:.0f} seconds.",
+            fr="Aucun fichier de verrou n'est apparu : l'apply se termine trop vite "
             "pour qu'un verrou soit observable. La commande du provisioner doit "
-            f"tenir l'apply au moins {DUREE_MINIMALE:.0f} secondes."
+            f"tenir l'apply au moins {DUREE_MINIMALE:.0f} secondes.",
+        )
         )
 
     chemin_relatif = verrou.relative_to(cwd).as_posix()
@@ -173,14 +202,21 @@ def mesures(applied: Path) -> dict:
     if not verrou.exists():
         proc.wait(timeout=DUREE_MAXIMALE)
         pytest.fail(
-            "Le verrou s'est libere avant la fin des mesures : l'apply est trop "
-            f"court. Il doit tenir au moins {DUREE_MINIMALE:.0f} secondes."
+            message(
+            en="The lock was released before the measurements ended: the apply is too "
+            f"short. It must hold for at least {DUREE_MINIMALE:.0f} seconds.",
+            fr="Le verrou s'est libéré avant la fin des mesures : l'apply est trop "
+            f"court. Il doit tenir au moins {DUREE_MINIMALE:.0f} secondes.",
+        )
         )
 
     proc.wait(timeout=DUREE_MAXIMALE)
     duree = time.monotonic() - debut
     if proc.returncode != 0:
-        pytest.fail(f"L'apply de remplacement a echoue (code {proc.returncode}).")
+        pytest.fail(message(
+            en=f"The replacement apply failed (code {proc.returncode}).",
+            fr=f"L'apply de remplacement a échoué (code {proc.returncode}).",
+        ))
 
     return {
         "cwd": cwd,
@@ -200,7 +236,10 @@ def residuel(mesures: dict) -> dict:
     verrou = _attendre_verrou(cwd)
     if verrou is None:
         proc.kill()
-        pytest.fail("Aucun verrou observable : l'apply est trop court.")
+        pytest.fail(message(
+            en="No observable lock: the apply is too short.",
+            fr="Aucun verrou observable : l'apply est trop court.",
+        ))
 
     os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
     proc.wait(timeout=30)
@@ -224,15 +263,19 @@ def test_state_hors_racine(applied: Path) -> None:
     backend = json.loads(
         (applied / ".terraform" / "terraform.tfstate").read_text(encoding="utf-8")
     )["backend"]
-    assert backend["type"] == "local", (
-        f"backend type = {backend['type']}, attendu local."
+    assert backend["type"] == "local", message(
+        en=f"backend type = {backend['type']}, expected local.",
+        fr=f"backend type = {backend['type']}, attendu local.",
     )
-    assert backend["config"].get("path") == STATE_ATTENDU, (
-        f"path resolu = {backend['config'].get('path')!r}, attendu "
-        f"{STATE_ATTENDU!r} : le state doit sortir de la racine du projet."
+    assert backend["config"].get("path") == STATE_ATTENDU, message(
+        en=f"resolved path = {backend['config'].get('path')!r}, expected "
+        f"{STATE_ATTENDU!r}: the state must live outside the project root.",
+        fr=f"path résolu = {backend['config'].get('path')!r}, attendu "
+        f"{STATE_ATTENDU!r} : le state doit sortir de la racine du projet.",
     )
-    assert (applied / STATE_ATTENDU).is_file(), (
-        f"Le state doit exister en {STATE_ATTENDU}."
+    assert (applied / STATE_ATTENDU).is_file(), message(
+        en=f"The state must exist at {STATE_ATTENDU}.",
+        fr=f"Le state doit exister en {STATE_ATTENDU}.",
     )
 
 
@@ -242,14 +285,19 @@ def test_state_hors_racine(applied: Path) -> None:
 
 def test_apply_assez_lent(mesures: dict) -> None:
     duree = mesures["duree"]
-    assert duree >= DUREE_MINIMALE, (
-        f"L'apply de remplacement a dure {duree:.1f}s, il en faut au moins "
-        f"{DUREE_MINIMALE:.0f} pour mener les mesures pendant le verrou."
+    assert duree >= DUREE_MINIMALE, message(
+        en=f"The replacement apply lasted {duree:.1f}s; at least "
+        f"{DUREE_MINIMALE:.0f} are needed to take the measurements while the lock is held.",
+        fr=f"L'apply de remplacement a duré {duree:.1f}s, il en faut au moins "
+        f"{DUREE_MINIMALE:.0f} pour mener les mesures pendant le verrou.",
     )
     ressources = show_json(mesures["cwd"])["values"]["root_module"]["resources"]
     lentes = [r for r in ressources
               if r["address"] == "terraform_data.lent" and r.get("mode") == "managed"]
-    assert lentes, "terraform_data.lent doit figurer au state en mode managed."
+    assert lentes, message(
+        en="terraform_data.lent must appear in the state in managed mode.",
+        fr="terraform_data.lent doit figurer au state en mode managed.",
+    )
 
 
 # --------------------------------------------------------------------------
@@ -258,21 +306,31 @@ def test_apply_assez_lent(mesures: dict) -> None:
 
 def test_forme_du_verrou(mesures: dict) -> None:
     verrou = mesures["verrou_contenu"]
-    assert set(verrou) == {"ID", "Operation", "Info", "Who", "Version", "Created", "Path"}, (
-        f"Le verrou porte les cles {sorted(verrou)}, attendu les sept champs "
-        "ID, Operation, Info, Who, Version, Created, Path."
+    assert set(verrou) == {"ID", "Operation", "Info", "Who", "Version", "Created", "Path"}, message(
+        en=f"The lock carries the keys {sorted(verrou)}, expected the seven fields "
+        "ID, Operation, Info, Who, Version, Created, Path.",
+        fr=f"Le verrou porte les clés {sorted(verrou)}, attendu les sept champs "
+        "ID, Operation, Info, Who, Version, Created, Path.",
     )
-    assert verrou["Operation"] == "OperationTypeApply", (
-        f"Operation = {verrou['Operation']!r}, attendu OperationTypeApply."
+    assert verrou["Operation"] == "OperationTypeApply", message(
+        en=f"Operation = {verrou['Operation']!r}, expected OperationTypeApply.",
+        fr=f"Operation = {verrou['Operation']!r}, attendu OperationTypeApply.",
     )
-    assert UUID_RE.match(verrou["ID"]), f"ID = {verrou['ID']!r}, attendu un UUID."
-    assert verrou["Version"] == _version_cli(), (
-        f"Version = {verrou['Version']!r} alors que la CLI est en "
-        f"{_version_cli()!r} : le champ reflete la CLI qui a pose le verrou."
+    assert UUID_RE.match(verrou["ID"]), message(
+        en=f"ID = {verrou['ID']!r}, a UUID was expected.",
+        fr=f"ID = {verrou['ID']!r}, attendu un UUID.",
     )
-    assert verrou["Path"] == STATE_ATTENDU, (
-        f"Path = {verrou['Path']!r}, attendu {STATE_ATTENDU!r} : le champ "
-        "designe le state verrouille, pas le fichier de verrou."
+    assert verrou["Version"] == _version_cli(), message(
+        en=f"Version = {verrou['Version']!r} while the CLI is "
+        f"{_version_cli()!r}: the field reflects the CLI that placed the lock.",
+        fr=f"Version = {verrou['Version']!r} alors que la CLI est en "
+        f"{_version_cli()!r} : le champ reflète la CLI qui a posé le verrou.",
+    )
+    assert verrou["Path"] == STATE_ATTENDU, message(
+        en=f"Path = {verrou['Path']!r}, expected {STATE_ATTENDU!r}: the field "
+        "names the locked state, not the lock file.",
+        fr=f"Path = {verrou['Path']!r}, attendu {STATE_ATTENDU!r} : le champ "
+        "désigne le state verrouillé, pas le fichier de verrou.",
     )
 
 
@@ -283,10 +341,13 @@ def test_forme_du_verrou(mesures: dict) -> None:
 def test_emplacement_du_verrou(mesures: dict) -> None:
     declare = _declare(mesures["cwd"], "fichier_verrou")
     reel = mesures["verrou_chemin"]
-    assert declare == reel, (
-        f"fichier_verrou declare {declare!r}, verrou reellement observe en "
-        f"{reel!r}. Le nom du fichier se derive du chemin du state, il n'est "
-        "pas fixe."
+    assert declare == reel, message(
+        en=f"fichier_verrou declares {declare!r}, the lock actually observed at "
+        f"{reel!r}. The file's name is derived from the state's path, it is "
+        "not fixed.",
+        fr=f"fichier_verrou déclare {declare!r}, verrou réellement observé en "
+        f"{reel!r}. Le nom du fichier se dérive du chemin du state, il n'est "
+        "pas fixe.",
     )
 
 
@@ -296,20 +357,26 @@ def test_emplacement_du_verrou(mesures: dict) -> None:
 
 def test_codes_pendant_verrou(mesures: dict) -> None:
     declares = _declare(mesures["cwd"], "codes_pendant_verrou")
-    assert isinstance(declares, dict), (
-        f"codes_pendant_verrou vaut {declares!r}, attendu un objet."
+    assert isinstance(declares, dict), message(
+        en=f"codes_pendant_verrou is {declares!r}, an object was expected.",
+        fr=f"codes_pendant_verrou vaut {declares!r}, attendu un objet.",
     )
     manquants = set(mesures["codes"]) - set(declares)
-    assert not manquants, f"Gestes non renseignes dans codes_pendant_verrou : {sorted(manquants)}."
+    assert not manquants, message(
+        en=f"Actions not filled in under codes_pendant_verrou: {sorted(manquants)}.",
+        fr=f"Gestes non renseignés dans codes_pendant_verrou : {sorted(manquants)}.",
+    )
 
     ecarts = []
     for geste, mesure in mesures["codes"].items():
         declare = _entier(declares[geste], f"codes_pendant_verrou.{geste}")
         if declare != mesure:
             ecarts.append(f"{geste} : declare {declare}, mesure {mesure}")
-    assert not ecarts, (
-        "Ces gestes ne se comportent pas comme vous l'avez ecrit, pendant un "
-        "verrou reellement tenu :\n  " + "\n  ".join(ecarts)
+    assert not ecarts, message(
+        en="These actions do not behave as you wrote, while a lock is "
+        "really held:\n  " + "\n  ".join(ecarts),
+        fr="Ces gestes ne se comportent pas comme vous l'avez écrit, pendant un "
+        "verrou réellement tenu :\n  " + "\n  ".join(ecarts),
     )
 
 
@@ -318,28 +385,40 @@ def test_codes_pendant_verrou(mesures: dict) -> None:
 # --------------------------------------------------------------------------
 
 def test_verrou_residuel(mesures: dict, residuel: dict) -> None:
-    assert residuel["present_avant"], (
-        "Le fichier de verrou n'a pas survecu au kill -9 : mesure impossible."
+    assert residuel["present_avant"], message(
+        en="The lock file did not survive the kill -9: measurement impossible.",
+        fr="Le fichier de verrou n'a pas survécu au kill -9 : mesure impossible.",
     )
     declares = _declare(mesures["cwd"], "verrou_residuel")
-    assert isinstance(declares, dict), (
-        f"verrou_residuel vaut {declares!r}, attendu un objet."
+    assert isinstance(declares, dict), message(
+        en=f"verrou_residuel is {declares!r}, an object was expected.",
+        fr=f"verrou_residuel vaut {declares!r}, attendu un objet.",
     )
     for cle in ("plan_rc", "fichier_subsiste"):
-        assert cle in declares, f"verrou_residuel.{cle} est absent."
+        assert cle in declares, message(
+            en=f"verrou_residuel.{cle} is missing.",
+            fr=f"verrou_residuel.{cle} est absent.",
+        )
 
     plan_declare = _entier(declares["plan_rc"], "verrou_residuel.plan_rc")
-    assert plan_declare == residuel["plan_rc"], (
-        f"verrou_residuel.plan_rc declare {plan_declare}, mesure "
-        f"{residuel['plan_rc']} : un fichier de verrou laisse par un arret "
+    assert plan_declare == residuel["plan_rc"], message(
+        en=f"verrou_residuel.plan_rc declares {plan_declare}, measured "
+        f"{residuel['plan_rc']}: a lock file left behind by an abrupt stop "
+        "does not block the next plan, since the local lock is a system "
+        f"lock released by the kernel.\n{residuel['plan_stderr']}",
+        fr=f"verrou_residuel.plan_rc déclare {plan_declare}, mesuré "
+        f"{residuel['plan_rc']} : un fichier de verrou laissé par un arrêt "
         "brutal ne bloque pas le plan suivant, le verrou local est un verrou "
-        f"systeme libere par le noyau.\n{residuel['plan_stderr']}"
+        f"système libéré par le noyau.\n{residuel['plan_stderr']}",
     )
     subsiste_declare = _booleen(declares["fichier_subsiste"], "verrou_residuel.fichier_subsiste")
-    assert subsiste_declare == residuel["subsiste_apres"], (
-        f"verrou_residuel.fichier_subsiste declare {subsiste_declare}, mesure "
-        f"{residuel['subsiste_apres']} : c'est Terraform qui fait le menage, "
-        "le `rm` enseigne ici et la est un rituel sans effet."
+    assert subsiste_declare == residuel["subsiste_apres"], message(
+        en=f"verrou_residuel.fichier_subsiste declares {subsiste_declare}, measured "
+        f"{residuel['subsiste_apres']}: it is Terraform that cleans up, and "
+        "the `rm` taught here and there is a ritual with no effect.",
+        fr=f"verrou_residuel.fichier_subsiste déclare {subsiste_declare}, mesuré "
+        f"{residuel['subsiste_apres']} : c'est Terraform qui fait le ménage, "
+        "le `rm` enseigné ici et là est un rituel sans effet.",
     )
 
 
@@ -349,27 +428,39 @@ def test_verrou_residuel(mesures: dict, residuel: dict) -> None:
 
 def test_backend_s3(mesures: dict) -> None:
     declares = _declare(mesures["cwd"], "backend_s3")
-    assert isinstance(declares, dict), (
-        f"backend_s3 vaut {declares!r}, attendu un objet."
+    assert isinstance(declares, dict), message(
+        en=f"backend_s3 is {declares!r}, an object was expected.",
+        fr=f"backend_s3 vaut {declares!r}, attendu un objet.",
     )
     for cle in S3_ATTENDU:
-        assert cle in declares, f"backend_s3.{cle} est absent."
+        assert cle in declares, message(
+            en=f"backend_s3.{cle} is missing.",
+            fr=f"backend_s3.{cle} est absent.",
+        )
 
-    assert declares["argument"] == S3_ATTENDU["argument"], (
-        f"backend_s3.argument declare {declares['argument']!r}, attendu "
+    assert declares["argument"] == S3_ATTENDU["argument"], message(
+        en=f"backend_s3.argument declares {declares['argument']!r}, expected "
+        f"{S3_ATTENDU['argument']!r}: that is the argument enabling the S3 "
+        "backend's native locking.",
+        fr=f"backend_s3.argument déclare {declares['argument']!r}, attendu "
         f"{S3_ATTENDU['argument']!r} : c'est l'argument qui active le "
-        "verrouillage natif du backend S3."
+        "verrouillage natif du backend S3.",
     )
     actif = _booleen(declares["actif_par_defaut"], "backend_s3.actif_par_defaut")
-    assert actif is S3_ATTENDU["actif_par_defaut"], (
-        "backend_s3.actif_par_defaut declare true : le verrouillage S3 est "
-        "opt-in, l'argument vaut false par defaut. Un state S3 sans "
-        "use_lockfile n'est pas protege."
+    assert actif is S3_ATTENDU["actif_par_defaut"], message(
+        en="backend_s3.actif_par_defaut declares true: S3 locking is "
+        "opt-in, the argument defaults to false. An S3 state without "
+        "use_lockfile is not protected.",
+        fr="backend_s3.actif_par_defaut déclare true : le verrouillage S3 est "
+        "opt-in, l'argument vaut false par défaut. Un state S3 sans "
+        "use_lockfile n'est pas protégé.",
     )
     deprecie = _booleen(declares["dynamodb_deprecie"], "backend_s3.dynamodb_deprecie")
-    assert deprecie is S3_ATTENDU["dynamodb_deprecie"], (
-        "backend_s3.dynamodb_deprecie declare false : le verrouillage par "
-        "table DynamoDB est deprecie et sera retire dans une version mineure."
+    assert deprecie is S3_ATTENDU["dynamodb_deprecie"], message(
+        en="backend_s3.dynamodb_deprecie declares false: locking through a "
+        "DynamoDB table is deprecated and will be removed in a minor version.",
+        fr="backend_s3.dynamodb_deprecie déclare false : le verrouillage par "
+        "table DynamoDB est déprécié et sera retiré dans une version mineure.",
     )
 
 
@@ -379,17 +470,23 @@ def test_backend_s3(mesures: dict) -> None:
 
 def test_aucun_verrou_apres_apply(mesures: dict) -> None:
     restants = mesures["verrou_apres"]
-    assert not restants, (
-        f"Des fichiers de verrou subsistent apres la fin de l'apply : {restants}."
+    assert not restants, message(
+        en=f"Lock files remain after the apply has finished: {restants}.",
+        fr=f"Des fichiers de verrou subsistent après la fin de l'apply : {restants}.",
     )
 
 
 def test_idempotence(mesures: dict, residuel: dict) -> None:
     cwd = mesures["cwd"]
     app = terraform("apply", "-auto-approve", "-input=false", "-no-color", cwd=cwd)
-    assert app.returncode == 0, f"`terraform apply` a echoue.\n{app.stderr[-1200:]}"
+    assert app.returncode == 0, message(
+        en=f"`terraform apply` failed.\n{app.stderr[-1200:]}",
+        fr=f"`terraform apply` a échoué.\n{app.stderr[-1200:]}",
+    )
     plan = terraform("plan", "-input=false", "-detailed-exitcode", "-no-color", cwd=cwd)
-    assert plan.returncode == 0, (
-        f"plan -detailed-exitcode rend {plan.returncode}, attendu 0 : le state "
-        "doit decrire la realite une fois le projet converge."
+    assert plan.returncode == 0, message(
+        en=f"plan -detailed-exitcode returns {plan.returncode}, expected 0: the state "
+        "must describe reality once the project has converged.",
+        fr=f"plan -detailed-exitcode rend {plan.returncode}, attendu 0 : le state "
+        "doit décrire la réalité une fois le projet convergé.",
     )

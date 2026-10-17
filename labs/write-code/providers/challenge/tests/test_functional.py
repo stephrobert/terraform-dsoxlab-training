@@ -19,7 +19,7 @@ from pathlib import Path
 
 import pytest
 
-from conftest import exiger_workdir, show_json, terraform, workdir_lab
+from conftest import exiger_workdir, message, show_json, terraform, workdir_lab
 
 WORKDIR = workdir_lab(__file__)
 LAB_ID = "write-code-providers"
@@ -30,12 +30,19 @@ def applied() -> Path:
     exiger_workdir(WORKDIR, LAB_ID)
     init = terraform("init", "-input=false", "-no-color", cwd=WORKDIR)
     if init.returncode != 0:
-        pytest.fail(f"`terraform init` a echoue.\n{init.stderr[-1200:]}")
+        pytest.fail(message(
+            en=f"`terraform init` failed.\n{init.stderr[-1200:]}",
+            fr=f"`terraform init` a échoué.\n{init.stderr[-1200:]}",
+        ))
     app = terraform("apply", "-auto-approve", "-input=false", "-no-color", cwd=WORKDIR)
     if app.returncode != 0:
         pytest.fail(
-            "`terraform apply` a echoue. Un `???` restant, une source invalide, ou "
-            f"une seconde config provider sans alias (doublon) ?\n{app.stderr[-1500:]}"
+            message(
+            en="`terraform apply` failed. A leftover `???`, an invalid source, or "
+            f"a second provider configuration with no alias (a duplicate)?\n{app.stderr[-1500:]}",
+            fr="`terraform apply` a échoué. Un `???` restant, une source invalide, ou "
+            f"une seconde config provider sans alias (doublon) ?\n{app.stderr[-1500:]}",
+        )
         )
     return WORKDIR
 
@@ -43,7 +50,10 @@ def applied() -> Path:
 def _config(cwd: Path) -> dict:
     p = terraform("plan", "-input=false", "-no-color", "-out=tfplan", cwd=cwd)
     if p.returncode != 0:
-        pytest.fail(f"`terraform plan` a echoue.\n{p.stderr[-1000:]}")
+        pytest.fail(message(
+            en=f"`terraform plan` failed.\n{p.stderr[-1000:]}",
+            fr=f"`terraform plan` a échoué.\n{p.stderr[-1000:]}",
+        ))
     return json.loads(terraform("show", "-json", "tfplan", cwd=cwd).stdout)["configuration"]
 
 
@@ -54,9 +64,11 @@ def _config(cwd: Path) -> dict:
 def test_source_explicite_resolue(applied: Path) -> None:
     data = json.loads(terraform("version", "-json", cwd=applied).stdout)
     selections = data.get("provider_selections", {})
-    assert "registry.terraform.io/hashicorp/random" in selections, (
-        f"provider_selections = {selections}. La source doit etre explicite "
-        "(hashicorp/random), qui se resout en registry.terraform.io/hashicorp/random."
+    assert "registry.terraform.io/hashicorp/random" in selections, message(
+        en=f"provider_selections = {selections}. The source must be explicit "
+        "(hashicorp/random), which resolves to registry.terraform.io/hashicorp/random.",
+        fr=f"provider_selections = {selections}. La source doit être explicite "
+        "(hashicorp/random), qui se résout en registry.terraform.io/hashicorp/random.",
     )
 
 
@@ -67,13 +79,26 @@ def test_source_explicite_resolue(applied: Path) -> None:
 def test_alias_secondaire_declare(applied: Path) -> None:
     provider_config = _config(applied).get("provider_config", {})
     aliasee = provider_config.get("random.secondaire")
-    assert aliasee is not None, (
-        f"Pas de configuration aliasee 'random.secondaire'. Configs vues : "
-        f"{list(provider_config)}. Declarez un second bloc provider random avec "
-        "alias = \"secondaire\"."
+    assert aliasee is not None, message(
+        en=f"No aliased configuration 'random.secondaire'. Configurations seen: "
+        f"{list(provider_config)}. Declare a second random provider block with "
+        "alias = \"secondaire\".",
+        fr=f"Pas de configuration aliasée 'random.secondaire'. Configs vues : "
+        f"{list(provider_config)}. Déclarez un second bloc provider random avec "
+        "alias = \"secondaire\".",
     )
-    assert aliasee.get("alias") == "secondaire"
-    assert aliasee.get("full_name") == "registry.terraform.io/hashicorp/random"
+    assert aliasee.get("alias") == "secondaire", message(
+        en=f"The second configuration carries the alias {aliasee.get('alias')!r}, "
+        "`secondaire` expected.",
+        fr=f"La seconde configuration porte l'alias {aliasee.get('alias')!r}, "
+        "`secondaire` attendu.",
+    )
+    assert aliasee.get("full_name") == "registry.terraform.io/hashicorp/random", message(
+        en=f"The aliased configuration names {aliasee.get('full_name')!r}: an alias "
+        "configures the SAME provider a second time, not another one.",
+        fr=f"La configuration aliasée désigne {aliasee.get('full_name')!r} : un alias "
+        "configure une seconde fois le MÊME provider, pas un autre.",
+    )
 
 
 # --------------------------------------------------------------------------
@@ -83,13 +108,17 @@ def test_alias_secondaire_declare(applied: Path) -> None:
 def test_cablage_des_ressources(applied: Path) -> None:
     resources = _config(applied)["root_module"]["resources"]
     keys = {r["address"]: r.get("provider_config_key") for r in resources}
-    assert keys.get("random_pet.autre") == "random.secondaire", (
-        f"random_pet.autre est cablee sur {keys.get('random_pet.autre')!r}, attendu "
-        "'random.secondaire'. Ajoutez `provider = random.secondaire` sur cette ressource."
+    assert keys.get("random_pet.autre") == "random.secondaire", message(
+        en=f"random_pet.autre is wired to {keys.get('random_pet.autre')!r}, expected "
+        "'random.secondaire'. Add `provider = random.secondaire` on that resource.",
+        fr=f"random_pet.autre est câblée sur {keys.get('random_pet.autre')!r}, attendu "
+        "'random.secondaire'. Ajoutez `provider = random.secondaire` sur cette ressource.",
     )
-    assert keys.get("random_pet.defaut") == "random", (
-        f"random_pet.defaut est cablee sur {keys.get('random_pet.defaut')!r}, attendu "
-        "la config par defaut 'random' (ne pas y mettre de provider=)."
+    assert keys.get("random_pet.defaut") == "random", message(
+        en=f"random_pet.defaut is wired to {keys.get('random_pet.defaut')!r}, expected "
+        "the default configuration 'random' (do not put a provider= on it).",
+        fr=f"random_pet.defaut est câblée sur {keys.get('random_pet.defaut')!r}, attendu "
+        "la config par défaut 'random' (ne pas y mettre de provider=).",
     )
 
 
@@ -100,7 +129,10 @@ def test_cablage_des_ressources(applied: Path) -> None:
 def test_deux_pets_dans_le_state(applied: Path) -> None:
     pets = [r for r in show_json(applied)["values"]["root_module"]["resources"]
             if r.get("type") == "random_pet"]
-    assert len(pets) == 2, f"{len(pets)} random_pet dans le state, attendu 2."
+    assert len(pets) == 2, message(
+        en=f"{len(pets)} random_pet in the state, 2 expected.",
+        fr=f"{len(pets)} random_pet dans le state, attendu 2.",
+    )
 
 
 # --------------------------------------------------------------------------
@@ -109,7 +141,9 @@ def test_deux_pets_dans_le_state(applied: Path) -> None:
 
 def test_configuration_stable_apres_apply(applied: Path) -> None:
     p = terraform("plan", "-input=false", "-detailed-exitcode", "-no-color", cwd=applied)
-    assert p.returncode == 0, (
-        f"`plan -detailed-exitcode` rend {p.returncode} (2 = des changements "
-        "restent planifies). Un apply doit converger."
+    assert p.returncode == 0, message(
+        en=f"`plan -detailed-exitcode` returns {p.returncode} (2 = changes "
+        "remain planned). An apply must converge.",
+        fr=f"`plan -detailed-exitcode` rend {p.returncode} (2 = des changements "
+        "restent planifiés). Un apply doit converger.",
     )

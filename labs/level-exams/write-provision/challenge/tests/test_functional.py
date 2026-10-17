@@ -35,7 +35,7 @@ from pathlib import Path
 
 import pytest
 
-from conftest import exiger_workdir, workdir_lab
+from conftest import exiger_workdir, message, workdir_lab
 
 pytestmark = pytest.mark.no_replay
 
@@ -51,9 +51,15 @@ CLE = WORKDIR / "acces" / "id_ed25519"
 
 def _epreuve() -> dict:
     etat = os.environ.get("LAB_STATE_DIR")
-    assert etat, "LAB_STATE_DIR absent : lancez l'épreuve par `dsoxlab run`, puis notez par `dsoxlab check`."
+    assert etat, message(
+        en="LAB_STATE_DIR missing: start the exam with `dsoxlab run`, then grade it with `dsoxlab check`.",
+        fr="LAB_STATE_DIR absent : lancez l'épreuve par `dsoxlab run`, puis notez par `dsoxlab check`.",
+    )
     fichier = Path(etat) / "epreuve.json"
-    assert fichier.is_file(), f"{fichier} absent : la préparation n'a pas tourné (`dsoxlab run`)."
+    assert fichier.is_file(), message(
+        en=f"{fichier} missing: the preparation did not run (`dsoxlab run`).",
+        fr=f"{fichier} absent : la préparation n'a pas tourné (`dsoxlab run`).",
+    )
     return json.loads(fichier.read_text())
 
 
@@ -72,7 +78,10 @@ def _domaines(e: dict, nom: str) -> list[str]:
 
 def _domaine(e: dict, nom: str) -> str:
     d = _domaines(e, nom)
-    assert len(d) == 1, f"« {nom} » : un domaine attendu dont le nom commence par {e['prefixe']}-{nom}, trouvé {d or 'aucun'}."
+    assert len(d) == 1, message(
+        en=f"\"{nom}\": a domain whose name starts with {e['prefixe']}-{nom} was expected, found {d or 'none'}.",
+        fr=f"« {nom} » : un domaine attendu dont le nom commence par {e['prefixe']}-{nom}, trouvé {d or 'aucun'}.",
+    )
     return d[0]
 
 
@@ -142,8 +151,10 @@ def _changements(plan: dict) -> list[tuple[str, list[str]]]:
 def _secret(e: dict) -> str:
     ip = _ipv4(_domaine(e, e["app"]))
     r = _ssh(ip, "sudo cat /etc/app/secret")
-    assert r.returncode == 0 and r.stdout.strip(), (
-        f"Le secret n'est pas lisible dans /etc/app/secret sur « {e['app']} » ({ip}) : {r.stderr.strip()[:200]}")
+    assert r.returncode == 0 and r.stdout.strip(), message(
+        en=f"The secret cannot be read at /etc/app/secret on \"{e['app']}\" ({ip}): {r.stderr.strip()[:200]}",
+        fr=f"Le secret n'est pas lisible dans /etc/app/secret sur « {e['app']} » ({ip}) : {r.stderr.strip()[:200]}",
+    )
     return r.stdout.strip()
 
 
@@ -157,9 +168,12 @@ def _workdir() -> None:
 def test_workflow_la_configuration_converge() -> None:
     """Après l'apply, un plan ne propose plus rien : `-detailed-exitcode` rend 0."""
     r = _terraform("plan", "-input=false", "-detailed-exitcode")
-    assert r.returncode == 0, (
-        f"plan -detailed-exitcode rend {r.returncode} (0 attendu : rien à faire après l'apply).\n"
-        f"{(r.stdout + r.stderr)[-600:]}")
+    assert r.returncode == 0, message(
+        en=f"plan -detailed-exitcode returns {r.returncode} (0 expected: nothing to do after the apply).\n"
+        f"{(r.stdout + r.stderr)[-600:]}",
+        fr=f"plan -detailed-exitcode rend {r.returncode} (0 attendu : rien à faire après l'apply).\n"
+        f"{(r.stdout + r.stderr)[-600:]}",
+    )
 
 
 # ── resource ─────────────────────────────────────────────────────────────────
@@ -168,29 +182,49 @@ def test_resource_chaque_machine_du_catalogue_existe_et_boote() -> None:
     e = _epreuve()
     for nom, m in e["machines"].items():
         d = _domaine(e, nom)
-        assert _boote(d), f"{d} n'a pas démarré de système (moins de {SECONDES_CPU_MINIMUM} s de CPU)."
+        assert _boote(d), message(
+            en=f"{d} did not boot a system (less than {SECONDES_CPU_MINIMUM} s of CPU).",
+            fr=f"{d} n'a pas démarré de système (moins de {SECONDES_CPU_MINIMUM} s de CPU).",
+        )
         memoire = int(re.search(r"Max memory:\s+(\d+)", _virsh("dominfo", d).stdout).group(1))
-        assert memoire == MEMOIRE_KIB[m["taille"]], (
-            f"{d} : {memoire} KiB de mémoire, {MEMOIRE_KIB[m['taille']]} attendus pour la taille « {m['taille']} ».")
+        assert memoire == MEMOIRE_KIB[m["taille"]], message(
+            en=f"{d}: {memoire} KiB of memory, {MEMOIRE_KIB[m['taille']]} expected for size \"{m['taille']}\".",
+            fr=f"{d} : {memoire} KiB de mémoire, {MEMOIRE_KIB[m['taille']]} attendus pour la taille « {m['taille']} ».",
+        )
 
 
 def test_resource_les_machines_sont_sur_un_reseau_isole() -> None:
     e = _epreuve()
     reseaux = [n for n in _virsh("net-list", "--all", "--name").stdout.split() if n.startswith(e["prefixe"])]
-    assert reseaux, f"Aucun réseau libvirt dont le nom commence par {e['prefixe']}."
+    assert reseaux, message(
+        en=f"No libvirt network whose name starts with {e['prefixe']}.",
+        fr=f"Aucun réseau libvirt dont le nom commence par {e['prefixe']}.",
+    )
     isoles = [n for n in reseaux if "<forward" not in _virsh("net-dumpxml", n).stdout]
-    assert isoles, f"Réseau {reseaux} : il route vers l'extérieur (bloc <forward>), un réseau isolé n'en a pas."
+    assert isoles, message(
+        en=f"Network {reseaux}: it routes to the outside (a <forward> block); an isolated network has none.",
+        fr=f"Réseau {reseaux} : il route vers l'extérieur (bloc <forward>), un réseau isolé n'en a pas.",
+    )
     for nom in e["machines"]:
         d = _domaine(e, nom)
         sources = _virsh("domiflist", d).stdout
-        assert any(n in sources for n in isoles), f"{d} n'est pas raccordée au réseau isolé {isoles}."
+        assert any(n in sources for n in isoles), message(
+            en=f"{d} is not attached to the isolated network {isoles}.",
+            fr=f"{d} n'est pas raccordée au réseau isolé {isoles}.",
+        )
 
 
 def test_resource_les_providers_sont_verrouilles() -> None:
     verrou = WORKDIR / ".terraform.lock.hcl"
-    assert verrou.is_file(), "Pas de .terraform.lock.hcl : les versions des providers ne sont pas verrouillées."
+    assert verrou.is_file(), message(
+        en="No .terraform.lock.hcl: the providers' versions are not locked.",
+        fr="Pas de .terraform.lock.hcl : les versions des providers ne sont pas verrouillées.",
+    )
     texte = verrou.read_text()
-    assert 'provider "registry.terraform.io/dmacvicar/libvirt"' in texte, "Le provider libvirt n'est pas verrouillé."
+    assert 'provider "registry.terraform.io/dmacvicar/libvirt"' in texte, message(
+        en="The libvirt provider is not locked.",
+        fr="Le provider libvirt n'est pas verrouillé.",
+    )
 
 
 # ── sensitive ────────────────────────────────────────────────────────────────
@@ -198,23 +232,44 @@ def test_resource_les_providers_sont_verrouilles() -> None:
 def test_sensitive_le_secret_est_arrive_dans_la_machine_applicative() -> None:
     e = _epreuve()
     secret = _secret(e)
-    assert len(secret) >= 16, f"Le secret ne fait que {len(secret)} caractères (16 au moins)."
+    assert len(secret) >= 16, message(
+        en=f"The secret is only {len(secret)} characters long (16 at least).",
+        fr=f"Le secret ne fait que {len(secret)} caractères (16 au moins).",
+    )
     droits = _ssh(_ipv4(_domaine(e, e["app"])), "sudo stat -c '%a %U' /etc/app/secret").stdout.strip()
-    assert droits == "600 root", f"/etc/app/secret : droits « {droits} », « 600 root » attendus."
+    assert droits == "600 root", message(
+        en=f"/etc/app/secret: permissions \"{droits}\", \"600 root\" expected.",
+        fr=f"/etc/app/secret : droits « {droits} », « 600 root » attendus.",
+    )
 
 
 def test_sensitive_le_secret_ne_figure_ni_dans_le_state_ni_dans_le_plan() -> None:
     e = _epreuve()
     secret = _secret(e)
     state = _terraform("state", "pull")
-    assert state.returncode == 0, f"state pull impossible : {state.stderr[-300:]}"
-    assert secret not in state.stdout, "Le secret figure en clair dans le state."
+    assert state.returncode == 0, message(
+        en=f"state pull impossible: {state.stderr[-300:]}",
+        fr=f"state pull impossible : {state.stderr[-300:]}",
+    )
+    assert secret not in state.stdout, message(
+        en="The secret appears in clear text in the state.",
+        fr="Le secret figure en clair dans le state.",
+    )
     r, plan, fichier = _plan_json()
-    assert plan is not None, f"Plan impossible : {(r.stdout + r.stderr)[-300:]}"
-    assert secret not in json.dumps(plan), "Le secret figure dans le plan JSON."
+    assert plan is not None, message(
+        en=f"Plan impossible: {(r.stdout + r.stderr)[-300:]}",
+        fr=f"Plan impossible : {(r.stdout + r.stderr)[-300:]}",
+    )
+    assert secret not in json.dumps(plan), message(
+        en="The secret appears in the JSON plan.",
+        fr="Le secret figure dans le plan JSON.",
+    )
     with zipfile.ZipFile(fichier) as z:
         for nom in z.namelist():
-            assert secret.encode() not in z.read(nom), f"Le secret figure dans le plan enregistré ({nom})."
+            assert secret.encode() not in z.read(nom), message(
+                en=f"The secret appears in the saved plan ({nom}).",
+                fr=f"Le secret figure dans le plan enregistré ({nom}).",
+            )
 
 
 # ── parameterize ─────────────────────────────────────────────────────────────
@@ -236,9 +291,14 @@ def test_parameterize_un_catalogue_invalide_est_refuse_avant_le_plan(cas: str) -
     sortie = r.stdout + r.stderr
     # Une règle de validation écrit « Invalid value for variable », une erreur
     # de type (champ manquant) « Invalid value for input variable ».
-    assert r.returncode == 1 and re.search(r"Invalid value for (input )?variable", sortie), (
-        f"Catalogue invalide ({cas}) : le plan devait le refuser sur la variable du catalogue.\n{sortie[-500:]}")
-    assert "Plan:" not in sortie, f"Catalogue invalide ({cas}) : un plan a été calculé."
+    assert r.returncode == 1 and re.search(r"Invalid value for (input )?variable", sortie), message(
+        en=f"Invalid catalogue ({cas}): the plan was supposed to refuse it on the catalogue variable.\n{sortie[-500:]}",
+        fr=f"Catalogue invalide ({cas}) : le plan devait le refuser sur la variable du catalogue.\n{sortie[-500:]}",
+    )
+    assert "Plan:" not in sortie, message(
+        en=f"Invalid catalogue ({cas}): a plan was computed.",
+        fr=f"Catalogue invalide ({cas}) : un plan a été calculé.",
+    )
 
 
 # ── expression ───────────────────────────────────────────────────────────────
@@ -247,20 +307,34 @@ def test_expression_retirer_une_machine_ne_touche_qu_elle() -> None:
     e = _epreuve()
     nom = e["fronts"][1]
     r, plan, _ = _plan_json(f"-var-file={_catalogue_modifie(e, lambda m: m.pop(nom))}")
-    assert plan is not None, f"Plan impossible sans « {nom} » : {(r.stdout + r.stderr)[-400:]}"
+    assert plan is not None, message(
+        en=f"Plan impossible without \"{nom}\": {(r.stdout + r.stderr)[-400:]}",
+        fr=f"Plan impossible sans « {nom} » : {(r.stdout + r.stderr)[-400:]}",
+    )
     changements = _changements(plan)
-    assert changements, f"Retirer « {nom} » du catalogue ne change rien : le catalogue ne pilote pas le code."
+    assert changements, message(
+        en=f"Removing \"{nom}\" from the catalogue changes nothing: the catalogue does not drive the code.",
+        fr=f"Retirer « {nom} » du catalogue ne change rien : le catalogue ne pilote pas le code.",
+    )
     autres = [(a, act) for a, act in changements if act != ["delete"] or f'["{nom}"]' not in a]
-    assert not autres, f"Retirer « {nom} » touche aussi autre chose qu'elle : {autres}"
-    assert any("libvirt_domain" in a for a, _ in changements), f"Retirer « {nom} » ne détruit pas son domaine."
+    assert not autres, message(
+        en=f"Removing \"{nom}\" also affects something other than it: {autres}",
+        fr=f"Retirer « {nom} » touche aussi autre chose qu'elle : {autres}",
+    )
+    assert any("libvirt_domain" in a for a, _ in changements), message(
+        en=f"Removing \"{nom}\" does not destroy its domain.",
+        fr=f"Retirer « {nom} » ne détruit pas son domaine.",
+    )
 
 
 # ── guard ────────────────────────────────────────────────────────────────────
 
 def test_guard_la_machine_critique_refuse_un_plan_de_destruction() -> None:
     r = _terraform("plan", "-input=false", "-destroy")
-    assert r.returncode == 1 and "cannot be destroyed" in (r.stdout + r.stderr), (
-        f"plan -destroy rend {r.returncode} : la machine critique devait le refuser.\n{(r.stdout + r.stderr)[-400:]}")
+    assert r.returncode == 1 and "cannot be destroyed" in (r.stdout + r.stderr), message(
+        en=f"plan -destroy returns {r.returncode}: the critical machine was supposed to refuse it.\n{(r.stdout + r.stderr)[-400:]}",
+        fr=f"plan -destroy rend {r.returncode} : la machine critique devait le refuser.\n{(r.stdout + r.stderr)[-400:]}",
+    )
 
 
 def test_guard_la_machine_critique_refuse_son_remplacement() -> None:
@@ -272,8 +346,10 @@ def test_guard_la_machine_critique_refuse_son_remplacement() -> None:
 
     r = _terraform("plan", "-input=false", f"-var-file={_catalogue_modifie(e, nouvelle_generation)}")
     sortie = r.stdout + r.stderr
-    assert r.returncode == 1 and "cannot be destroyed" in sortie, (
-        f"Nouvelle génération de « {nom} » : le remplacement de la machine critique devait être refusé.\n{sortie[-400:]}")
+    assert r.returncode == 1 and "cannot be destroyed" in sortie, message(
+        en=f"New generation of \"{nom}\": replacing the critical machine was supposed to be refused.\n{sortie[-400:]}",
+        fr=f"Nouvelle génération de « {nom} » : le remplacement de la machine critique devait être refusé.\n{sortie[-400:]}",
+    )
 
 
 def test_guard_un_front_remplace_est_recree_avant_d_etre_detruit() -> None:
@@ -285,21 +361,44 @@ def test_guard_un_front_remplace_est_recree_avant_d_etre_detruit() -> None:
         machines[nom]["generation"] += 1
 
     r, plan, fichier = _plan_json(f"-var-file={_catalogue_modifie(e, nouvelle_generation)}")
-    assert plan is not None, f"Plan impossible : {(r.stdout + r.stderr)[-400:]}"
+    assert plan is not None, message(
+        en=f"Plan impossible: {(r.stdout + r.stderr)[-400:]}",
+        fr=f"Plan impossible : {(r.stdout + r.stderr)[-400:]}",
+    )
     domaines = [(a, act) for a, act in _changements(plan) if "libvirt_domain" in a and f'["{nom}"]' in a]
-    assert domaines, f"Nouvelle génération de « {nom} » : son domaine n'est pas remplacé."
-    assert all(act == ["create", "delete"] for _, act in domaines), (
-        f"« {nom} » doit être créée avant d'être détruite : actions {domaines}.")
+    assert domaines, message(
+        en=f"New generation of \"{nom}\": its domain is not replaced.",
+        fr=f"Nouvelle génération de « {nom} » : son domaine n'est pas remplacé.",
+    )
+    assert all(act == ["create", "delete"] for _, act in domaines), message(
+        en=f"\"{nom}\" must be created before being destroyed: actions {domaines}.",
+        fr=f"« {nom} » doit être créée avant d'être détruite : actions {domaines}.",
+    )
     autres = [a for a, _ in _changements(plan) if f'["{nom}"]' not in a]
-    assert not autres, f"Remplacer « {nom} » touche aussi : {autres}"
+    assert not autres, message(
+        en=f"Replacing \"{nom}\" also affects: {autres}",
+        fr=f"Remplacer « {nom} » touche aussi : {autres}",
+    )
 
     applique = _terraform("apply", "-input=false", str(fichier), timeout=1200)
-    assert applique.returncode == 0, f"Le remplacement échoue : {(applique.stdout + applique.stderr)[-500:]}"
+    assert applique.returncode == 0, message(
+        en=f"The replacement fails: {(applique.stdout + applique.stderr)[-500:]}",
+        fr=f"Le remplacement échoue : {(applique.stdout + applique.stderr)[-500:]}",
+    )
     nouveau = _domaine(e, nom)
-    assert nouveau != ancien and _boote(nouveau), f"« {nom} » : la nouvelle machine ({nouveau}) ne remplace pas {ancien}."
+    assert nouveau != ancien and _boote(nouveau), message(
+        en=f"\"{nom}\": the new machine ({nouveau}) does not replace {ancien}.",
+        fr=f"« {nom} » : la nouvelle machine ({nouveau}) ne remplace pas {ancien}.",
+    )
 
     # On remet l'environnement dans l'état du catalogue de l'apprenant.
     retour = _terraform("apply", "-input=false", "-auto-approve", timeout=1200)
-    assert retour.returncode == 0, f"Le retour au catalogue d'origine échoue : {(retour.stdout + retour.stderr)[-500:]}"
+    assert retour.returncode == 0, message(
+        en=f"Going back to the original catalogue fails: {(retour.stdout + retour.stderr)[-500:]}",
+        fr=f"Le retour au catalogue d'origine échoue : {(retour.stdout + retour.stderr)[-500:]}",
+    )
     final = _terraform("plan", "-input=false", "-detailed-exitcode")
-    assert final.returncode == 0, f"Après le retour, le plan rend {final.returncode} (0 attendu)."
+    assert final.returncode == 0, message(
+        en=f"After going back, the plan returns {final.returncode} (0 expected).",
+        fr=f"Après le retour, le plan rend {final.returncode} (0 attendu).",
+    )

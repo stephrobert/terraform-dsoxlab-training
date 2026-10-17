@@ -26,7 +26,7 @@ from pathlib import Path
 
 import pytest
 
-from conftest import exiger_workdir, terraform, workdir_lab
+from conftest import exiger_workdir, message, terraform, workdir_lab
 
 WORKDIR = workdir_lab(__file__)
 LAB_ID = "environments-organize-terraform-repo"
@@ -50,7 +50,10 @@ VERSIONNE = ".terraform.lock.hcl"
 def _projet(racine: Path) -> Path:
     chemin = racine / PROJET
     if not chemin.is_dir():
-        pytest.fail(f"Le repertoire {PROJET}/ est absent de challenge/work.")
+        pytest.fail(message(
+            en=f"The {PROJET}/ directory is missing from challenge/work.",
+            fr=f"Le répertoire {PROJET}/ est absent de challenge/work.",
+        ))
     return chemin
 
 
@@ -58,7 +61,10 @@ def _plan(dossier: Path, nom: str = "analyse.tfplan") -> dict:
     plan = terraform("plan", "-input=false", "-no-color", f"-out={nom}", cwd=dossier)
     if plan.returncode != 0:
         pytest.fail(
-            f"`terraform plan` a echoue dans {dossier.name}.\n{plan.stderr[-1100:]}"
+            message(
+            en=f"`terraform plan` failed in {dossier.name}.\n{plan.stderr[-1100:]}",
+            fr=f"`terraform plan` a échoué dans {dossier.name}.\n{plan.stderr[-1100:]}",
+        )
         )
     montre = terraform("show", "-json", nom, cwd=dossier)
     montre.check_returncode()
@@ -93,7 +99,10 @@ def racine() -> Iterator[Path]:
     exiger_workdir(WORKDIR, LAB_ID)
     init = terraform("init", "-input=false", "-no-color", cwd=_projet(WORKDIR))
     if init.returncode != 0:
-        pytest.fail(f"`terraform init` a echoue.\n{init.stderr[-1100:]}")
+        pytest.fail(message(
+            en=f"`terraform init` failed.\n{init.stderr[-1100:]}",
+            fr=f"`terraform init` a échoué.\n{init.stderr[-1100:]}",
+        ))
     yield WORKDIR
 
 
@@ -109,8 +118,12 @@ def decoupe(racine: Path) -> Iterator[Path]:
     manquants = [nom for nom in SOCLE if not (projet / nom).is_file()]
     if manquants:
         pytest.fail(
-            f"Le decoupage n'a pas eu lieu, {sorted(manquants)} manquent : "
-            "comparer le plan a lui-meme ne prouverait rien."
+            message(
+            en=f"The split did not happen, {sorted(manquants)} are missing: "
+            "comparing the plan with itself would prove nothing.",
+            fr=f"Le découpage n'a pas eu lieu, {sorted(manquants)} manquent : "
+            "comparer le plan à lui-même ne prouverait rien.",
+        )
         )
     yield racine
 
@@ -123,7 +136,10 @@ def temoin(tmp_path_factory: pytest.TempPathFactory) -> Iterator[dict]:
     init = terraform("init", "-input=false", "-no-color", cwd=copie)
     if init.returncode != 0:
         pytest.fail(
-            f"`terraform init` a echoue sur la fixture d'origine.\n{init.stderr[-800:]}"
+            message(
+            en=f"`terraform init` failed on the original fixture.\n{init.stderr[-800:]}",
+            fr=f"`terraform init` a échoué sur la fixture d'origine.\n{init.stderr[-800:]}",
+        )
         )
     yield _empreinte(_plan(copie))
 
@@ -135,17 +151,21 @@ def temoin(tmp_path_factory: pytest.TempPathFactory) -> Iterator[dict]:
 def test_le_plan_est_identique_a_celui_du_monolithe(decoupe: Path, temoin: dict) -> None:
     obtenu = _empreinte(_plan(_projet(decoupe)))
     for cle, attendu in temoin.items():
-        assert obtenu[cle] == attendu, (
-            f"Le decoupage a change `{cle}` du plan. Un `terraform validate` vert "
-            "ne prouve rien ici : il ne regarde ni l'etat, ni la valeur des "
-            "arguments. Seule la comparaison de deux plans etablit l'invariance."
+        assert obtenu[cle] == attendu, message(
+            en=f"The split changed `{cle}` in the plan. A green `terraform validate` "
+            "proves nothing here: it looks neither at the state, nor at the value of the "
+            "arguments. Only comparing two plans establishes invariance.",
+            fr=f"Le découpage a changé `{cle}` du plan. Un `terraform validate` vert "
+            "ne prouve rien ici : il ne regarde ni l'état, ni la valeur des "
+            "arguments. Seule la comparaison de deux plans établit l'invariance.",
         )
 
 
 def test_la_configuration_reste_valide(decoupe: Path) -> None:
     validate = terraform("validate", "-no-color", cwd=_projet(decoupe))
-    assert validate.returncode == 0, (
-        f"`terraform validate` echoue.\n{validate.stdout[-800:]}"
+    assert validate.returncode == 0, message(
+        en=f"`terraform validate` fails.\n{validate.stdout[-800:]}",
+        fr=f"`terraform validate` échoue.\n{validate.stdout[-800:]}",
     )
 
 
@@ -156,11 +176,15 @@ def test_la_configuration_reste_valide(decoupe: Path) -> None:
 def test_le_socle_de_fichiers_est_en_place(racine: Path) -> None:
     projet = _projet(racine)
     manquants = [nom for nom in SOCLE if not (projet / nom).is_file()]
-    assert not manquants, (
-        f"{sorted(manquants)} manquent. Le style guide nomme ces fichiers, et ce "
+    assert not manquants, message(
+        en=f"{sorted(manquants)} are missing. The style guide names those files, and they "
+        "are not the ones you would think: the `terraform` block lives in "
+        "`terraform.tf`, not in a `versions.tf` that appears nowhere in "
+        "the official documentation.",
+        fr=f"{sorted(manquants)} manquent. Le style guide nomme ces fichiers, et ce "
         "ne sont pas ceux qu'on croit : le bloc `terraform` vit dans "
-        "`terraform.tf`, pas dans un `versions.tf` qui n'apparait nulle part dans "
-        "la documentation officielle."
+        "`terraform.tf`, pas dans un `versions.tf` qui n'apparaît nulle part dans "
+        "la documentation officielle.",
     )
 
 
@@ -168,21 +192,29 @@ def test_chaque_bloc_est_dans_son_fichier(racine: Path) -> None:
     projet = _projet(racine)
     for nom, bloc in SOCLE.items():
         contenu = (projet / nom).read_text(encoding="utf-8")
-        assert f"{bloc} " in contenu, f"{nom} ne contient aucun bloc `{bloc}`."
+        assert f"{bloc} " in contenu, message(
+            en=f"{nom} contains no `{bloc}` block.",
+            fr=f"{nom} ne contient aucun bloc `{bloc}`.",
+        )
 
     autres = {f.name for f in projet.glob("*.tf") if f.name not in SOCLE}
-    assert autres, (
-        "Aucun fichier hors du socle : les `resource` doivent rester dans un "
-        "`main.tf`, que le socle ne remplace pas."
+    assert autres, message(
+        en="No file outside the base: the `resource` blocks must stay in a "
+        "`main.tf`, which the base does not replace.",
+        fr="Aucun fichier hors du socle : les `resource` doivent rester dans un "
+        "`main.tf`, que le socle ne remplace pas.",
     )
 
     terraform_tf = (projet / "terraform.tf").read_text(encoding="utf-8")
-    assert terraform_tf.count("terraform {") == 1, (
-        "`terraform.tf` doit contenir UN SEUL bloc `terraform`."
+    assert terraform_tf.count("terraform {") == 1, message(
+        en="`terraform.tf` must contain a SINGLE `terraform` block.",
+        fr="`terraform.tf` doit contenir UN SEUL bloc `terraform`.",
     )
-    assert 'provider "' not in terraform_tf, (
-        "`terraform.tf` contient encore un bloc `provider` : la documentation lui "
-        "reserve un fichier, `providers.tf`."
+    assert 'provider "' not in terraform_tf, message(
+        en="`terraform.tf` still contains a `provider` block: the documentation "
+        "reserves a file for it, `providers.tf`.",
+        fr="`terraform.tf` contient encore un bloc `provider` : la documentation lui "
+        "réserve un fichier, `providers.tf`.",
     )
 
 
@@ -195,10 +227,15 @@ def test_variables_et_sorties_sont_triees(racine: Path) -> None:
             for ligne in contenu.splitlines()
             if ligne.startswith(f'{bloc} "')
         ]
-        assert declares, f"{nom} ne declare aucun bloc `{bloc}`."
-        assert declares == sorted(declares), (
-            f"{nom} declare {declares} : le style guide demande l'ordre "
-            f"ALPHABETIQUE, « all {bloc} blocks in alphabetical order »."
+        assert declares, message(
+            en=f"{nom} declares no `{bloc}` block.",
+            fr=f"{nom} ne déclare aucun bloc `{bloc}`.",
+        )
+        assert declares == sorted(declares), message(
+            en=f"{nom} declares {declares}: the style guide asks for "
+            f"ALPHABETICAL order, \"all {bloc} blocks in alphabetical order\".",
+            fr=f"{nom} déclare {declares} : le style guide demande l'ordre "
+            f"ALPHABÉTIQUE, « all {bloc} blocks in alphabetical order ».",
         )
 
 
@@ -208,11 +245,15 @@ def test_variables_et_sorties_sont_triees(racine: Path) -> None:
 
 def test_l_arborescence_entiere_est_formatee(decoupe: Path) -> None:
     fmt = terraform("fmt", "-check", "-recursive", "-no-color", cwd=decoupe)
-    assert fmt.returncode == 0, (
-        f"`terraform fmt -check -recursive` rend {fmt.returncode} et signale "
+    assert fmt.returncode == 0, message(
+        en=f"`terraform fmt -check -recursive` returns {fmt.returncode} and reports "
+        f"{fmt.stdout.strip().splitlines()}. Without `-recursive`, the command only "
+        "looks at the current directory: a CI check stays "
+        "green with badly formatted sub-directories.",
+        fr=f"`terraform fmt -check -recursive` rend {fmt.returncode} et signale "
         f"{fmt.stdout.strip().splitlines()}. Sans `-recursive`, la commande ne "
-        "regarde que le repertoire courant : un controle d'integration reste "
-        "vert avec des sous-repertoires mal formates."
+        "regarde que le répertoire courant : un contrôle d'intégration reste "
+        "vert avec des sous-répertoires mal formatés.",
     )
 
 
@@ -231,8 +272,12 @@ def depot(racine: Path, tmp_path_factory: pytest.TempPathFactory) -> Iterator[Pa
     gitignore = racine / ".gitignore"
     if not gitignore.is_file():
         pytest.fail(
-            "Aucun `.gitignore` a la racine de `challenge/work` : le depot "
-            "committerait l'etat, le repertoire de travail et les plans enregistres."
+            message(
+            en="No `.gitignore` at the root of `challenge/work`: the repository "
+            "would commit the state, the working directory and the saved plans.",
+            fr="Aucun `.gitignore` à la racine de `challenge/work` : le dépôt "
+            "committerait l'état, le répertoire de travail et les plans enregistrés.",
+        )
         )
     copie = tmp_path_factory.mktemp("depot") / "travail"
     shutil.copytree(racine, copie, ignore=shutil.ignore_patterns(".git"))
@@ -243,19 +288,28 @@ def depot(racine: Path, tmp_path_factory: pytest.TempPathFactory) -> Iterator[Pa
 def test_le_depot_ignore_les_artefacts(depot: Path) -> None:
     for chemin in IGNORES:
         verdict = _git("check-ignore", "-q", f"{PROJET}/{chemin}", cwd=depot)
-        assert verdict.returncode == 0, (
-            f"`{chemin}` n'est PAS ignore. Attention au plan enregistre : "
+        assert verdict.returncode == 0, message(
+            en=f"`{chemin}` is NOT ignored. Mind the saved plan: "
+            "`terraform plan -out=tfplan` produces a file with NO extension, "
+            "which a `*.tfplan` pattern does not catch, and which contains the "
+            "resolved values, secrets included.",
+            fr=f"`{chemin}` n'est PAS ignoré. Attention au plan enregistré : "
             "`terraform plan -out=tfplan` produit un fichier SANS extension, "
             "qu'un motif `*.tfplan` n'attrape pas, et qui contient les valeurs "
-            "resolues, secrets compris."
+            "résolues, secrets compris.",
         )
     verdict = _git("check-ignore", "-q", f"{PROJET}/.terraform/", cwd=depot)
-    assert verdict.returncode == 0, "`.terraform/` n'est pas ignore."
+    assert verdict.returncode == 0, message(
+        en="`.terraform/` is not ignored.",
+        fr="`.terraform/` n'est pas ignoré.",
+    )
 
 
 def test_le_verrou_reste_versionne(depot: Path) -> None:
     verdict = _git("check-ignore", "-q", f"{PROJET}/{VERSIONNE}", cwd=depot)
-    assert verdict.returncode != 0, (
-        f"`{VERSIONNE}` est ignore. Il doit au contraire etre COMMITE : c'est lui "
-        "qui garantit que toute l'equipe emploie les memes versions de providers."
+    assert verdict.returncode != 0, message(
+        en=f"`{VERSIONNE}` is ignored. On the contrary, it must be COMMITTED: it is what "
+        "guarantees that the whole team uses the same provider versions.",
+        fr=f"`{VERSIONNE}` est ignoré. Il doit au contraire être COMMITÉ : c'est lui "
+        "qui garantit que toute l'équipe emploie les mêmes versions de providers.",
     )

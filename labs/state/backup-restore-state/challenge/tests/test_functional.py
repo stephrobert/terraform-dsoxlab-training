@@ -41,7 +41,7 @@ from pathlib import Path
 
 import pytest
 
-from conftest import exiger_workdir, terraform, workdir_lab
+from conftest import exiger_workdir, message, terraform, workdir_lab
 
 WORKDIR = workdir_lab(__file__)
 LAB_ID = "state-backup-restore-state"
@@ -64,7 +64,10 @@ def _charger(chemin: Path) -> dict:
     try:
         return json.loads(chemin.read_text(encoding="utf-8"))
     except json.JSONDecodeError as erreur:
-        pytest.fail(f"{chemin.name} n'est pas un JSON valide : {erreur}")
+        pytest.fail(message(
+            en=f"{chemin.name} is not valid JSON: {erreur}",
+            fr=f"{chemin.name} n'est pas un JSON valide : {erreur}",
+        ))
 
 
 def _state_courant(cwd: Path) -> dict:
@@ -91,8 +94,12 @@ def _sauvegarde_restaurable(cwd: Path, lineage: str) -> dict:
     valides = [d for d in candidates if d.get("lineage") == lineage]
     if not valides:
         pytest.fail(
-            "Aucune sauvegarde ne porte le lineage du projet. Les fixtures du "
-            "lab ont ete modifiees."
+            message(
+            en="No backup carries the project's lineage. The lab's fixtures "
+            "were modified.",
+            fr="Aucune sauvegarde ne porte le lineage du projet. Les fixtures du "
+            "lab ont été modifiées.",
+        )
         )
     return max(valides, key=lambda d: d["serial"])
 
@@ -101,10 +108,13 @@ def _exiger_restauration_faite(cwd: Path) -> dict:
     """Garde commune : sans restauration, les controles suivants ne disent rien."""
     courant = _state_courant(cwd)
     gerees = _ressources_gerees(courant)
-    assert gerees == ADRESSES, (
-        f"Le state decrit {sorted(gerees)}, attendu {sorted(ADRESSES)}. La "
-        "restauration n'a pas eu lieu : ce controle ne peut se prononcer "
-        "qu'apres."
+    assert gerees == ADRESSES, message(
+        en=f"The state describes {sorted(gerees)}, expected {sorted(ADRESSES)}. The "
+        "restore did not happen: this check can only decide "
+        "afterwards.",
+        fr=f"Le state décrit {sorted(gerees)}, attendu {sorted(ADRESSES)}. La "
+        "restauration n'a pas eu lieu : ce contrôle ne peut se prononcer "
+        "qu'après.",
     )
     return courant
 
@@ -114,7 +124,10 @@ def restaure() -> Iterator[Path]:
     exiger_workdir(WORKDIR, LAB_ID)
     init = terraform("init", "-input=false", "-no-color", cwd=WORKDIR)
     if init.returncode != 0:
-        pytest.fail(f"`terraform init` a echoue.\n{init.stderr[-1200:]}")
+        pytest.fail(message(
+            en=f"`terraform init` failed.\n{init.stderr[-1200:]}",
+            fr=f"`terraform init` a échoué.\n{init.stderr[-1200:]}",
+        ))
     yield WORKDIR
 
 
@@ -124,22 +137,30 @@ def restaure() -> Iterator[Path]:
 
 def test_l_etat_endommage_a_ete_sauvegarde_avant_toute_ecriture(restaure: Path) -> None:
     chemin = restaure / AVANT
-    assert chemin.is_file(), (
-        f"{AVANT} est absent. Avant de pousser quoi que ce soit, on photographie "
-        f"l'etat endommage : `terraform state pull > {AVANT}`. Un `push` ne se "
-        "rejoue pas."
+    assert chemin.is_file(), message(
+        en=f"{AVANT} is missing. Before pushing anything, you photograph "
+        f"the damaged state: `terraform state pull > {AVANT}`. A `push` cannot "
+        "be replayed.",
+        fr=f"{AVANT} est absent. Avant de pousser quoi que ce soit, on photographie "
+        f"l'état endommagé : `terraform state pull > {AVANT}`. Un `push` ne se "
+        "rejoue pas.",
     )
     photo = _charger(chemin)
     attendu = _charger(restaure / REFERENCE)
-    assert photo.get("lineage") == attendu["lineage"], (
-        "La photo ne porte pas le lineage du projet : elle ne vient pas de ce "
-        "state."
+    assert photo.get("lineage") == attendu["lineage"], message(
+        en="The photograph does not carry the project's lineage: it does not come from this "
+        "state.",
+        fr="La photo ne porte pas le lineage du projet : elle ne vient pas de ce "
+        "state.",
     )
     gerees = _ressources_gerees(photo)
-    assert gerees == {"local_file.un", "local_file.deux"}, (
-        f"La photo decrit {sorted(gerees)}, alors que l'etat endommage portait "
-        "exactement local_file.un et local_file.deux. Un fichier pris APRES la "
-        "restauration ne prouve rien."
+    assert gerees == {"local_file.un", "local_file.deux"}, message(
+        en=f"The photograph describes {sorted(gerees)}, while the damaged state carried "
+        "exactly local_file.un and local_file.deux. A file taken AFTER the "
+        "restore proves nothing.",
+        fr=f"La photo décrit {sorted(gerees)}, alors que l'état endommagé portait "
+        "exactement local_file.un et local_file.deux. Un fichier pris APRÈS la "
+        "restauration ne prouve rien.",
     )
 
 
@@ -160,11 +181,15 @@ def test_les_trois_ressources_sont_gerees_et_le_lineage_est_celui_du_projet(
     """
     courant = _exiger_restauration_faite(restaure)
     attendu = _charger(restaure / REFERENCE)["lineage"]
-    assert courant["lineage"] == attendu, (
-        f"Le state courant porte le lineage {courant['lineage']!r}, attendu "
-        f"{attendu!r}. Une sauvegarde venue d'un autre projet a ete poussee : "
+    assert courant["lineage"] == attendu, message(
+        en=f"The current state carries the lineage {courant['lineage']!r}, expected "
+        f"{attendu!r}. A backup from another project was pushed: "
+        "Terraform refuses it with `cannot import state with lineage … over "
+        "unrelated state`, and `-force` overrides it without asking.",
+        fr=f"Le state courant porte le lineage {courant['lineage']!r}, attendu "
+        f"{attendu!r}. Une sauvegarde venue d'un autre projet a été poussée : "
         "Terraform le refuse par `cannot import state with lineage ... over "
-        "unrelated state`, et `-force` passe outre sans rien demander."
+        "unrelated state`, et `-force` passe outre sans rien demander.",
     )
 
 
@@ -186,13 +211,19 @@ def test_la_restauration_est_passee_par_state_push_et_non_par_une_copie(
     sauvegarde = _sauvegarde_restaurable(restaure, attendu["lineage"])
     courant = _exiger_restauration_faite(restaure)
 
-    assert courant["serial"] > sauvegarde["serial"], (
-        f"Le serial courant vaut {courant['serial']}, celui de la sauvegarde "
+    assert courant["serial"] > sauvegarde["serial"], message(
+        en=f"The current serial is {courant['serial']}, that of the restorable "
+        f"backup {sauvegarde['serial']}. A `terraform state push` starts "
+        "from the backup's serial and increments it: the restored state therefore "
+        "always carries a HIGHER serial. An equal serial is the signature of a file copy "
+        "dropped over `terraform.tfstate`, which bypasses every "
+        "guard.",
+        fr=f"Le serial courant vaut {courant['serial']}, celui de la sauvegarde "
         f"restaurable {sauvegarde['serial']}. Un `terraform state push` repart "
-        "du serial de la sauvegarde et l'incremente : le state restaure porte "
-        "donc toujours un serial SUPERIEUR. Un serial egal signe une copie de "
-        "fichier posee par-dessus `terraform.tfstate`, ce qui contourne tout "
-        "garde-fou."
+        "du serial de la sauvegarde et l'incrémente : le state restauré porte "
+        "donc toujours un serial SUPÉRIEUR. Un serial égal signe une copie de "
+        "fichier posée par-dessus `terraform.tfstate`, ce qui contourne tout "
+        "garde-fou.",
     )
 
     etrangeres = [
@@ -201,20 +232,27 @@ def test_la_restauration_est_passee_par_state_push_et_non_par_une_copie(
         if _charger(chemin).get("lineage") != attendu["lineage"]
     ]
     if not etrangeres:
-        pytest.fail("Aucune sauvegarde au lineage etranger : fixtures modifiees.")
+        pytest.fail(message(
+            en="No backup with a foreign lineage: fixtures modified.",
+            fr="Aucune sauvegarde au lineage étranger : fixtures modifiées.",
+        ))
 
     copie = tmp_path / "garde-fou"
     shutil.copytree(restaure, copie)
     pousse = terraform(
         "state", "push", str(etrangeres[0].relative_to(restaure)), cwd=copie
     )
-    assert pousse.returncode != 0, (
-        "Pousser une sauvegarde au lineage etranger devrait echouer. Si ce "
-        "controle passe, Terraform a change et le lab doit etre revu."
+    assert pousse.returncode != 0, message(
+        en="Pushing a backup with a foreign lineage should fail. If this "
+        "check passes, Terraform has changed and the lab must be revised.",
+        fr="Pousser une sauvegarde au lineage étranger devrait échouer. Si ce "
+        "contrôle passe, Terraform a changé et le lab doit être revu.",
     )
-    assert "unrelated state" in pousse.stderr, (
-        "Le refus attendu mentionne `over unrelated state`. Releve :\n"
-        f"{pousse.stderr[-600:]}"
+    assert "unrelated state" in pousse.stderr, message(
+        en="The expected refusal mentions `over unrelated state`. Recorded:\n"
+        f"{pousse.stderr[-600:]}",
+        fr="Le refus attendu mentionne `over unrelated state`. Relevé :\n"
+        f"{pousse.stderr[-600:]}",
     )
 
 
@@ -236,11 +274,15 @@ def test_le_code_converge_sans_que_terraform_ait_rien_recree(restaure: Path) -> 
     """
     plan = terraform("plan", "-input=false", "-detailed-exitcode", "-no-color",
                      cwd=restaure)
-    assert plan.returncode == 0, (
-        f"plan -detailed-exitcode rend {plan.returncode}, attendu 0. Un code 2 "
-        "signale une sauvegarde PERIMEE : son contenu ne correspond plus au "
-        "fichier reel, et Terraform propose un remplacement.\n"
-        f"{plan.stdout[-900:]}"
+    assert plan.returncode == 0, message(
+        en=f"plan -detailed-exitcode returns {plan.returncode}, expected 0. A code 2 "
+        "signals a STALE backup: its content no longer matches the "
+        "real file, and Terraform proposes a replacement.\n"
+        f"{plan.stdout[-900:]}",
+        fr=f"plan -detailed-exitcode rend {plan.returncode}, attendu 0. Un code 2 "
+        "signale une sauvegarde PÉRIMÉE : son contenu ne correspond plus au "
+        "fichier réel, et Terraform propose un remplacement.\n"
+        f"{plan.stdout[-900:]}",
     )
 
     repere = (restaure / REFERENCE).stat().st_mtime
@@ -254,16 +296,27 @@ def test_le_code_converge_sans_que_terraform_ait_rien_recree(restaure: Path) -> 
             contenus.append(nom)
         if chemin.stat().st_mtime > repere + MARGE_SECONDES:
             recrees.append(nom)
-    assert not manquants, f"Ces artefacts ont disparu : {sorted(manquants)}."
-    assert not contenus, (
-        f"Le contenu de ces artefacts a change : {sorted(contenus)}. La "
-        "restauration ne doit rien reecrire."
+    assert not manquants, message(
+        en=f"These artefacts have disappeared: {sorted(manquants)}.",
+        fr=f"Ces artefacts ont disparu : {sorted(manquants)}.",
     )
-    assert not recrees, (
-        f"Ces artefacts ont ete RECREES par Terraform : {sorted(recrees)}. Leur "
-        "date de modification est posterieure a la mise en place du lab.\n\n"
+    assert not contenus, message(
+        en=f"The content of these artefacts has changed: {sorted(contenus)}. The "
+        "restore must rewrite nothing.",
+        fr=f"Le contenu de ces artefacts a changé : {sorted(contenus)}. La "
+        "restauration ne doit rien réécrire.",
+    )
+    assert not recrees, message(
+        en=f"These artefacts were RECREATED by Terraform: {sorted(recrees)}. Their "
+        "modification date is later than the lab's setup.\n\n"
+        "The plan is empty, but it is empty for the wrong reason: an `apply` "
+        "on the truncated state recreates the missing file instead of repairing the "
+        "state. The infrastructure was intact, and on a real system that "
+        "recreation is a destruction.",
+        fr=f"Ces artefacts ont été RECRÉÉS par Terraform : {sorted(recrees)}. Leur "
+        "date de modification est postérieure à la mise en place du lab.\n\n"
         "Le plan est vide, mais il l'est pour la mauvaise raison : un `apply` "
-        "sur le state ampute recree le fichier manquant au lieu de reparer le "
-        "state. L'infrastructure etait intacte, et sur un vrai systeme cette "
-        "recreation est une destruction."
+        "sur le state amputé recrée le fichier manquant au lieu de réparer le "
+        "state. L'infrastructure était intacte, et sur un vrai système cette "
+        "recréation est une destruction.",
     )

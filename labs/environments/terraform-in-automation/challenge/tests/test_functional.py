@@ -29,7 +29,7 @@ from pathlib import Path
 
 import pytest
 
-from conftest import exiger_workdir, workdir_lab
+from conftest import exiger_workdir, message, workdir_lab
 
 WORKDIR = workdir_lab(__file__)
 LAB_ID = "environments-terraform-in-automation"
@@ -61,13 +61,20 @@ def _preuve(travail: Path, nom: str) -> dict:
     chemin = travail / "preuves" / nom
     if not chemin.is_file():
         pytest.fail(
-            f"preuves/{nom} est absent. Ce lab demande de CONSIGNER ce que "
-            "Terraform repond, pas seulement de le lire."
+            message(
+            en=f"preuves/{nom} is missing. This lab asks you to RECORD what "
+            "Terraform answers, not merely to read it.",
+            fr=f"preuves/{nom} est absent. Ce lab demande de CONSIGNER ce que "
+            "Terraform répond, pas seulement de le lire.",
+        )
         )
     try:
         return json.loads(chemin.read_text(encoding="utf-8"))
     except json.JSONDecodeError as erreur:
-        pytest.fail(f"preuves/{nom} n'est pas du JSON valide : {erreur}")
+        pytest.fail(message(
+            en=f"preuves/{nom} is not valid JSON: {erreur}",
+            fr=f"preuves/{nom} n'est pas du JSON valide : {erreur}",
+        ))
 
 
 def _copie(source: Path, cible: Path) -> Path:
@@ -81,7 +88,10 @@ def travail() -> Iterator[Path]:
     if not (WORKDIR / ".terraform" / "providers").is_dir():
         init, _ = _tf("init", "-input=false", "-no-color", cwd=WORKDIR)
         if init.returncode != 0:
-            pytest.fail(f"`terraform init` echoue.\n{init.stderr[-800:]}")
+            pytest.fail(message(
+                en=f"`terraform init` fails.\n{init.stderr[-800:]}",
+                fr=f"`terraform init` échoue.\n{init.stderr[-800:]}",
+            ))
     yield WORKDIR
 
 
@@ -90,40 +100,52 @@ def travail() -> Iterator[Path]:
 
 def test_les_six_preuves_existent(travail: Path) -> None:
     manquantes = [n for n in PREUVES if not (travail / "preuves" / n).is_file()]
-    assert not manquantes, f"Preuves absentes : {manquantes}"
+    assert not manquantes, message(
+        en=f"Missing evidence: {manquantes}",
+        fr=f"Preuves absentes : {manquantes}",
+    )
 
 
 def test_l_etat_final_porte_les_trois_ressources(travail: Path) -> None:
     montre, _ = _tf("show", "-json", cwd=travail)
     if montre.returncode != 0:
-        pytest.fail(f"`terraform show -json` echoue.\n{montre.stderr[-600:]}")
+        pytest.fail(message(
+            en=f"`terraform show -json` fails.\n{montre.stderr[-600:]}",
+            fr=f"`terraform show -json` échoue.\n{montre.stderr[-600:]}",
+        ))
     etat = json.loads(montre.stdout or "{}")
     gerees = [
         r for r in etat.get("values", {}).get("root_module", {}).get("resources", [])
         if r.get("mode") == "managed"
     ]
     adresses = sorted(r["address"] for r in gerees)
-    assert len(gerees) == 3, (
-        f"L'etat porte {len(gerees)} ressource(s) : {adresses}. Attendu 3, "
-        "c'est-a-dire une configuration reellement appliquee."
+    assert len(gerees) == 3, message(
+        en=f"The state holds {len(gerees)} resource(s): {adresses}. 3 expected, "
+        "that is, a configuration that was really applied.",
+        fr=f"L'état porte {len(gerees)} ressource(s) : {adresses}. Attendu 3, "
+        "c'est-à-dire une configuration réellement appliquée.",
     )
 
 
 def test_la_chaine_a_releve_cinq_codes(travail: Path) -> None:
     chaine = _preuve(travail, "chaine.json")
     attendues = {"fmt", "init", "validate", "plan", "apply"}
-    assert set(chaine) == attendues, (
-        f"chaine.json porte {sorted(chaine)}, attendu {sorted(attendues)}."
+    assert set(chaine) == attendues, message(
+        en=f"chaine.json carries {sorted(chaine)}, expected {sorted(attendues)}.",
+        fr=f"chaine.json porte {sorted(chaine)}, attendu {sorted(attendues)}.",
     )
     # `plan -detailed-exitcode` rend 2 quand il reste des changements : c'est un
     # succes, pas une erreur. Les quatre autres etapes doivent rendre 0.
     for etape in ("fmt", "init", "validate", "apply"):
-        assert chaine[etape] == 0, (
-            f"chaine.json donne {etape} = {chaine[etape]}, attendu 0."
+        assert chaine[etape] == 0, message(
+            en=f"chaine.json gives {etape} = {chaine[etape]}, expected 0.",
+            fr=f"chaine.json donne {etape} = {chaine[etape]}, attendu 0.",
         )
-    assert chaine["plan"] in (0, 2), (
-        f"chaine.json donne plan = {chaine['plan']}, attendu 0 ou 2. Un 1 "
-        "signale une erreur de planification, pas des changements."
+    assert chaine["plan"] in (0, 2), message(
+        en=f"chaine.json gives plan = {chaine['plan']}, expected 0 or 2. A 1 "
+        "signals a planning error, not pending changes.",
+        fr=f"chaine.json donne plan = {chaine['plan']}, attendu 0 ou 2. Un 1 "
+        "signale une erreur de planification, pas des changements.",
     )
 
 
@@ -135,13 +157,17 @@ def test_les_trois_codes_du_plan_sont_exacts(travail: Path, tmp_path: Path) -> N
 
     apres, _ = _tf("plan", "-input=false", "-detailed-exitcode", "-no-color",
                    cwd=travail)
-    assert apres.returncode == 0, (
-        f"Apres apply, `plan -detailed-exitcode` rend {apres.returncode}, "
-        "attendu 0 : la configuration n'a pas converge."
+    assert apres.returncode == 0, message(
+        en=f"After apply, `plan -detailed-exitcode` returns {apres.returncode}, "
+        "expected 0: the configuration has not converged.",
+        fr=f"Après apply, `plan -detailed-exitcode` rend {apres.returncode}, "
+        "attendu 0 : la configuration n'a pas convergé.",
     )
-    assert releve.get("plan_apres_apply") == 0, (
-        f"codes.json annonce plan_apres_apply = {releve.get('plan_apres_apply')}, "
-        "mesure 0."
+    assert releve.get("plan_apres_apply") == 0, message(
+        en=f"codes.json claims plan_apres_apply = {releve.get('plan_apres_apply')}, "
+        "measured 0.",
+        fr=f"codes.json annonce plan_apres_apply = {releve.get('plan_apres_apply')}, "
+        "mesuré 0.",
     )
 
     # Avant apply : on rejoue sur une copie vierge de tout etat.
@@ -150,13 +176,17 @@ def test_les_trois_codes_du_plan_sont_exacts(travail: Path, tmp_path: Path) -> N
     shutil.rmtree(vierge / "produits", ignore_errors=True)
     avant, _ = _tf("plan", "-input=false", "-detailed-exitcode", "-no-color",
                    cwd=vierge)
-    assert avant.returncode == 2, (
-        f"Sans etat, `plan -detailed-exitcode` rend {avant.returncode}, "
-        "attendu 2."
+    assert avant.returncode == 2, message(
+        en=f"With no state, `plan -detailed-exitcode` returns {avant.returncode}, "
+        "expected 2.",
+        fr=f"Sans état, `plan -detailed-exitcode` rend {avant.returncode}, "
+        "attendu 2.",
     )
-    assert releve.get("plan_avant_apply") == 2, (
-        f"codes.json annonce plan_avant_apply = "
-        f"{releve.get('plan_avant_apply')}, mesure 2."
+    assert releve.get("plan_avant_apply") == 2, message(
+        en=f"codes.json claims plan_avant_apply = "
+        f"{releve.get('plan_avant_apply')}, measured 2.",
+        fr=f"codes.json annonce plan_avant_apply = "
+        f"{releve.get('plan_avant_apply')}, mesuré 2.",
     )
 
     # Configuration cassee : code 1.
@@ -166,12 +196,15 @@ def test_les_trois_codes_du_plan_sont_exacts(travail: Path, tmp_path: Path) -> N
     )
     fait, _ = _tf("plan", "-input=false", "-detailed-exitcode", "-no-color",
                   cwd=cassee)
-    assert fait.returncode == 1, (
-        f"Sur configuration cassee, le plan rend {fait.returncode}, attendu 1."
+    assert fait.returncode == 1, message(
+        en=f"On a broken configuration, the plan returns {fait.returncode}, expected 1.",
+        fr=f"Sur configuration cassée, le plan rend {fait.returncode}, attendu 1.",
     )
-    assert releve.get("plan_config_cassee") == 1, (
-        f"codes.json annonce plan_config_cassee = "
-        f"{releve.get('plan_config_cassee')}, mesure 1."
+    assert releve.get("plan_config_cassee") == 1, message(
+        en=f"codes.json claims plan_config_cassee = "
+        f"{releve.get('plan_config_cassee')}, measured 1.",
+        fr=f"codes.json annonce plan_config_cassee = "
+        f"{releve.get('plan_config_cassee')}, mesuré 1.",
     )
 
 
@@ -183,14 +216,19 @@ def test_le_code_de_fmt_check_est_trois(travail: Path, tmp_path: Path) -> None:
         encoding="utf-8",
     )
     fait, _ = _tf("fmt", "-check", "-recursive", "-no-color", cwd=copie)
-    assert fait.returncode == 3, (
-        f"`fmt -check` rend {fait.returncode} sur un fichier mal indente, "
-        "attendu 3."
+    assert fait.returncode == 3, message(
+        en=f"`fmt -check` returns {fait.returncode} on a badly indented file, "
+        "expected 3.",
+        fr=f"`fmt -check` rend {fait.returncode} sur un fichier mal indenté, "
+        "attendu 3.",
     )
-    assert releve.get("fmt_check_mal_indente") == 3, (
-        f"codes.json annonce fmt_check_mal_indente = "
-        f"{releve.get('fmt_check_mal_indente')}, mesure 3. Ce n'est pas 1 : un "
-        "pipeline qui teste `-eq 1` ne detecte donc jamais rien."
+    assert releve.get("fmt_check_mal_indente") == 3, message(
+        en=f"codes.json claims fmt_check_mal_indente = "
+        f"{releve.get('fmt_check_mal_indente')}, measured 3. It is not 1: a "
+        "pipeline testing `-eq 1` therefore never detects anything.",
+        fr=f"codes.json annonce fmt_check_mal_indente = "
+        f"{releve.get('fmt_check_mal_indente')}, mesuré 3. Ce n'est pas 1 : un "
+        "pipeline qui teste `-eq 1` ne détecte donc jamais rien.",
     )
 
 
@@ -206,23 +244,30 @@ def test_le_plan_sans_variable_echoue_aussitot(travail: Path, tmp_path: Path) ->
         auto.unlink()
 
     fait, duree = _tf("plan", "-input=false", "-no-color", cwd=copie)
-    assert fait.returncode == 1, (
-        f"Sans valeur pour `environnement`, le plan rend {fait.returncode}, "
-        "attendu 1."
+    assert fait.returncode == 1, message(
+        en=f"With no value for `environnement`, the plan returns {fait.returncode}, "
+        "expected 1.",
+        fr=f"Sans valeur pour `environnement`, le plan rend {fait.returncode}, "
+        "attendu 1.",
     )
-    assert "No value for required variable" in (fait.stdout + fait.stderr), (
-        "Le plan echoue, mais pas sur l'absence de valeur de variable."
+    assert "No value for required variable" in (fait.stdout + fait.stderr), message(
+        en="The plan fails, but not on the missing variable value.",
+        fr="Le plan échoue, mais pas sur l'absence de valeur de variable.",
     )
-    assert duree < 5.0, (
-        f"Le plan a mis {duree:.1f}s : il ne devrait PAS attendre."
+    assert duree < 5.0, message(
+        en=f"The plan took {duree:.1f}s: it should NOT wait.",
+        fr=f"Le plan a mis {duree:.1f}s : il ne devrait PAS attendre.",
     )
-    assert releve.get("code") == 1, (
-        f"prompt.json annonce code = {releve.get('code')}, mesure 1."
+    assert releve.get("code") == 1, message(
+        en=f"prompt.json claims code = {releve.get('code')}, measured 1.",
+        fr=f"prompt.json annonce code = {releve.get('code')}, mesuré 1.",
     )
     attente = releve.get("attente_secondes")
-    assert isinstance(attente, (int, float)) and attente < 5.0, (
-        f"prompt.json annonce attente_secondes = {attente}. La commande "
-        "n'attend pas : elle echoue tout de suite."
+    assert isinstance(attente, (int, float)) and attente < 5.0, message(
+        en=f"prompt.json claims attente_secondes = {attente}. The command "
+        "does not wait: it fails straight away.",
+        fr=f"prompt.json annonce attente_secondes = {attente}. La commande "
+        "n'attend pas : elle échoue tout de suite.",
     )
 
 
@@ -237,8 +282,9 @@ def test_le_sort_des_quatre_options_est_exact(travail: Path, tmp_path: Path) -> 
         "refresh_false": "ignore",
         "target": "ignore",
     }
-    assert set(releve) == set(attendu), (
-        f"plan_fige.json porte {sorted(releve)}, attendu {sorted(attendu)}."
+    assert set(releve) == set(attendu), message(
+        en=f"plan_fige.json carries {sorted(releve)}, expected {sorted(attendu)}.",
+        fr=f"plan_fige.json porte {sorted(releve)}, attendu {sorted(attendu)}.",
     )
 
     options = {
@@ -256,22 +302,30 @@ def test_le_sort_des_quatre_options_est_exact(travail: Path, tmp_path: Path) -> 
         shutil.rmtree(copie / "produits", ignore_errors=True)
         planifie, _ = _tf("plan", "-out=essai.tfplan", "-input=false", "-no-color",
                           cwd=copie)
-        assert planifie.returncode == 0, (
-            f"Impossible d'enregistrer un plan pour l'essai {cle}.\n"
-            f"{planifie.stderr[-500:]}"
+        assert planifie.returncode == 0, message(
+            en=f"Cannot save a plan for attempt {cle}.\n"
+            f"{planifie.stderr[-500:]}",
+            fr=f"Impossible d'enregistrer un plan pour l'essai {cle}.\n"
+            f"{planifie.stderr[-500:]}",
         )
         fait, _ = _tf("apply", "-input=false", "-no-color", *args, "essai.tfplan",
                       cwd=copie)
         mesure = "erreur" if fait.returncode != 0 else "ignore"
-        assert mesure == attendu[cle], (
-            f"L'option {args} sur un plan sauvegarde donne {mesure!r}, "
-            f"mesure attendue {attendu[cle]!r}."
+        assert mesure == attendu[cle], message(
+            en=f"The {args} option on a saved plan gives {mesure!r}, "
+            f"measurement expected {attendu[cle]!r}.",
+            fr=f"L'option {args} sur un plan sauvegardé donne {mesure!r}, "
+            f"mesure attendue {attendu[cle]!r}.",
         )
-        assert releve[cle] == attendu[cle], (
-            f"plan_fige.json annonce {cle} = {releve[cle]!r}, mesure "
+        assert releve[cle] == attendu[cle], message(
+            en=f"plan_fige.json claims {cle} = {releve[cle]!r}, measured "
+            f"{attendu[cle]!r}. Reminder: only an attempt to change a "
+            "VARIABLE raises an error; planning modes are "
+            "accepted and ignored.",
+            fr=f"plan_fige.json annonce {cle} = {releve[cle]!r}, mesure "
             f"{attendu[cle]!r}. Rappel : seule une tentative de changer une "
-            "VARIABLE leve une erreur ; les modes de planification sont "
-            "acceptes et ignores."
+            "VARIABLE lève une erreur ; les modes de planification sont "
+            "acceptés et ignorés.",
         )
 
 
@@ -280,9 +334,11 @@ def test_le_sort_des_quatre_options_est_exact(travail: Path, tmp_path: Path) -> 
 
 def test_le_verrou_est_mesure(travail: Path, tmp_path: Path) -> None:
     releve = _preuve(travail, "verrou.json")
-    assert releve.get("defaut_secondes") == 0, (
-        f"verrou.json annonce defaut_secondes = {releve.get('defaut_secondes')}. "
-        "Le defaut de `-lock-timeout` est 0s : la commande n'attend pas."
+    assert releve.get("defaut_secondes") == 0, message(
+        en=f"verrou.json claims defaut_secondes = {releve.get('defaut_secondes')}. "
+        "The default for `-lock-timeout` is 0s: the command does not wait.",
+        fr=f"verrou.json annonce defaut_secondes = {releve.get('defaut_secondes')}. "
+        "Le défaut de `-lock-timeout` est 0s : la commande n'attend pas.",
     )
 
     copie = _copie(travail, tmp_path / "verrou")
@@ -306,29 +362,41 @@ def test_le_verrou_est_mesure(travail: Path, tmp_path: Path) -> None:
                         cwd=copie)
     fil.join()
 
-    assert resultat.get("duree", 0) >= DUREE_MINIMALE_APPLY, (
-        f"L'apply n'a dure que {resultat.get('duree', 0):.1f}s. Il doit durer "
+    assert resultat.get("duree", 0) >= DUREE_MINIMALE_APPLY, message(
+        en=f"The apply only lasted {resultat.get('duree', 0):.1f}s. It must last "
+        f"at least {DUREE_MINIMALE_APPLY:.0f}s for a lock to be "
+        "observable: is the `local-exec` command slow enough?",
+        fr=f"L'apply n'a duré que {resultat.get('duree', 0):.1f}s. Il doit durer "
         f"au moins {DUREE_MINIMALE_APPLY:.0f}s pour qu'un verrou soit "
-        "observable : la commande de `local-exec` est-elle assez lente ?"
+        "observable : la commande de `local-exec` est-elle assez lente ?",
     )
-    assert concurrent.returncode == 1, (
-        f"Le plan concurrent rend {concurrent.returncode}, attendu 1 : avec le "
-        "defaut, il doit echouer immediatement sur le verrou."
+    assert concurrent.returncode == 1, message(
+        en=f"The concurrent plan returns {concurrent.returncode}, expected 1: with the "
+        "default, it must fail immediately on the lock.",
+        fr=f"Le plan concurrent rend {concurrent.returncode}, attendu 1 : avec le "
+        "défaut, il doit échouer immédiatement sur le verrou.",
     )
-    assert "state lock" in (concurrent.stdout + concurrent.stderr).lower(), (
-        "Le plan concurrent echoue, mais pas sur le verrou d'etat."
+    assert "state lock" in (concurrent.stdout + concurrent.stderr).lower(), message(
+        en="The concurrent plan fails, but not on the state lock.",
+        fr="Le plan concurrent échoue, mais pas sur le verrou d'état.",
     )
-    assert avec_delai.returncode == 0, (
-        f"Avec `-lock-timeout`, le plan rend {avec_delai.returncode}, attendu "
-        "0 : il doit patienter puis aboutir."
+    assert avec_delai.returncode == 0, message(
+        en=f"With `-lock-timeout`, the plan returns {avec_delai.returncode}, expected "
+        "0: it must wait and then succeed.",
+        fr=f"Avec `-lock-timeout`, le plan rend {avec_delai.returncode}, attendu "
+        "0 : il doit patienter puis aboutir.",
     )
-    assert releve.get("code_avec_defaut") == 1, (
-        f"verrou.json annonce code_avec_defaut = "
-        f"{releve.get('code_avec_defaut')}, mesure 1."
+    assert releve.get("code_avec_defaut") == 1, message(
+        en=f"verrou.json claims code_avec_defaut = "
+        f"{releve.get('code_avec_defaut')}, measured 1.",
+        fr=f"verrou.json annonce code_avec_defaut = "
+        f"{releve.get('code_avec_defaut')}, mesuré 1.",
     )
-    assert releve.get("code_avec_delai") == 0, (
-        f"verrou.json annonce code_avec_delai = "
-        f"{releve.get('code_avec_delai')}, mesure 0."
+    assert releve.get("code_avec_delai") == 0, message(
+        en=f"verrou.json claims code_avec_delai = "
+        f"{releve.get('code_avec_delai')}, measured 0.",
+        fr=f"verrou.json annonce code_avec_delai = "
+        f"{releve.get('code_avec_delai')}, mesuré 0.",
     )
 
 
@@ -338,20 +406,31 @@ def test_le_verrou_est_mesure(travail: Path, tmp_path: Path) -> None:
 def test_le_chemin_de_la_fuite_est_exact(travail: Path, tmp_path: Path) -> None:
     releve = _preuve(travail, "fuite.json")
     chemin = str(releve.get("chemin", "")).strip()
-    assert chemin, "fuite.json ne designe aucun chemin."
+    assert chemin, message(
+        en="fuite.json names no path.",
+        fr="fuite.json ne désigne aucun chemin.",
+    )
 
     copie = _copie(travail, tmp_path / "fuite")
     (copie / "terraform.tfstate").unlink(missing_ok=True)
     shutil.rmtree(copie / "produits", ignore_errors=True)
     planifie, _ = _tf("plan", "-out=fuite.tfplan", "-input=false", "-no-color",
                       cwd=copie)
-    assert planifie.returncode == 0, "Impossible d'enregistrer le plan d'essai."
+    assert planifie.returncode == 0, message(
+        en="Cannot save the trial plan.",
+        fr="Impossible d'enregistrer le plan d'essai.",
+    )
 
     montre, _ = _tf("show", "-json", "fuite.tfplan", cwd=copie)
-    assert montre.returncode == 0, "Impossible de relire le plan en JSON."
-    assert SECRET in montre.stdout, (
-        "Le secret n'apparait pas dans la relecture JSON du plan : la variable "
-        "porte-t-elle bien sa valeur par defaut ?"
+    assert montre.returncode == 0, message(
+        en="Cannot read the plan back as JSON.",
+        fr="Impossible de relire le plan en JSON.",
+    )
+    assert SECRET in montre.stdout, message(
+        en="The secret does not appear in the JSON reading of the plan: does the variable "
+        "actually carry its default value?",
+        fr="Le secret n'apparaît pas dans la relecture JSON du plan : la variable "
+        "porte-t-elle bien sa valeur par défaut ?",
     )
 
     # Le chemin annonce est evalue par jq contre le JSON du plan.
@@ -360,14 +439,19 @@ def test_le_chemin_de_la_fuite_est_exact(travail: Path, tmp_path: Path) -> None:
         capture_output=True, text=True,
         check=False,
     )
-    assert jq.returncode == 0, (
-        f"Le chemin {chemin!r} n'est pas une expression jq valide : "
-        f"{jq.stderr.strip()[:200]}"
+    assert jq.returncode == 0, message(
+        en=f"The path {chemin!r} is not a valid jq expression: "
+        f"{jq.stderr.strip()[:200]}",
+        fr=f"Le chemin {chemin!r} n'est pas une expression jq valide : "
+        f"{jq.stderr.strip()[:200]}",
     )
-    assert SECRET in jq.stdout, (
-        f"Le chemin {chemin!r} ne designe pas le secret. Il rend "
-        f"{jq.stdout.strip()[:80]!r}. Cherchez ou la valeur sort en clair, par "
-        "exemple sous `.variables`."
+    assert SECRET in jq.stdout, message(
+        en=f"The path {chemin!r} does not name the secret. It returns "
+        f"{jq.stdout.strip()[:80]!r}. Look for where the value comes out in clear, for "
+        "instance under `.variables`.",
+        fr=f"Le chemin {chemin!r} ne désigne pas le secret. Il rend "
+        f"{jq.stdout.strip()[:80]!r}. Cherchez où la valeur sort en clair, par "
+        "exemple sous `.variables`.",
     )
 
 
@@ -386,8 +470,11 @@ def test_le_gitignore_attrape_le_plan_sans_extension(
             ["git", "check-ignore", "-q", nom], cwd=depot, capture_output=True,
             check=False,
         )
-        assert verdict.returncode == 0, (
-            f"`git check-ignore` ne considere pas {nom} comme ignore. Le nom "
+        assert verdict.returncode == 0, message(
+            en=f"`git check-ignore` does not consider {nom} ignored. The name "
+            "produced by `plan -out=tfplan` has NO extension at all: a "
+            "`*.tfplan` pattern alone does not catch it.",
+            fr=f"`git check-ignore` ne considère pas {nom} comme ignoré. Le nom "
             "produit par `plan -out=tfplan` n'a AUCUNE extension : un motif "
-            "`*.tfplan` seul ne l'attrape pas."
+            "`*.tfplan` seul ne l'attrape pas.",
         )

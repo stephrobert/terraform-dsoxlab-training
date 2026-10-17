@@ -19,7 +19,14 @@ from pathlib import Path
 
 import pytest
 
-from conftest import exiger_workdir, output_json, show_json, terraform, workdir_lab
+from conftest import (
+    exiger_workdir,
+    message,
+    output_json,
+    show_json,
+    terraform,
+    workdir_lab,
+)
 
 WORKDIR = workdir_lab(__file__)
 LAB_ID = "write-code-declare-resources"
@@ -30,7 +37,10 @@ ADRESSES = {"random_pet.hote", "local_file.fiche", "terraform_data.sceau", "loca
 def actions(cwd: Path, adresse: str, *var: str) -> list[str] | None:
     p = terraform("plan", "-input=false", "-no-color", "-out=tfplan", *var, cwd=cwd)
     if p.returncode != 0:
-        pytest.fail(f"`terraform plan` a échoué.\n{p.stderr[-1000:]}")
+        pytest.fail(message(
+            en=f"`terraform plan` failed.\n{p.stderr[-1000:]}",
+            fr=f"`terraform plan` a échoué.\n{p.stderr[-1000:]}",
+        ))
     plan = json.loads(terraform("show", "-json", "tfplan", cwd=cwd).stdout)
     for rc in plan.get("resource_changes", []):
         if rc["address"] == adresse:
@@ -43,10 +53,16 @@ def applied() -> Path:
     exiger_workdir(WORKDIR, LAB_ID)
     init = terraform("init", "-input=false", "-no-color", cwd=WORKDIR)
     if init.returncode != 0:
-        pytest.fail(f"`terraform init` a échoué.\n{init.stderr[-1200:]}")
+        pytest.fail(message(
+            en=f"`terraform init` failed.\n{init.stderr[-1200:]}",
+            fr=f"`terraform init` a échoué.\n{init.stderr[-1200:]}",
+        ))
     app = terraform("apply", "-auto-approve", "-input=false", "-no-color", cwd=WORKDIR)
     if app.returncode != 0:
-        pytest.fail(f"`terraform apply` a échoué. Un `???` subsiste.\n{app.stderr[-1500:]}")
+        pytest.fail(message(
+            en=f"`terraform apply` failed. A `???` remains.\n{app.stderr[-1500:]}",
+            fr=f"`terraform apply` a échoué. Un `???` subsiste.\n{app.stderr[-1500:]}",
+        ))
     return WORKDIR
 
 
@@ -57,11 +73,13 @@ def applied() -> Path:
 def test_les_quatre_ressources_sont_dans_le_state(applied: Path) -> None:
     module = show_json(applied).get("values", {}).get("root_module", {})
     trouvees = {r["address"]: r.get("mode") for r in module.get("resources", [])}
-    assert set(trouvees) == ADRESSES, (
-        f"Adresses dans le state : {sorted(trouvees)}. Attendu : {sorted(ADRESSES)}."
+    assert set(trouvees) == ADRESSES, message(
+        en=f"Addresses in the state: {sorted(trouvees)}. Expected: {sorted(ADRESSES)}.",
+        fr=f"Adresses dans le state : {sorted(trouvees)}. Attendu : {sorted(ADRESSES)}.",
     )
-    assert all(m == "managed" for m in trouvees.values()), (
-        f"Toutes les ressources doivent être en mode managed : {trouvees}."
+    assert all(m == "managed" for m in trouvees.values()), message(
+        en=f"Every resource must be in managed mode: {trouvees}.",
+        fr=f"Toutes les ressources doivent être en mode managed : {trouvees}.",
     )
 
 
@@ -71,16 +89,23 @@ def test_les_quatre_ressources_sont_dans_le_state(applied: Path) -> None:
 
 def test_la_fiche_n_a_pas_de_depends_on(applied: Path) -> None:
     p = terraform("plan", "-input=false", "-no-color", "-out=tfplan", cwd=applied)
-    assert p.returncode == 0
+    assert p.returncode == 0, message(
+        en=f"`terraform plan -out` failed.\n{p.stderr[-800:]}",
+        fr=f"`terraform plan -out` a échoué.\n{p.stderr[-800:]}",
+    )
     conf = json.loads(terraform("show", "-json", "tfplan", cwd=applied).stdout)
     res = {r["address"]: r for r in conf["configuration"]["root_module"]["resources"]}
-    assert not res["local_file.fiche"].get("depends_on"), (
-        "`local_file.fiche` doit dépendre de `random_pet.hote` par une référence "
-        "implicite (son filename), sans depends_on."
+    assert not res["local_file.fiche"].get("depends_on"), message(
+        en="`local_file.fiche` must depend on `random_pet.hote` through an implicit "
+        "reference (its filename), without depends_on.",
+        fr="`local_file.fiche` doit dépendre de `random_pet.hote` par une référence "
+        "implicite (son filename), sans depends_on.",
     )
-    assert res["local_file.journal"].get("depends_on") == ["terraform_data.sceau"], (
-        "`local_file.journal` doit porter depends_on = [terraform_data.sceau] : "
-        "c'est une dépendance de comportement, sans référence."
+    assert res["local_file.journal"].get("depends_on") == ["terraform_data.sceau"], message(
+        en="`local_file.journal` must carry depends_on = [terraform_data.sceau]: "
+        "it is a behaviour dependency, with no reference.",
+        fr="`local_file.journal` doit porter depends_on = [terraform_data.sceau] : "
+        "c'est une dépendance de comportement, sans référence.",
     )
 
 
@@ -90,12 +115,15 @@ def test_la_fiche_n_a_pas_de_depends_on(applied: Path) -> None:
 
 def test_outputs_cables(applied: Path) -> None:
     sorties = output_json(applied)
-    assert "out/fiche-" in sorties["chemin_fiche"]["value"], (
-        f"`chemin_fiche` = {sorties['chemin_fiche']['value']!r}."
+    assert "out/fiche-" in sorties["chemin_fiche"]["value"], message(
+        en=f"`chemin_fiche` = {sorties['chemin_fiche']['value']!r}.",
+        fr=f"`chemin_fiche` = {sorties['chemin_fiche']['value']!r}.",
     )
-    assert sorties["sceau"]["value"] == "v1", (
-        f"`sceau` = {sorties['sceau']['value']!r}, attendu l'étiquette appliquée 'v1'. "
-        "L'output doit exposer terraform_data.sceau.output."
+    assert sorties["sceau"]["value"] == "v1", message(
+        en=f"`sceau` = {sorties['sceau']['value']!r}, the applied label 'v1' was expected. "
+        "The output must expose terraform_data.sceau.output.",
+        fr=f"`sceau` = {sorties['sceau']['value']!r}, attendu l'étiquette appliquée 'v1'. "
+        "L'output doit exposer terraform_data.sceau.output.",
     )
 
 
@@ -105,10 +133,13 @@ def test_outputs_cables(applied: Path) -> None:
 
 def test_changer_l_etiquette_met_le_sceau_a_jour_en_place(applied: Path) -> None:
     a = actions(applied, "terraform_data.sceau", "-var", "etiquette=v2")
-    assert a == ["update"], (
-        f"actions sur terraform_data.sceau = {a}, attendu ['update']. Un changement "
+    assert a == ["update"], message(
+        en=f"actions on terraform_data.sceau = {a}, expected ['update']. A change "
+        "of `input` updates in place, it does not replace. Check that `input` "
+        "really carries `var.etiquette`.",
+        fr=f"actions sur terraform_data.sceau = {a}, attendu ['update']. Un changement "
         "de `input` se met à jour en place, il ne remplace pas. Vérifiez que `input` "
-        "porte bien `var.etiquette`."
+        "porte bien `var.etiquette`.",
     )
 
 
@@ -118,18 +149,23 @@ def test_changer_l_etiquette_met_le_sceau_a_jour_en_place(applied: Path) -> None
 
 def test_changer_la_generation_remplace_le_sceau(applied: Path) -> None:
     a = actions(applied, "terraform_data.sceau", "-var", "generation=2")
-    assert a is not None and set(a) == {"create", "delete"}, (
-        f"actions sur terraform_data.sceau = {a}, attendu un remplacement. "
-        "`triggers_replace` doit valoir l'id de l'hôte, qui change avec la génération."
+    assert a is not None and set(a) == {"create", "delete"}, message(
+        en=f"actions on terraform_data.sceau = {a}, a replacement was expected. "
+        "`triggers_replace` must be the host's id, which changes with the generation.",
+        fr=f"actions sur terraform_data.sceau = {a}, attendu un remplacement. "
+        "`triggers_replace` doit valoir l'id de l'hôte, qui change avec la génération.",
     )
 
 
 def test_la_fiche_est_creee_avant_d_etre_detruite(applied: Path) -> None:
     a = actions(applied, "local_file.fiche", "-var", "generation=2")
-    assert a == ["create", "delete"], (
-        f"actions sur local_file.fiche = {a}, attendu ['create', 'delete']. Sans "
+    assert a == ["create", "delete"], message(
+        en=f"actions on local_file.fiche = {a}, expected ['create', 'delete']. Without "
+        "`create_before_destroy = true`, the order would be ['delete', 'create'], with a "
+        "window where the file no longer exists.",
+        fr=f"actions sur local_file.fiche = {a}, attendu ['create', 'delete']. Sans "
         "`create_before_destroy = true`, l'ordre serait ['delete', 'create'], avec une "
-        "fenêtre où le fichier n'existe plus."
+        "fenêtre où le fichier n'existe plus.",
     )
 
 
@@ -139,7 +175,9 @@ def test_la_fiche_est_creee_avant_d_etre_detruite(applied: Path) -> None:
 
 def test_la_configuration_est_stable_apres_apply(applied: Path) -> None:
     p = terraform("plan", "-input=false", "-detailed-exitcode", "-no-color", cwd=applied)
-    assert p.returncode == 0, (
-        f"`plan -detailed-exitcode` rend {p.returncode} (2 = des changements restent "
-        "planifiés). Un apply doit converger."
+    assert p.returncode == 0, message(
+        en=f"`plan -detailed-exitcode` returns {p.returncode} (2 = changes remain "
+        "planned). An apply must converge.",
+        fr=f"`plan -detailed-exitcode` rend {p.returncode} (2 = des changements restent "
+        "planifiés). Un apply doit converger.",
     )

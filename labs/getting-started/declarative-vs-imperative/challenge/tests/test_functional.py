@@ -22,7 +22,14 @@ from pathlib import Path
 
 import pytest
 
-from conftest import exiger_workdir, output_json, show_json, terraform, workdir_lab
+from conftest import (
+    exiger_workdir,
+    message,
+    output_json,
+    show_json,
+    terraform,
+    workdir_lab,
+)
 
 WORKDIR = workdir_lab(__file__)
 LAB_ID = "getting-started-declarative-vs-imperative"
@@ -45,8 +52,12 @@ def prepared() -> Path:
     init = terraform("init", "-input=false", "-no-color", cwd=WORKDIR)
     if init.returncode != 0:
         pytest.fail(
-            "`terraform init` a échoué. Un `???` subsiste-t-il dans la "
-            f"configuration ?\n{init.stderr[-1200:]}"
+            message(
+            en="`terraform init` failed. Is there a leftover `???` in the "
+            f"configuration?\n{init.stderr[-1200:]}",
+            fr="`terraform init` a échoué. Un `???` subsiste-t-il dans la "
+            f"configuration ?\n{init.stderr[-1200:]}",
+        )
         )
     return WORKDIR
 
@@ -55,7 +66,10 @@ def prepared() -> Path:
 def applied(prepared: Path) -> Path:
     app = terraform("apply", "-auto-approve", "-input=false", "-no-color", cwd=prepared)
     if app.returncode != 0:
-        pytest.fail(f"`terraform apply` a échoué.\n{app.stderr[-1500:]}")
+        pytest.fail(message(
+            en=f"`terraform apply` failed.\n{app.stderr[-1500:]}",
+            fr=f"`terraform apply` a échoué.\n{app.stderr[-1500:]}",
+        ))
     return prepared
 
 
@@ -75,9 +89,11 @@ def ressources(cwd: Path) -> list[dict]:
 # --------------------------------------------------------------------------
 def test_les_trois_providers_sont_verrouilles(prepared: Path) -> None:
     verrou = prepared / ".terraform.lock.hcl"
-    assert verrou.is_file(), (
-        "`.terraform.lock.hcl` est absent : `terraform init` n'a pas résolu les "
-        "providers."
+    assert verrou.is_file(), message(
+        en="`.terraform.lock.hcl` is missing: `terraform init` did not resolve the "
+        "providers.",
+        fr="`.terraform.lock.hcl` est absent : `terraform init` n'a pas résolu les "
+        "providers.",
     )
     trouves = dict(
         re.findall(
@@ -86,8 +102,9 @@ def test_les_trois_providers_sont_verrouilles(prepared: Path) -> None:
         )
     )
     manquants = PROVIDERS_ATTENDUS - set(trouves)
-    assert not manquants, (
-        f"Le verrou ne liste pas {sorted(manquants)}. Il porte {sorted(trouves)}."
+    assert not manquants, message(
+        en=f"The lock does not list {sorted(manquants)}. It carries {sorted(trouves)}.",
+        fr=f"Le verrou ne liste pas {sorted(manquants)}. Il porte {sorted(trouves)}.",
     )
 
 
@@ -96,9 +113,11 @@ def test_les_trois_providers_sont_verrouilles(prepared: Path) -> None:
 # --------------------------------------------------------------------------
 def test_le_state_porte_les_trois_ressources_attendues(applied: Path) -> None:
     gerees = {r["address"] for r in ressources(applied) if r["mode"] == "managed"}
-    assert gerees == GEREES_ATTENDUES, (
-        f"Le state gère {sorted(gerees)}.\nAttendu exactement : "
-        f"{sorted(GEREES_ATTENDUES)}."
+    assert gerees == GEREES_ATTENDUES, message(
+        en=f"The state manages {sorted(gerees)}.\nExactly expected: "
+        f"{sorted(GEREES_ATTENDUES)}.",
+        fr=f"Le state gère {sorted(gerees)}.\nAttendu exactement : "
+        f"{sorted(GEREES_ATTENDUES)}.",
     )
 
     empreinte = next(
@@ -109,12 +128,17 @@ def test_le_state_porte_les_trois_ressources_attendues(applied: Path) -> None:
         for r in ressources(applied)
         if r["address"] == "random_string.identifiant"
     )
-    assert identifiant in (empreinte["values"].get("triggers") or {}).values(), (
-        "Le déclencheur de `null_resource.empreinte` ne dépend pas de "
+    assert identifiant in (empreinte["values"].get("triggers") or {}).values(), message(
+        en="The trigger of `null_resource.empreinte` does not depend on "
+        f"the identifier.\nIt is {empreinte['values'].get('triggers')!r}.\n\n"
+        "Without that dependency, nothing ties the resource to what it is "
+        "supposed to track: it would be neither replaced when it should, nor spared "
+        "when it should not.",
+        fr="Le déclencheur de `null_resource.empreinte` ne dépend pas de "
         f"l'identifiant.\nIl vaut {empreinte['values'].get('triggers')!r}.\n\n"
         "Sans cette dépendance, rien ne relie la ressource à ce qu'elle est "
         "censée suivre : elle ne serait ni remplacée quand il faut, ni épargnée "
-        "quand il ne faut pas."
+        "quand il ne faut pas.",
     )
 
 
@@ -126,8 +150,9 @@ def test_le_rapport_existe_et_porte_l_identifiant_du_state(applied: Path) -> Non
         r for r in ressources(applied) if r["address"] == "local_file.rapport"
     )
     chemin = (applied / rapport["values"]["filename"]).resolve()
-    assert chemin.is_file(), (
-        f"Le rapport est annoncé en {chemin}, qui n'existe pas sur le disque."
+    assert chemin.is_file(), message(
+        en=f"The report is announced at {chemin}, which does not exist on disk.",
+        fr=f"Le rapport est annoncé en {chemin}, qui n'existe pas sur le disque.",
     )
 
     identifiant = next(
@@ -136,15 +161,21 @@ def test_le_rapport_existe_et_porte_l_identifiant_du_state(applied: Path) -> Non
         if r["address"] == "random_string.identifiant"
     )
     contenu = chemin.read_text(encoding="utf-8")
-    assert identifiant in contenu, (
-        f"Le rapport ne contient pas {identifiant!r}, l'identifiant du state.\n"
+    assert identifiant in contenu, message(
+        en=f"The report does not contain {identifiant!r}, the identifier from the state.\n"
+        f"It contains: {contenu[:200]!r}\n\nThe content must be built by "
+        "interpolation, not typed in.",
+        fr=f"Le rapport ne contient pas {identifiant!r}, l'identifiant du state.\n"
         f"Il contient : {contenu[:200]!r}\n\nLe contenu doit être construit par "
-        "interpolation, pas saisi."
+        "interpolation, pas saisi.",
     )
-    assert contenu.count(identifiant) == 1, (
-        "L'identifiant apparaît plusieurs fois dans le rapport. Le fichier "
+    assert contenu.count(identifiant) == 1, message(
+        en="The identifier appears several times in the report. The file "
+        "describes a state, it does not pile up a history: that is precisely "
+        "what `imperatif.sh` does with its `>>`.",
+        fr="L'identifiant apparaît plusieurs fois dans le rapport. Le fichier "
         "décrit un état, il n'empile pas un historique : c'est précisément ce "
-        "que fait `imperatif.sh` avec son `>>`."
+        "que fait `imperatif.sh` avec son `>>`.",
     )
 
 
@@ -154,19 +185,27 @@ def test_le_rapport_existe_et_porte_l_identifiant_du_state(applied: Path) -> Non
 def test_les_deux_sorties_designent_le_resultat_reel(applied: Path) -> None:
     sorties = output_json(applied)
     for attendu in ("identifiant", "chemin_rapport"):
-        assert attendu in sorties, (
-            f"La sortie `{attendu}` n'est pas déclarée. Présentes : "
-            f"{sorted(sorties)}."
+        assert attendu in sorties, message(
+            en=f"The output `{attendu}` is not declared. Present: "
+            f"{sorted(sorties)}.",
+            fr=f"La sortie `{attendu}` n'est pas déclarée. Présentes : "
+            f"{sorted(sorties)}.",
         )
-        assert sorties[attendu]["value"], f"La sortie `{attendu}` est vide."
+        assert sorties[attendu]["value"], message(
+            en=f"The output `{attendu}` is empty.",
+            fr=f"La sortie `{attendu}` est vide.",
+        )
 
     chemin = (applied / sorties["chemin_rapport"]["value"]).resolve()
-    assert chemin.is_file(), (
-        f"`chemin_rapport` désigne {chemin}, qui n'existe pas."
+    assert chemin.is_file(), message(
+        en=f"`chemin_rapport` names {chemin}, which does not exist.",
+        fr=f"`chemin_rapport` désigne {chemin}, qui n'existe pas.",
     )
-    assert sorties["identifiant"]["value"] in chemin.read_text(encoding="utf-8"), (
-        "La sortie `identifiant` ne correspond pas à ce que contient le fichier "
-        "désigné par `chemin_rapport`."
+    assert sorties["identifiant"]["value"] in chemin.read_text(encoding="utf-8"), message(
+        en="The `identifiant` output does not match what the file "
+        "named by `chemin_rapport` contains.",
+        fr="La sortie `identifiant` ne correspond pas à ce que contient le fichier "
+        "désigné par `chemin_rapport`.",
     )
 
 
@@ -177,10 +216,13 @@ def test_un_second_plan_n_annonce_aucune_action(applied: Path) -> None:
     plan = terraform(
         "plan", "-detailed-exitcode", "-input=false", "-no-color", cwd=applied
     )
-    assert plan.returncode == 0, (
-        f"`terraform plan -detailed-exitcode` rend {plan.returncode}.\n"
+    assert plan.returncode == 0, message(
+        en=f"`terraform plan -detailed-exitcode` returns {plan.returncode}.\n"
+        "0 = no change, 1 = error, 2 = changes are planned.\n"
+        f"{plan.stdout[-1200:]}",
+        fr=f"`terraform plan -detailed-exitcode` rend {plan.returncode}.\n"
         "0 = aucun changement, 1 = erreur, 2 = des changements sont prévus.\n"
-        f"{plan.stdout[-1200:]}"
+        f"{plan.stdout[-1200:]}",
     )
 
 
@@ -190,7 +232,10 @@ def test_un_second_plan_n_annonce_aucune_action(applied: Path) -> None:
 def test_la_derive_annonce_une_seule_creation(
     applied: Path, identifiant_avant: str
 ) -> None:
-    assert identifiant_avant, "L'identifiant n'a pas pu être relevé avant la dérive."
+    assert identifiant_avant, message(
+        en="The identifier could not be recorded before the drift.",
+        fr="L'identifiant n'a pas pu être relevé avant la dérive.",
+    )
 
     chemin = (applied / output_json(applied)["chemin_rapport"]["value"]).resolve()
     chemin.unlink()
@@ -198,27 +243,41 @@ def test_la_derive_annonce_une_seule_creation(
     detecte = terraform(
         "plan", "-detailed-exitcode", "-input=false", "-no-color", cwd=applied
     )
-    assert detecte.returncode == 2, (
-        f"Après suppression du rapport hors de Terraform, `plan "
+    assert detecte.returncode == 2, message(
+        en=f"After deleting the report outside Terraform, `plan "
+        f"-detailed-exitcode` returns {detecte.returncode}, expected 2. The drift "
+        "is not detected: with no match in the state, Terraform would not "
+        "know that something is missing.",
+        fr=f"Après suppression du rapport hors de Terraform, `plan "
         f"-detailed-exitcode` rend {detecte.returncode}, attendu 2. La dérive "
         "n'est pas détectée : sans correspondance dans le state, Terraform ne "
-        "saurait pas qu'il manque quelque chose."
+        "saurait pas qu'il manque quelque chose.",
     )
 
     plan = terraform("plan", "-input=false", "-no-color", "-out=plan.tfplan", cwd=applied)
-    assert plan.returncode == 0, f"Le plan a échoué.\n{plan.stderr[-1200:]}"
+    assert plan.returncode == 0, message(
+        en=f"The plan failed.\n{plan.stderr[-1200:]}",
+        fr=f"Le plan a échoué.\n{plan.stderr[-1200:]}",
+    )
     montre = terraform("show", "-json", "plan.tfplan", cwd=applied)
-    assert montre.returncode == 0, f"`show -json` du plan a échoué.\n{montre.stderr}"
+    assert montre.returncode == 0, message(
+        en=f"`show -json` of the plan failed.\n{montre.stderr}",
+        fr=f"`show -json` du plan a échoué.\n{montre.stderr}",
+    )
 
     actions = {
         c["address"]: c["change"]["actions"]
         for c in json.loads(montre.stdout).get("resource_changes", [])
         if c["change"]["actions"] != ["no-op"]
     }
-    assert actions == {"local_file.rapport": ["create"]}, (
-        f"Le plan annonce {actions}, attendu une seule création sur "
+    assert actions == {"local_file.rapport": ["create"]}, message(
+        en=f"The plan announces {actions}, a single creation on "
+        "`local_file.rapport` was expected.\n\nThe identifier must not be "
+        "removed: it has not drifted, and replacing it would change the content of the "
+        "report to be recreated.",
+        fr=f"Le plan annonce {actions}, attendu une seule création sur "
         "`local_file.rapport`.\n\nL'identifiant ne doit pas être retiré : il n'a "
-        "pas dérivé, et le remplacer changerait le contenu du rapport à recréer."
+        "pas dérivé, et le remplacer changerait le contenu du rapport à recréer.",
     )
 
 
@@ -229,28 +288,41 @@ def test_la_convergence_restaure_sans_changer_l_identifiant(
     applied: Path, identifiant_avant: str
 ) -> None:
     app = terraform("apply", "-auto-approve", "-input=false", "-no-color", cwd=applied)
-    assert app.returncode == 0, f"La convergence a échoué.\n{app.stderr[-1500:]}"
+    assert app.returncode == 0, message(
+        en=f"Convergence failed.\n{app.stderr[-1500:]}",
+        fr=f"La convergence a échoué.\n{app.stderr[-1500:]}",
+    )
 
     sorties = output_json(applied)
-    assert sorties["identifiant"]["value"] == identifiant_avant, (
-        f"L'identifiant vaut {sorties['identifiant']['value']!r} après la "
+    assert sorties["identifiant"]["value"] == identifiant_avant, message(
+        en=f"The identifier is {sorties['identifiant']['value']!r} after the "
+        f"repair, against {identifiant_avant!r} before the drift.\n\nIt was "
+        "regenerated: that is the behaviour of the imperative script, not the one "
+        "expected here. Look at what decides its stability.",
+        fr=f"L'identifiant vaut {sorties['identifiant']['value']!r} après la "
         f"réparation, contre {identifiant_avant!r} avant la dérive.\n\nIl a été "
         "regénéré : c'est le comportement du script impératif, pas celui qu'on "
-        "attend ici. Regardez ce qui décide de sa stabilité."
+        "attend ici. Regardez ce qui décide de sa stabilité.",
     )
 
     chemin = (applied / sorties["chemin_rapport"]["value"]).resolve()
-    assert chemin.is_file(), "Le rapport n'est pas revenu après la convergence."
-    assert identifiant_avant in chemin.read_text(encoding="utf-8"), (
-        "Le rapport recréé ne porte plus l'identifiant d'origine."
+    assert chemin.is_file(), message(
+        en="The report did not come back after convergence.",
+        fr="Le rapport n'est pas revenu après la convergence.",
+    )
+    assert identifiant_avant in chemin.read_text(encoding="utf-8"), message(
+        en="The recreated report no longer carries the original identifier.",
+        fr="Le rapport recréé ne porte plus l'identifiant d'origine.",
     )
 
     stable = terraform(
         "plan", "-detailed-exitcode", "-input=false", "-no-color", cwd=applied
     )
-    assert stable.returncode == 0, (
-        f"Après réparation, le plan rend encore {stable.returncode} : la "
-        "configuration n'a pas convergé."
+    assert stable.returncode == 0, message(
+        en=f"After the repair, the plan still returns {stable.returncode}: the "
+        "configuration has not converged.",
+        fr=f"Après réparation, le plan rend encore {stable.returncode} : la "
+        "configuration n'a pas convergé.",
     )
 
 
@@ -272,20 +344,26 @@ def test_le_script_diverge_la_ou_la_configuration_converge(
             ["bash", "imperatif.sh"], cwd=bac, capture_output=True, text=True,
             check=False,
         )
-        assert proc.returncode == 0, (
-            f"`imperatif.sh` a échoué au passage {passage}.\n{proc.stderr}"
+        assert proc.returncode == 0, message(
+            en=f"`imperatif.sh` failed on pass {passage}.\n{proc.stderr}",
+            fr=f"`imperatif.sh` a échoué au passage {passage}.\n{proc.stderr}",
         )
         releves.append((bac / "sortie-imperative" / "dernier-id.txt").read_text().strip())
 
-    assert releves[0] != releves[1], (
-        "Les deux passages du script impératif ont donné le même identifiant. "
+    assert releves[0] != releves[1], message(
+        en="The two passes of the imperative script gave the same identifier. "
+        "The provided script is meant to diverge: check that it has not been "
+        "modified, it is to be read, not fixed.",
+        fr="Les deux passages du script impératif ont donné le même identifiant. "
         "Le script fourni est censé diverger : vérifiez qu'il n'a pas été "
-        "modifié, il se lit et ne se corrige pas."
+        "modifié, il se lit et ne se corrige pas.",
     )
     lignes = (bac / "sortie-imperative" / "rapport.txt").read_text().splitlines()
-    assert len(lignes) == 2, (
-        f"Le rapport impératif porte {len(lignes)} ligne(s) après deux passages, "
-        "attendu 2 : son `>>` empile, l'état dépend du nombre d'exécutions."
+    assert len(lignes) == 2, message(
+        en=f"The imperative report carries {len(lignes)} line(s) after two passes, "
+        "2 expected: its `>>` piles up, so the state depends on the number of runs.",
+        fr=f"Le rapport impératif porte {len(lignes)} ligne(s) après deux passages, "
+        "attendu 2 : son `>>` empile, l'état dépend du nombre d'exécutions.",
     )
 
     # L'autre côté, et il n'est atteignable qu'après le travail : la même
@@ -294,16 +372,23 @@ def test_le_script_diverge_la_ou_la_configuration_converge(
         rejeu = terraform(
             "apply", "-auto-approve", "-input=false", "-no-color", cwd=applied
         )
-        assert rejeu.returncode == 0, f"Le rejeu a échoué.\n{rejeu.stderr[-1200:]}"
+        assert rejeu.returncode == 0, message(
+            en=f"The replay failed.\n{rejeu.stderr[-1200:]}",
+            fr=f"Le rejeu a échoué.\n{rejeu.stderr[-1200:]}",
+        )
 
-    assert output_json(applied)["identifiant"]["value"] == identifiant_avant, (
-        "L'identifiant a changé après deux applications supplémentaires. La "
+    assert output_json(applied)["identifiant"]["value"] == identifiant_avant, message(
+        en="The identifier changed after two further applies. The "
+        "configuration behaves like the script: it still describes steps, "
+        "not a state.",
+        fr="L'identifiant a changé après deux applications supplémentaires. La "
         "configuration se comporte comme le script : elle décrit encore des "
-        "étapes, pas un état."
+        "étapes, pas un état.",
     )
     contenu = (applied / output_json(applied)["chemin_rapport"]["value"]).read_text(
         encoding="utf-8"
     )
-    assert contenu.count(identifiant_avant) == 1, (
-        "Le rapport a grossi au fil des applications. Un état ne s'empile pas."
+    assert contenu.count(identifiant_avant) == 1, message(
+        en="The report grew with each apply. A state does not pile up.",
+        fr="Le rapport a grossi au fil des applications. Un état ne s'empile pas.",
     )

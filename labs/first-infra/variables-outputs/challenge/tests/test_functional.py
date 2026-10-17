@@ -25,7 +25,7 @@ from pathlib import Path
 
 import pytest
 
-from conftest import exiger_workdir, workdir_lab
+from conftest import exiger_workdir, message, workdir_lab
 
 WORKDIR = workdir_lab(__file__)
 LAB_ID = "first-infra-variables-outputs"
@@ -57,13 +57,20 @@ def applique() -> Iterator[None]:
 
     init = _tf("init", "-input=false", "-no-color")
     if init.returncode != 0:
-        pytest.fail(f"`terraform init` a echoue.\n{init.stderr[-1200:]}")
+        pytest.fail(message(
+            en=f"`terraform init` failed.\n{init.stderr[-1200:]}",
+            fr=f"`terraform init` a échoué.\n{init.stderr[-1200:]}",
+        ))
 
     app = _tf("apply", "-auto-approve", "-input=false", "-no-color")
     if app.returncode != 0:
         pytest.fail(
-            "`terraform apply` a echoue. Des `???` subsistent-ils ?\n"
-            f"{(app.stderr or app.stdout)[-1800:]}"
+            message(
+            en="`terraform apply` failed. Are there leftover `???`?\n"
+            f"{(app.stderr or app.stdout)[-1800:]}",
+            fr="`terraform apply` a échoué. Des `???` subsistent-ils ?\n"
+            f"{(app.stderr or app.stdout)[-1800:]}",
+        )
         )
     try:
         yield
@@ -84,8 +91,9 @@ def _sorties() -> dict:
 
 def _valeur(nom: str):
     sorties = _sorties()
-    assert nom in sorties, (
-        f"L'output `{nom}` n'est pas declare. Presents : {sorted(sorties)}."
+    assert nom in sorties, message(
+        en=f"The output `{nom}` is not declared. Present: {sorted(sorties)}.",
+        fr=f"L'output `{nom}` n'est pas déclaré. Présents : {sorted(sorties)}.",
     )
     return sorties[nom]["value"]
 
@@ -96,9 +104,11 @@ def _valeur(nom: str):
 def test_les_cinq_sorties_sont_declarees(applique: None) -> None:
     presentes = set(_sorties())
     manquantes = SORTIES_ATTENDUES - presentes
-    assert not manquantes, (
-        f"Ces sorties manquent : {sorted(manquantes)}.\nPresentes : "
-        f"{sorted(presentes)}."
+    assert not manquantes, message(
+        en=f"These outputs are missing: {sorted(manquantes)}.\nPresent: "
+        f"{sorted(presentes)}.",
+        fr=f"Ces sorties manquent : {sorted(manquantes)}.\nPrésentes : "
+        f"{sorted(presentes)}.",
     )
 
 
@@ -108,10 +118,13 @@ def test_les_cinq_sorties_sont_declarees(applique: None) -> None:
 def test_une_variable_sans_default_se_fournit_par_l_environnement(
     applique: None,
 ) -> None:
-    assert _valeur("region_effective") == REGION, (
-        f"`region_effective` vaut {_valeur('region_effective')!r}, attendu "
+    assert _valeur("region_effective") == REGION, message(
+        en=f"`region_effective` is {_valeur('region_effective')!r}, expected "
+        f"{REGION!r}.\n\n`region` has NO default: it can only come "
+        "from outside, and `TF_VAR_region` is enough.",
+        fr=f"`region_effective` vaut {_valeur('region_effective')!r}, attendu "
         f"{REGION!r}.\n\n`region` n'a PAS de default : elle ne peut venir que "
-        "de l'exterieur, et `TF_VAR_region` suffit."
+        "de l'extérieur, et `TF_VAR_region` suffit.",
     )
 
 
@@ -126,8 +139,9 @@ def test_le_fichier_tfvars_bat_la_variable_d_environnement(applique: None) -> No
     `terraform.tfvars`.
     """
     auto = WORKDIR / AUTO_TFVARS
-    assert auto.is_file(), (
-        f"`{AUTO_TFVARS}` est absent : le lab demande de le creer."
+    assert auto.is_file(), message(
+        en=f"`{AUTO_TFVARS}` is missing: the lab asks you to create it.",
+        fr=f"`{AUTO_TFVARS}` est absent : le lab demande de le créer.",
     )
     ecarte = WORKDIR / ECARTE
     auto.rename(ecarte)
@@ -136,16 +150,22 @@ def test_le_fichier_tfvars_bat_la_variable_d_environnement(applique: None) -> No
             "apply", "-auto-approve", "-input=false", "-no-color",
             env={"TF_VAR_env": "dev"},
         )
-        assert applique_bis.returncode == 0, (
-            f"L'application a echoue.\n{(applique_bis.stderr or applique_bis.stdout)[-1200:]}"
+        assert applique_bis.returncode == 0, message(
+            en=f"The apply failed.\n{(applique_bis.stderr or applique_bis.stdout)[-1200:]}",
+            fr=f"L'application a échoué.\n{(applique_bis.stderr or applique_bis.stdout)[-1200:]}",
         )
         obtenu = _valeur("env_effectif")
-        assert obtenu == "staging", (
-            f"`env_effectif` vaut {obtenu!r} alors que `TF_VAR_env=dev` etait "
-            "pose et que `terraform.tfvars` dit `staging`.\n\nAttendu "
+        assert obtenu == "staging", message(
+            en=f"`env_effectif` is {obtenu!r} although `TF_VAR_env=dev` was "
+            "set and `terraform.tfvars` says `staging`.\n\nExpected "
+            "`staging`: a values file BEATS the environment variable. "
+            "`TF_VAR_` sits just above the `default`, and below "
+            "any file. That is the rank most often misplaced.",
+            fr=f"`env_effectif` vaut {obtenu!r} alors que `TF_VAR_env=dev` était "
+            "posé et que `terraform.tfvars` dit `staging`.\n\nAttendu "
             "`staging` : un fichier de valeurs BAT la variable d'environnement. "
             "`TF_VAR_` se situe juste au-dessus du `default`, et en dessous de "
-            "tout fichier. C'est le rang le plus souvent mal place."
+            "tout fichier. C'est le rang le plus souvent mal placé.",
         )
     finally:
         ecarte.rename(auto)
@@ -159,15 +179,20 @@ def test_le_fichier_auto_bat_terraform_tfvars(applique: None) -> None:
         "apply", "-auto-approve", "-input=false", "-no-color",
         env={"TF_VAR_env": "dev"},
     )
-    assert applique_bis.returncode == 0, (
-        f"L'application a echoue.\n{(applique_bis.stderr or applique_bis.stdout)[-1200:]}"
+    assert applique_bis.returncode == 0, message(
+        en=f"The apply failed.\n{(applique_bis.stderr or applique_bis.stdout)[-1200:]}",
+        fr=f"L'application a échoué.\n{(applique_bis.stderr or applique_bis.stdout)[-1200:]}",
     )
     obtenu = _valeur("env_effectif")
-    assert obtenu == "prod", (
-        f"`env_effectif` vaut {obtenu!r}, attendu `prod`.\n\n"
-        f"`{AUTO_TFVARS}` est charge AUTOMATIQUEMENT, apres "
+    assert obtenu == "prod", message(
+        en=f"`env_effectif` is {obtenu!r}, expected `prod`.\n\n"
+        f"`{AUTO_TFVARS}` is loaded AUTOMATICALLY, after "
+        "`terraform.tfvars`, and therefore wins against it. It is the most "
+        "discreet step: its name does not say so, and no command mentions it.",
+        fr=f"`env_effectif` vaut {obtenu!r}, attendu `prod`.\n\n"
+        f"`{AUTO_TFVARS}` est chargé AUTOMATIQUEMENT, après "
         "`terraform.tfvars`, et gagne donc contre lui. C'est la marche la plus "
-        "discrete : son nom ne le dit pas, et aucune commande ne le mentionne."
+        "discrète : son nom ne le dit pas, et aucune commande ne le mentionne.",
     )
 
 
@@ -179,19 +204,26 @@ def test_la_ligne_de_commande_bat_toutes_les_autres_sources(applique: None) -> N
         "apply", "-auto-approve", "-input=false", "-no-color", "-var", "env=dev",
         env={"TF_VAR_env": "staging"},
     )
-    assert applique_bis.returncode == 0, (
-        f"L'application a echoue.\n{(applique_bis.stderr or applique_bis.stdout)[-1200:]}"
+    assert applique_bis.returncode == 0, message(
+        en=f"The apply failed.\n{(applique_bis.stderr or applique_bis.stdout)[-1200:]}",
+        fr=f"L'application a échoué.\n{(applique_bis.stderr or applique_bis.stdout)[-1200:]}",
     )
-    assert _valeur("env_effectif") == "dev", (
-        f"`env_effectif` vaut {_valeur('env_effectif')!r} alors que `-var "
-        "env=dev` a ete fourni, contre un `TF_VAR_env`, un `terraform.tfvars` "
-        f"et un `{AUTO_TFVARS}`. La ligne de commande gagne toujours."
+    assert _valeur("env_effectif") == "dev", message(
+        en=f"`env_effectif` is {_valeur('env_effectif')!r} although `-var "
+        "env=dev` was given, against a `TF_VAR_env`, a `terraform.tfvars` "
+        f"and a `{AUTO_TFVARS}`. The command line always wins.",
+        fr=f"`env_effectif` vaut {_valeur('env_effectif')!r} alors que `-var "
+        "env=dev` a été fourni, contre un `TF_VAR_env`, un `terraform.tfvars` "
+        f"et un `{AUTO_TFVARS}`. La ligne de commande gagne toujours.",
     )
 
     # On remet la configuration dans l'etat que les fichiers decrivent, pour
     # que les tests suivants mesurent la configuration et non nos restes.
     remise = _tf("apply", "-auto-approve", "-input=false", "-no-color")
-    assert remise.returncode == 0, f"La remise en etat a echoue.\n{remise.stderr[-1000:]}"
+    assert remise.returncode == 0, message(
+        en=f"Restoring the state failed.\n{remise.stderr[-1000:]}",
+        fr=f"La remise en état a échoué.\n{remise.stderr[-1000:]}",
+    )
 
 
 # --------------------------------------------------------------------------
@@ -205,19 +237,24 @@ def test_les_validations_refusent_les_valeurs_hors_plage(applique: None) -> None
     """
     for variable, valeur in (("env", "qa"), ("replicas", "0")):
         refus = _tf("plan", "-input=false", "-no-color", "-var", f"{variable}={valeur}")
-        assert refus.returncode != 0, (
-            f"`plan -var {variable}={valeur}` REUSSIT, alors que cette valeur "
-            "est hors des bornes annoncees.\n\nLe bloc `validation` manque, ou "
-            "sa condition est trop large."
+        assert refus.returncode != 0, message(
+            en=f"`plan -var {variable}={valeur}` SUCCEEDS, although that value "
+            "is outside the announced bounds.\n\nThe `validation` block is missing, or "
+            "its condition is too broad.",
+            fr=f"`plan -var {variable}={valeur}` RÉUSSIT, alors que cette valeur "
+            "est hors des bornes annoncées.\n\nLe bloc `validation` manque, ou "
+            "sa condition est trop large.",
         )
 
     # Contre-controle : une valeur admise doit passer. Sans lui, une condition
     # qui refuse TOUT ferait passer le test precedent pour la mauvaise raison.
     for variable, valeur in (("env", "staging"), ("replicas", "3")):
         accepte = _tf("plan", "-input=false", "-no-color", "-var", f"{variable}={valeur}")
-        assert accepte.returncode == 0, (
-            f"`plan -var {variable}={valeur}` echoue alors que cette valeur est "
-            f"admise.\n\nLa condition est trop stricte.\n{accepte.stderr[-800:]}"
+        assert accepte.returncode == 0, message(
+            en=f"`plan -var {variable}={valeur}` fails although that value is "
+            f"allowed.\n\nThe condition is too strict.\n{accepte.stderr[-800:]}",
+            fr=f"`plan -var {variable}={valeur}` échoue alors que cette valeur est "
+            f"admise.\n\nLa condition est trop stricte.\n{accepte.stderr[-800:]}",
         )
 
 
@@ -232,9 +269,11 @@ def test_le_sizing_est_consomme_et_pas_seulement_declare(applique: None) -> None
     autre variable.
     """
     total = _valeur("sizing_total_mb")
-    assert isinstance(total, (int, float)) and not isinstance(total, bool), (
-        f"`sizing_total_mb` vaut {total!r}, de type {type(total).__name__}. Un "
-        "nombre est attendu : la memoire multipliee par les replicas."
+    assert isinstance(total, (int, float)) and not isinstance(total, bool), message(
+        en=f"`sizing_total_mb` is {total!r}, of type {type(total).__name__}. A "
+        "number is expected: the memory multiplied by the replicas.",
+        fr=f"`sizing_total_mb` vaut {total!r}, de type {type(total).__name__}. Un "
+        "nombre est attendu : la mémoire multipliée par les replicas.",
     )
 
     etat = json.loads(_tf("show", "-json").stdout)
@@ -244,14 +283,20 @@ def test_le_sizing_est_consomme_et_pas_seulement_declare(applique: None) -> None
          if r["type"] == "local_file" and r["mode"] == "managed"),
         None,
     )
-    assert manifeste, "Aucune ressource `local_file` dans le state."
+    assert manifeste, message(
+        en="No `local_file` resource in the state.",
+        fr="Aucune ressource `local_file` dans le state.",
+    )
 
     ecrit = json.loads(manifeste["values"]["content"])
     attendu = ecrit["sizing"]["memory_mb"] * ecrit["replicas"]
-    assert total == attendu, (
-        f"`sizing_total_mb` vaut {total}, alors que le manifeste porte "
+    assert total == attendu, message(
+        en=f"`sizing_total_mb` is {total}, while the manifest carries "
+        f"{ecrit['sizing']['memory_mb']} MiB per replica and "
+        f"{ecrit['replicas']} replicas, that is {attendu}.",
+        fr=f"`sizing_total_mb` vaut {total}, alors que le manifeste porte "
         f"{ecrit['sizing']['memory_mb']} Mio par exemplaire et "
-        f"{ecrit['replicas']} exemplaires, soit {attendu}."
+        f"{ecrit['replicas']} exemplaires, soit {attendu}.",
     )
 
 
@@ -270,22 +315,31 @@ def test_le_stack_name_est_calcule_et_nomme_le_fichier(applique: None) -> None:
     sorties annoncent.
     """
     attendu = f"app-{_valeur('env_effectif')}-{_valeur('region_effective')}"
-    assert _valeur("stack_name") == attendu, (
-        f"`stack_name` vaut {_valeur('stack_name')!r}, attendu {attendu!r}.\n\n"
-        "Il doit DERIVER des valeurs effectives : un local qu'on fournit de "
-        "l'exterieur n'est plus un local."
+    assert _valeur("stack_name") == attendu, message(
+        en=f"`stack_name` is {_valeur('stack_name')!r}, expected {attendu!r}.\n\n"
+        "It must DERIVE from the effective values: a local provided from "
+        "outside is no longer a local.",
+        fr=f"`stack_name` vaut {_valeur('stack_name')!r}, attendu {attendu!r}.\n\n"
+        "Il doit DÉRIVER des valeurs effectives : un local qu'on fournit de "
+        "l'extérieur n'est plus un local.",
     )
 
     chemin = Path(_valeur("manifest_path"))
     if not chemin.is_absolute():
         chemin = WORKDIR / chemin
-    assert chemin.is_file(), f"Le manifeste annonce en {chemin} n'existe pas."
-    assert attendu in chemin.name, (
-        f"Le fichier s'appelle {chemin.name!r} et ne porte pas {attendu!r}."
+    assert chemin.is_file(), message(
+        en=f"The manifest announced at {chemin} does not exist.",
+        fr=f"Le manifeste annoncé en {chemin} n'existe pas.",
+    )
+    assert attendu in chemin.name, message(
+        en=f"The file is named {chemin.name!r} and does not carry {attendu!r}.",
+        fr=f"Le fichier s'appelle {chemin.name!r} et ne porte pas {attendu!r}.",
     )
 
     stable = _tf("plan", "-detailed-exitcode", "-input=false", "-no-color")
-    assert stable.returncode == 0, (
-        f"`plan -detailed-exitcode` rend {stable.returncode}, attendu 0.\n"
-        f"{stable.stdout[-1000:]}"
+    assert stable.returncode == 0, message(
+        en=f"`plan -detailed-exitcode` returns {stable.returncode}, expected 0.\n"
+        f"{stable.stdout[-1000:]}",
+        fr=f"`plan -detailed-exitcode` rend {stable.returncode}, attendu 0.\n"
+        f"{stable.stdout[-1000:]}",
     )

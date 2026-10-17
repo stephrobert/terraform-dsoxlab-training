@@ -30,7 +30,14 @@ from pathlib import Path
 
 import pytest
 
-from conftest import exiger_workdir, output_json, show_json, terraform, workdir_lab
+from conftest import (
+    exiger_workdir,
+    message,
+    output_json,
+    show_json,
+    terraform,
+    workdir_lab,
+)
 
 WORKDIR = workdir_lab(__file__)
 LAB_ID = "state-terraform-state-list"
@@ -61,15 +68,24 @@ def applied() -> Iterator[Path]:
     init = terraform("init", "-input=false", "-no-color", cwd=WORKDIR)
     if init.returncode != 0:
         pytest.fail(
-            "`terraform init` a echoue. Un `???` restant dans "
-            f"reponses.auto.tfvars ?\n{init.stderr[-1200:]}"
+            message(
+            en="`terraform init` failed. A leftover `???` in "
+            f"reponses.auto.tfvars?\n{init.stderr[-1200:]}",
+            fr="`terraform init` a échoué. Un `???` restant dans "
+            f"reponses.auto.tfvars ?\n{init.stderr[-1200:]}",
+        )
         )
     app = terraform("apply", "-auto-approve", "-input=false", "-no-color", cwd=WORKDIR)
     if app.returncode != 0:
         pytest.fail(
-            "`terraform apply` a echoue. Les cinq reponses doivent etre des "
-            "valeurs valides (quatre chaines et un nombre)."
-            f"\n{app.stderr[-1500:]}"
+            message(
+            en="`terraform apply` failed. The five answers must be "
+            "valid values (four strings and one number)."
+            f"\n{app.stderr[-1500:]}",
+            fr="`terraform apply` a échoué. Les cinq réponses doivent être des "
+            "valeurs valides (quatre chaînes et un nombre)."
+            f"\n{app.stderr[-1500:]}",
+        )
         )
     yield WORKDIR
     terraform("destroy", "-auto-approve", "-input=false", "-no-color", cwd=WORKDIR)
@@ -92,7 +108,10 @@ def verite(applied: Path) -> dict:
 def _reponse(verite: dict, nom: str) -> object:
     sorties = verite["sorties"]
     if nom not in sorties:
-        pytest.fail(f"L'output `{nom}` est absent : reponses.auto.tfvars est incomplet.")
+        pytest.fail(message(
+            en=f"The output `{nom}` is missing: reponses.auto.tfvars is incomplete.",
+            fr=f"L'output `{nom}` est absent : reponses.auto.tfvars est incomplet.",
+        ))
     return sorties[nom]
 
 
@@ -106,12 +125,23 @@ def test_les_trois_familles_sont_au_state(verite: dict) -> None:
     services = {a for a in adresses if a.startswith("random_pet.service[")}
     archives = {a for a in adresses if a.startswith("module.stockage.random_pet.archive[")}
 
-    assert len(workers) == 6, f"{len(workers)} instances de worker, attendu 6."
-    assert len(services) == 8, f"{len(services)} instances de service, attendu 8."
-    assert len(archives) == 5, f"{len(archives)} archives dans le module, attendu 5."
-    assert len(verite["data"]) == 2, (
-        f"{len(verite['data'])} data sources, attendu 2 : une a la racine, une "
-        "dans le module."
+    assert len(workers) == 6, message(
+        en=f"{len(workers)} worker instances, 6 expected.",
+        fr=f"{len(workers)} instances de worker, attendu 6.",
+    )
+    assert len(services) == 8, message(
+        en=f"{len(services)} service instances, 8 expected.",
+        fr=f"{len(services)} instances de service, attendu 8.",
+    )
+    assert len(archives) == 5, message(
+        en=f"{len(archives)} archives in the module, 5 expected.",
+        fr=f"{len(archives)} archives dans le module, attendu 5.",
+    )
+    assert len(verite["data"]) == 2, message(
+        en=f"{len(verite['data'])} data sources, 2 expected: one at the root, one "
+        "in the module.",
+        fr=f"{len(verite['data'])} data sources, attendu 2 : une à la racine, une "
+        "dans le module.",
     )
 
 
@@ -123,12 +153,18 @@ def test_adresse_indexee_par_position(verite: dict) -> None:
     attendue = _adresse_portant(
         verite["instances"], _reponse(verite, "id_worker_recherche"), "random_pet.worker"
     )
-    assert attendue is not None, "Aucune instance de worker ne porte l'id publie."
+    assert attendue is not None, message(
+        en="No worker instance carries the published id.",
+        fr="Aucune instance de worker ne porte l'id publié.",
+    )
     declaree = _reponse(verite, "adresse_worker")
-    assert declaree == attendue, (
-        f"adresse_worker declaree {declaree!r}, mais l'id publie est porte par "
-        f"{attendue!r}. Une adresse de ressource sans index designe TOUTES ses "
-        "instances : c'est l'index entre crochets qui identifie celle-ci."
+    assert declaree == attendue, message(
+        en=f"adresse_worker declared {declaree!r}, but the published id is carried by "
+        f"{attendue!r}. A resource address with no index names ALL its "
+        "instances: the index in brackets identifies this one.",
+        fr=f"adresse_worker déclarée {declaree!r}, mais l'id publié est porté par "
+        f"{attendue!r}. Une adresse de ressource sans index désigne TOUTES ses "
+        "instances : c'est l'index entre crochets qui identifie celle-ci.",
     )
 
 
@@ -140,12 +176,18 @@ def test_adresse_indexee_par_cle(verite: dict) -> None:
     attendue = _adresse_portant(
         verite["instances"], _reponse(verite, "id_service_recherche"), "random_pet.service"
     )
-    assert attendue is not None, "Aucune instance de service ne porte l'id publie."
+    assert attendue is not None, message(
+        en="No service instance carries the published id.",
+        fr="Aucune instance de service ne porte l'id publié.",
+    )
     declaree = _reponse(verite, "adresse_service")
-    assert declaree == attendue, (
-        f"adresse_service declaree {declaree!r}, attendu {attendue!r}. Une "
-        "instance de for_each s'adresse par sa cle entre crochets ET entre "
-        "guillemets."
+    assert declaree == attendue, message(
+        en=f"adresse_service declared {declaree!r}, expected {attendue!r}. A "
+        "for_each instance is addressed by its key, in brackets AND in "
+        "quotes.",
+        fr=f"adresse_service déclarée {declaree!r}, attendu {attendue!r}. Une "
+        "instance de for_each s'adresse par sa clé entre crochets ET entre "
+        "guillemets.",
     )
 
 
@@ -159,12 +201,18 @@ def test_adresse_qualifiee_par_le_module(verite: dict) -> None:
         _reponse(verite, "id_archive_recherche"),
         "module.stockage.random_pet.archive",
     )
-    assert attendue is not None, "Aucune archive du module ne porte l'id publie."
+    assert attendue is not None, message(
+        en="No archive of the module carries the published id.",
+        fr="Aucune archive du module ne porte l'id publié.",
+    )
     declaree = _reponse(verite, "adresse_archive")
-    assert declaree == attendue, (
-        f"adresse_archive declaree {declaree!r}, attendu {attendue!r}. Une "
-        "instance logee dans un module porte le prefixe `module.<nom>.` : sans "
-        "lui, l'adresse ne designe rien."
+    assert declaree == attendue, message(
+        en=f"adresse_archive declared {declaree!r}, expected {attendue!r}. An "
+        "instance housed in a module carries the `module.<name>.` prefix: without "
+        "it, the address names nothing.",
+        fr=f"adresse_archive déclarée {declaree!r}, attendu {attendue!r}. Une "
+        "instance logée dans un module porte le préfixe `module.<nom>.` : sans "
+        "lui, l'adresse ne désigne rien.",
     )
 
 
@@ -174,15 +222,19 @@ def test_adresse_qualifiee_par_le_module(verite: dict) -> None:
 
 def test_data_source_du_module(verite: dict) -> None:
     dans_module = [i for i in verite["data"] if i["address"].startswith("module.")]
-    assert len(dans_module) == 1, (
-        f"{len(dans_module)} data source(s) dans un module, attendu 1."
+    assert len(dans_module) == 1, message(
+        en=f"{len(dans_module)} data source(s) in a module, 1 expected.",
+        fr=f"{len(dans_module)} data source(s) dans un module, attendu 1.",
     )
     attendue = dans_module[0]["address"]
     declaree = _reponse(verite, "adresse_data_module")
-    assert declaree == attendue, (
-        f"adresse_data_module declaree {declaree!r}, attendu {attendue!r}. "
-        "C'est une data source, mais son adresse commence par le prefixe de "
-        "module : `grep -v ^data` ne l'attrape donc pas."
+    assert declaree == attendue, message(
+        en=f"adresse_data_module declared {declaree!r}, expected {attendue!r}. "
+        "It is a data source, but its address starts with the module's "
+        "prefix: `grep -v ^data` therefore does not catch it.",
+        fr=f"adresse_data_module déclarée {declaree!r}, attendu {attendue!r}. "
+        "C'est une data source, mais son adresse commence par le préfixe de "
+        "module : `grep -v ^data` ne l'attrape donc pas.",
     )
 
 
@@ -194,9 +246,14 @@ def test_comptage_des_ressources_managees(verite: dict) -> None:
     attendu = len(verite["managees"])
     declare = _reponse(verite, "nombre_managees")
     assert int(declare) == attendu, (  # type: ignore[call-overload]
-        f"nombre_managees declare {declare}, attendu {attendu}. La recette "
+        message(
+        en=f"nombre_managees declared {declare}, expected {attendu}. The recipe "
+        "`state list | grep -v ^data | wc -l` returns one more, because it "
+        "counts the module's data source as a managed resource.",
+        fr=f"nombre_managees déclaré {declare}, attendu {attendu}. La recette "
         "`state list | grep -v ^data | wc -l` rend un de plus, parce qu'elle "
-        "compte la data source du module comme une ressource geree."
+        "compte la data source du module comme une ressource gérée.",
+    )
     )
 
 
@@ -207,10 +264,13 @@ def test_la_recette_au_grep_se_trompe_bien(verite: dict) -> None:
     lignes = [ligne for ligne in liste.stdout.splitlines() if ligne.strip()]
     recette = len([ligne for ligne in lignes if not ligne.startswith("data")])
     vrai = len(verite["managees"])
-    assert recette == vrai + 1, (
-        f"La recette au grep rend {recette} et le vrai comptage {vrai} : l'ecart "
-        "attendu est de 1, celui de la data source du module. Sans cet ecart, le "
-        "lab ne demontre plus rien."
+    assert recette == vrai + 1, message(
+        en=f"The grep recipe returns {recette} and the real count {vrai}: the expected "
+        "gap is 1, that of the module's data source. Without that gap, the "
+        "lab demonstrates nothing any more.",
+        fr=f"La recette au grep rend {recette} et le vrai comptage {vrai} : l'écart "
+        "attendu est de 1, celui de la data source du module. Sans cet écart, le "
+        "lab ne démontre plus rien.",
     )
 
 
@@ -222,22 +282,28 @@ def test_une_adresse_sans_index_rend_toutes_les_instances(verite: dict) -> None:
     proc = terraform("state", "list", "random_pet.worker", cwd=verite["cwd"])
     proc.check_returncode()
     lignes = [ligne for ligne in proc.stdout.splitlines() if ligne.strip()]
-    assert len(lignes) == 6, (
-        f"`state list random_pet.worker` rend {len(lignes)} ligne(s), attendu 6 : "
-        "l'argument filtre une FAMILLE d'instances, pas une ressource unique."
+    assert len(lignes) == 6, message(
+        en=f"`state list random_pet.worker` returns {len(lignes)} line(s), 6 expected: "
+        "the argument filters a FAMILY of instances, not a single resource.",
+        fr=f"`state list random_pet.worker` rend {len(lignes)} ligne(s), attendu 6 : "
+        "l'argument filtre une FAMILLE d'instances, pas une ressource unique.",
     )
 
 
 def test_une_adresse_de_module_est_un_filtre_valide(verite: dict) -> None:
     proc = terraform("state", "list", "module.stockage", cwd=verite["cwd"])
-    assert proc.returncode == 0, (
-        f"`state list module.stockage` rend {proc.returncode} : une adresse de "
-        f"module est pourtant un filtre accepte.\n{proc.stderr[-500:]}"
+    assert proc.returncode == 0, message(
+        en=f"`state list module.stockage` returns {proc.returncode}: a module "
+        f"address is nevertheless an accepted filter.\n{proc.stderr[-500:]}",
+        fr=f"`state list module.stockage` rend {proc.returncode} : une adresse de "
+        f"module est pourtant un filtre accepté.\n{proc.stderr[-500:]}",
     )
     lignes = [ligne for ligne in proc.stdout.splitlines() if ligne.strip()]
-    assert len(lignes) == 7, (
-        f"{len(lignes)} entree(s) pour module.stockage, attendu 7 (5 archives, "
-        "1 local_file, 1 data source)."
+    assert len(lignes) == 7, message(
+        en=f"{len(lignes)} entry(ies) for module.stockage, 7 expected (5 archives, "
+        "1 local_file, 1 data source).",
+        fr=f"{len(lignes)} entrée(s) pour module.stockage, attendu 7 (5 archives, "
+        "1 local_file, 1 data source).",
     )
 
 
@@ -248,13 +314,17 @@ def test_ordre_par_profondeur_de_module(verite: dict) -> None:
     lignes = [ligne for ligne in proc.stdout.splitlines() if ligne.strip()]
     premier_module = next(i for i, ligne in enumerate(lignes) if ligne.startswith("module."))
     racine_apres = [ligne for ligne in lignes[premier_module:] if not ligne.startswith("module.")]
-    assert not racine_apres, (
-        "Des entrees de la racine apparaissent apres celles du module : "
+    assert not racine_apres, message(
+        en="Some root entries appear after the module's ones: "
+        f"{racine_apres[:3]}. The order is module depth, then "
+        "alphabetical.",
+        fr="Des entrées de la racine apparaissent après celles du module : "
         f"{racine_apres[:3]}. L'ordre est la profondeur de module, puis "
-        "l'alphabetique."
+        "l'alphabétique.",
     )
-    assert lignes[-1].startswith("module."), (
-        "La derniere entree devrait appartenir au module le plus profond."
+    assert lignes[-1].startswith("module."), message(
+        en="The last entry should belong to the deepest module.",
+        fr="La dernière entrée devrait appartenir au module le plus profond.",
     )
 
 
@@ -267,13 +337,16 @@ def test_les_quatre_diagnostics_distincts(verite: dict) -> None:
     }
     for adresse, attendu in cas.items():
         proc = terraform("state", "list", "-no-color", adresse, cwd=verite["cwd"])
-        assert proc.returncode == 1, (
-            f"`state list {adresse}` rend {proc.returncode}, attendu 1."
+        assert proc.returncode == 1, message(
+            en=f"`state list {adresse}` returns {proc.returncode}, expected 1.",
+            fr=f"`state list {adresse}` rend {proc.returncode}, attendu 1.",
         )
         sortie = proc.stdout + proc.stderr
-        assert attendu in sortie, (
-            f"`state list {adresse}` devrait diagnostiquer « {attendu} », "
-            f"sortie obtenue :\n{sortie[-400:]}"
+        assert attendu in sortie, message(
+            en=f"`state list {adresse}` should diagnose \"{attendu}\", "
+            f"output obtained:\n{sortie[-400:]}",
+            fr=f"`state list {adresse}` devrait diagnostiquer « {attendu} », "
+            f"sortie obtenue :\n{sortie[-400:]}",
         )
 
 
@@ -281,13 +354,17 @@ def test_id_sans_correspondance_ne_leve_pas(verite: dict) -> None:
     """L'asymetrie qui decide de la facon de scripter la commande."""
     proc = terraform("state", "list", "-id=aucune-chance-que-cet-id-existe",
                      cwd=verite["cwd"])
-    assert proc.returncode == 0, (
-        f"`state list -id=<inconnu>` rend {proc.returncode}, attendu 0 : "
-        "contrairement a une adresse, un -id sans correspondance ne produit "
-        "aucune erreur."
+    assert proc.returncode == 0, message(
+        en=f"`state list -id=<unknown>` returns {proc.returncode}, expected 0: "
+        "unlike an address, an -id with no match produces "
+        "no error.",
+        fr=f"`state list -id=<inconnu>` rend {proc.returncode}, attendu 0 : "
+        "contrairement à une adresse, un -id sans correspondance ne produit "
+        "aucune erreur.",
     )
-    assert proc.stdout.strip() == "", (
-        f"Sortie attendue vide, obtenue : {proc.stdout[:200]!r}"
+    assert proc.stdout.strip() == "", message(
+        en=f"Empty output expected, got: {proc.stdout[:200]!r}",
+        fr=f"Sortie attendue vide, obtenue : {proc.stdout[:200]!r}",
     )
 
 
@@ -298,9 +375,11 @@ def test_id_retrouve_bien_l_instance_cherchee(verite: dict) -> None:
     proc = terraform("state", "list", f"-id={identifiant}", cwd=verite["cwd"])
     proc.check_returncode()
     lignes = [ligne.strip() for ligne in proc.stdout.splitlines() if ligne.strip()]
-    assert cible in lignes, (
-        f"`state list -id={identifiant}` rend {lignes}, qui ne contient pas "
-        f"{cible!r}."
+    assert cible in lignes, message(
+        en=f"`state list -id={identifiant}` returns {lignes}, which does not contain "
+        f"{cible!r}.",
+        fr=f"`state list -id={identifiant}` rend {lignes}, qui ne contient pas "
+        f"{cible!r}.",
     )
 
 
@@ -311,7 +390,9 @@ def test_id_retrouve_bien_l_instance_cherchee(verite: dict) -> None:
 def test_idempotence(verite: dict) -> None:
     proc = terraform("plan", "-input=false", "-detailed-exitcode", "-no-color",
                      cwd=verite["cwd"])
-    assert proc.returncode == 0, (
-        f"plan -detailed-exitcode rend {proc.returncode}, attendu 0 : lire le "
-        "state ne doit rien changer a l'infrastructure."
+    assert proc.returncode == 0, message(
+        en=f"plan -detailed-exitcode returns {proc.returncode}, expected 0: reading the "
+        "state must change nothing in the infrastructure.",
+        fr=f"plan -detailed-exitcode rend {proc.returncode}, attendu 0 : lire le "
+        "state ne doit rien changer à l'infrastructure.",
     )

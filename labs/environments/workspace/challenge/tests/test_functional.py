@@ -25,7 +25,7 @@ from pathlib import Path
 
 import pytest
 
-from conftest import exiger_workdir, workdir_lab
+from conftest import exiger_workdir, message, workdir_lab
 
 WORKDIR = workdir_lab(__file__)
 LAB_ID = "environments-workspace"
@@ -77,8 +77,12 @@ def _sorties(racine: Path, workspace: str) -> dict:
     rendu = _tf("output", "-json", cwd=racine, workspace=workspace)
     if rendu.returncode != 0:
         pytest.fail(
-            f"`terraform output` echoue pour le workspace {workspace!r}.\n"
-            f"{rendu.stderr[-700:]}"
+            message(
+            en=f"`terraform output` fails for workspace {workspace!r}.\n"
+            f"{rendu.stderr[-700:]}",
+            fr=f"`terraform output` échoue pour le workspace {workspace!r}.\n"
+            f"{rendu.stderr[-700:]}",
+        )
         )
     return json.loads(rendu.stdout or "{}")
 
@@ -89,7 +93,10 @@ def travail() -> Iterator[Path]:
     if not (WORKDIR / ".terraform" / "providers").is_dir():
         init = _tf("init", "-input=false", "-no-color", cwd=WORKDIR)
         if init.returncode != 0:
-            pytest.fail(f"`terraform init` echoue.\n{init.stderr[-900:]}")
+            pytest.fail(message(
+                en=f"`terraform init` fails.\n{init.stderr[-900:]}",
+                fr=f"`terraform init` échoue.\n{init.stderr[-900:]}",
+            ))
     yield WORKDIR
 
 
@@ -116,13 +123,17 @@ def _hors_rejeu_de_solution(quoi: str) -> None:
 def test_les_trois_workspaces_attendus(travail: Path) -> None:
     _hors_rejeu_de_solution("le workspace herite")
     trouves = _workspaces(travail)
-    assert HERITE not in trouves, (
-        f"Le workspace herite {HERITE!r} existe encore. Il devait etre detruit "
-        "puis supprime."
+    assert HERITE not in trouves, message(
+        en=f"The inherited workspace {HERITE!r} still exists. It was supposed to be torn down "
+        "and then deleted.",
+        fr=f"Le workspace hérité {HERITE!r} existe encore. Il devait être détruit "
+        "puis supprimé.",
     )
-    assert trouves == {"default", "dev", "prod"}, (
-        f"Workspaces presents : {sorted(trouves)}. Attendu exactement "
-        "default, dev et prod."
+    assert trouves == {"default", "dev", "prod"}, message(
+        en=f"Workspaces present: {sorted(trouves)}. Exactly "
+        "default, dev and prod expected.",
+        fr=f"Workspaces présents : {sorted(trouves)}. Attendu exactement "
+        "default, dev et prod.",
     )
 
 
@@ -131,10 +142,13 @@ def test_le_workspace_selectionne_est_default(travail: Path) -> None:
     marqueur = travail / ".terraform" / "environment"
     # Absent = jamais bascule depuis `default`, ce qui convient aussi.
     courant = marqueur.read_text(encoding="utf-8").strip() if marqueur.is_file() else "default"
-    assert courant == "default", (
-        f".terraform/environment porte {courant!r} : le travail doit se terminer "
+    assert courant == "default", message(
+        en=f".terraform/environment carries {courant!r}: the work must end "
+        "on `default`, so that the next command does not apply to the wrong "
+        "state.",
+        fr=f".terraform/environment porte {courant!r} : le travail doit se terminer "
         "sur `default`, pour ne pas laisser la prochaine commande s'appliquer "
-        "au mauvais etat."
+        "au mauvais état.",
     )
 
 
@@ -143,10 +157,13 @@ def test_le_workspace_selectionne_est_default(travail: Path) -> None:
 
 def test_default_ne_suit_aucune_ressource(travail: Path) -> None:
     gerees = _ressources_gerees(travail, "default")
-    assert not gerees, (
-        f"Le workspace `default` suit {len(gerees)} ressource(s) "
+    assert not gerees, message(
+        en=f"The `default` workspace tracks {len(gerees)} resource(s) "
+        f"({[r['address'] for r in gerees]}). It must stay empty: the "
+        "environments live in `dev` and `prod`.",
+        fr=f"Le workspace `default` suit {len(gerees)} ressource(s) "
         f"({[r['address'] for r in gerees]}). Il doit rester vide : les "
-        "environnements vivent dans `dev` et `prod`."
+        "environnements vivent dans `dev` et `prod`.",
     )
 
 
@@ -156,14 +173,18 @@ def test_default_ne_suit_aucune_ressource(travail: Path) -> None:
 def test_chaque_environnement_a_son_compte(travail: Path) -> None:
     for workspace, (ressources, fichiers) in ENVIRONNEMENTS.items():
         gerees = _ressources_gerees(travail, workspace)
-        assert len(gerees) == ressources, (
-            f"Le workspace {workspace!r} suit {len(gerees)} ressource(s), "
-            f"attendu {ressources}. Adresses : {[r['address'] for r in gerees]}"
+        assert len(gerees) == ressources, message(
+            en=f"The workspace {workspace!r} tracks {len(gerees)} resource(s), "
+            f"expected {ressources}. Addresses: {[r['address'] for r in gerees]}",
+            fr=f"Le workspace {workspace!r} suit {len(gerees)} ressource(s), "
+            f"attendu {ressources}. Adresses : {[r['address'] for r in gerees]}",
         )
         sorties = _sorties(travail, workspace)
-        assert sorties["replicas"]["value"] == fichiers, (
-            f"{workspace!r} produit {sorties['replicas']['value']} fichier(s), "
-            f"attendu {fichiers}."
+        assert sorties["replicas"]["value"] == fichiers, message(
+            en=f"{workspace!r} produces {sorties['replicas']['value']} file(s), "
+            f"expected {fichiers}.",
+            fr=f"{workspace!r} produit {sorties['replicas']['value']} fichier(s), "
+            f"attendu {fichiers}.",
         )
 
 
@@ -171,13 +192,17 @@ def test_chaque_fichier_porte_le_nom_de_son_workspace(travail: Path) -> None:
     for workspace in ENVIRONNEMENTS:
         sorties = _sorties(travail, workspace)
         produit = str(sorties["fichier_produit"]["value"])
-        assert workspace in produit, (
-            f"Le workspace {workspace!r} produit {produit!r}, qui ne porte pas "
-            "son nom. Le nom doit etre derive de `terraform.workspace`."
+        assert workspace in produit, message(
+            en=f"The workspace {workspace!r} produces {produit!r}, which does not carry "
+            "its name. The name must derive from `terraform.workspace`.",
+            fr=f"Le workspace {workspace!r} produit {produit!r}, qui ne porte pas "
+            "son nom. Le nom doit être dérivé de `terraform.workspace`.",
         )
-        assert sorties["workspace_actif"]["value"] == workspace, (
-            f"`workspace_actif` vaut {sorties['workspace_actif']['value']!r} "
-            f"dans le workspace {workspace!r}."
+        assert sorties["workspace_actif"]["value"] == workspace, message(
+            en=f"`workspace_actif` is {sorties['workspace_actif']['value']!r} "
+            f"in workspace {workspace!r}.",
+            fr=f"`workspace_actif` vaut {sorties['workspace_actif']['value']!r} "
+            f"dans le workspace {workspace!r}.",
         )
 
 
@@ -187,9 +212,11 @@ def test_les_deux_environnements_ont_converge(travail: Path) -> None:
             "plan", "-input=false", "-detailed-exitcode", "-no-color",
             cwd=travail, workspace=workspace,
         )
-        assert plan.returncode == 0, (
-            f"`plan -detailed-exitcode` rend {plan.returncode} dans "
-            f"{workspace!r}, attendu 0.\n{(plan.stdout + plan.stderr)[-700:]}"
+        assert plan.returncode == 0, message(
+            en=f"`plan -detailed-exitcode` returns {plan.returncode} in "
+            f"{workspace!r}, expected 0.\n{(plan.stdout + plan.stderr)[-700:]}",
+            fr=f"`plan -detailed-exitcode` rend {plan.returncode} dans "
+            f"{workspace!r}, attendu 0.\n{(plan.stdout + plan.stderr)[-700:]}",
         )
 
 
@@ -200,12 +227,17 @@ def test_le_fichier_herite_a_disparu(travail: Path) -> None:
     """Un `delete -force` aurait laisse ce fichier orphelin sur le disque."""
     _hors_rejeu_de_solution("le fichier herite")
     orphelin = travail / FICHIER_HERITE
-    assert not orphelin.exists(), (
-        f"{FICHIER_HERITE} existe encore. Le workspace {HERITE!r} a donc ete "
-        "supprime SANS avoir ete detruit, probablement avec `-force` : "
-        "l'etat a disparu, le fichier est reste, et plus rien ne le gere. "
+    assert not orphelin.exists(), message(
+        en=f"{FICHIER_HERITE} still exists. The workspace {HERITE!r} was therefore "
+        "deleted WITHOUT being torn down, probably with `-force`: "
+        "the state is gone, the file stayed, and nothing manages it any more. "
+        "The correct order is `terraform destroy` THEN "
+        "`terraform workspace delete`.",
+        fr=f"{FICHIER_HERITE} existe encore. Le workspace {HERITE!r} a donc été "
+        "supprimé SANS avoir été détruit, probablement avec `-force` : "
+        "l'état a disparu, le fichier est resté, et plus rien ne le gère. "
         "L'ordre correct est `terraform destroy` PUIS "
-        "`terraform workspace delete`."
+        "`terraform workspace delete`.",
     )
 
 
@@ -225,25 +257,34 @@ def test_le_nommage_suit_un_workspace_inconnu(travail: Path, tmp_path: Path) -> 
     cree = _tf(
         "workspace", "select", "-or-create", "controle", "-no-color", cwd=copie
     )
-    assert cree.returncode == 0, (
-        f"`workspace select -or-create` echoue.\n{cree.stderr[-700:]}"
+    assert cree.returncode == 0, message(
+        en=f"`workspace select -or-create` fails.\n{cree.stderr[-700:]}",
+        fr=f"`workspace select -or-create` échoue.\n{cree.stderr[-700:]}",
     )
 
     applique = _tf("apply", "-auto-approve", "-input=false", "-no-color", cwd=copie)
-    assert applique.returncode == 0, (
-        f"`terraform apply` echoue dans le workspace temoin.\n"
-        f"{applique.stderr[-900:]}"
+    assert applique.returncode == 0, message(
+        en=f"`terraform apply` fails in the witness workspace.\n"
+        f"{applique.stderr[-900:]}",
+        fr=f"`terraform apply` échoue dans le workspace témoin.\n"
+        f"{applique.stderr[-900:]}",
     )
 
     sorties = _sorties(copie, "controle")
     produit = str(sorties["fichier_produit"]["value"])
-    assert "controle" in produit, (
-        f"Dans un workspace nomme `controle`, le fichier produit est "
+    assert "controle" in produit, message(
+        en=f"In a workspace named `controle`, the file produced is "
+        f"{produit!r}. The name therefore does not follow `terraform.workspace`: it comes "
+        "from a hard-coded value or from the `nom_env` variable, which does not change "
+        "with the workspace.",
+        fr=f"Dans un workspace nommé `controle`, le fichier produit est "
         f"{produit!r}. Le nom ne suit donc pas `terraform.workspace` : il vient "
         "d'une valeur en dur ou de la variable `nom_env`, qui ne change pas "
-        "avec le workspace."
+        "avec le workspace.",
     )
-    assert sorties["replicas"]["value"] == 1, (
-        f"Le workspace temoin produit {sorties['replicas']['value']} fichiers, "
-        "attendu 1 : seul `prod` en produit trois."
+    assert sorties["replicas"]["value"] == 1, message(
+        en=f"The witness workspace produces {sorties['replicas']['value']} files, "
+        "1 expected: only `prod` produces three.",
+        fr=f"Le workspace témoin produit {sorties['replicas']['value']} fichiers, "
+        "attendu 1 : seul `prod` en produit trois.",
     )

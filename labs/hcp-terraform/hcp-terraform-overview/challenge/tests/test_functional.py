@@ -36,7 +36,7 @@ from pathlib import Path
 
 import pytest
 
-from conftest import exiger_workdir, output_json, terraform, workdir_lab
+from conftest import exiger_workdir, message, output_json, terraform, workdir_lab
 
 WORKDIR = workdir_lab(__file__)
 LAB_ID = "hcp-terraform-hcp-terraform-overview"
@@ -159,16 +159,20 @@ def _plan_json(repertoire: Path, fichier: str) -> dict:
     idempotent et ne touche a aucun plan.
     """
     chemin = repertoire / fichier
-    assert chemin.is_file(), (
-        f"`{RUN}/{fichier}` n'existe pas.\n\nUn run HCP est un plan puis un "
+    assert chemin.is_file(), message(
+        en=f"`{RUN}/{fichier}` does not exist.\n\nAn HCP run is a plan and then an "
+        "apply of THAT plan. Here, both plans must stay on disk: "
+        "they are what proves the work.",
+        fr=f"`{RUN}/{fichier}` n'existe pas.\n\nUn run HCP est un plan puis un "
         "apply de CE plan. Ici, les deux plans doivent rester sur le disque : "
-        "ce sont eux qui prouvent le travail."
+        "ce sont eux qui prouvent le travail.",
     )
 
     terraform("init", "-input=false", "-no-color", cwd=repertoire)
     proc = terraform("show", "-json", fichier, cwd=repertoire)
-    assert proc.returncode == 0, (
-        f"`terraform show -json {fichier}` a echoue.\n{proc.stderr[-800:]}"
+    assert proc.returncode == 0, message(
+        en=f"`terraform show -json {fichier}` failed.\n{proc.stderr[-800:]}",
+        fr=f"`terraform show -json {fichier}` a échoué.\n{proc.stderr[-800:]}",
     )
     return json.loads(proc.stdout)
 
@@ -176,17 +180,23 @@ def _plan_json(repertoire: Path, fichier: str) -> dict:
 def test_le_premier_run_a_ete_applique(joue: Path) -> None:
     """L'apply est passe, et il a pose la valeur du PREMIER plan."""
     rapport = joue / RUN / RAPPORT
-    assert rapport.is_file(), (
-        f"`{RUN}/{RAPPORT}` n'existe pas : le premier run n'a pas ete applique.\n\n"
-        "Un plan enregistre s'applique par `terraform apply <fichier>`, et cet "
-        "apply n'ouvre aucune confirmation : le plan a deja tranche."
+    assert rapport.is_file(), message(
+        en=f"`{RUN}/{RAPPORT}` does not exist: the first run was not applied.\n\n"
+        "A saved plan is applied with `terraform apply <file>`, and that "
+        "apply opens no confirmation: the plan has already decided.",
+        fr=f"`{RUN}/{RAPPORT}` n'existe pas : le premier run n'a pas été appliqué.\n\n"
+        "Un plan enregistré s'applique par `terraform apply <fichier>`, et cet "
+        "apply n'ouvre aucune confirmation : le plan a déjà tranché.",
     )
 
     contenu = rapport.read_text(encoding="utf-8")
-    assert contenu == PREMIER, (
-        f"`{RUN}/{RAPPORT}` contient {contenu!r}, {PREMIER!r} attendu.\n\n"
+    assert contenu == PREMIER, message(
+        en=f"`{RUN}/{RAPPORT}` contains {contenu!r}, {PREMIER!r} expected.\n\n"
+        "That is the value of the FIRST run. If you read the second one's there, the "
+        "second plan was applied although it was meant to stay pending.",
+        fr=f"`{RUN}/{RAPPORT}` contient {contenu!r}, {PREMIER!r} attendu.\n\n"
         "C'est la valeur du PREMIER run. Si vous y lisez celle du second, le "
-        "second plan a ete applique alors qu'il devait rester en attente."
+        "second plan a été appliqué alors qu'il devait rester en attente.",
     )
 
 
@@ -199,27 +209,39 @@ def test_le_second_plan_attend_toujours_son_apply(joue: Path) -> None:
     repertoire = joue / RUN
     plan = _plan_json(repertoire, PLAN2)
 
-    assert plan.get("applyable") is True, (
-        f"`{PLAN2}` porte `applyable: {plan.get('applyable')}`, `true` attendu.\n\n"
+    assert plan.get("applyable") is True, message(
+        en=f"`{PLAN2}` carries `applyable: {plan.get('applyable')}`, `true` expected.\n\n"
+        "A plan with no change is `applyable: false`, and that is exactly "
+        "what HCP Terraform calls \"Planned and finished\". Here the second run "
+        "must carry a change.",
+        fr=f"`{PLAN2}` porte `applyable: {plan.get('applyable')}`, `true` attendu.\n\n"
         "Un plan sans changement vaut `applyable: false`, et c'est exactement "
         "ce que HCP Terraform nomme « Planned and finished ». Ici le second run "
-        "doit porter un changement."
+        "doit porter un changement.",
     )
 
     valeur = (plan.get("variables") or {}).get("message", {}).get("value")
-    assert valeur == SECOND, (
-        f"`{PLAN2}` a ete calcule avec `message = {valeur!r}`, {SECOND!r} "
-        "attendu.\n\nUn plan enregistre FIGE les valeurs qui lui ont ete "
-        "donnees : c'est ce que HCP Terraform fait d'un run, verrouille sur sa "
-        "configuration version et son jeu de variables."
+    assert valeur == SECOND, message(
+        en=f"`{PLAN2}` was computed with `message = {valeur!r}`, {SECOND!r} "
+        "expected.\n\nA saved plan FREEZES the values it was "
+        "given: that is what HCP Terraform does with a run, locked onto its "
+        "configuration version and its set of variables.",
+        fr=f"`{PLAN2}` a été calculé avec `message = {valeur!r}`, {SECOND!r} "
+        "attendu.\n\nUn plan enregistré FIGE les valeurs qui lui ont été "
+        "données : c'est ce que HCP Terraform fait d'un run, verrouillé sur sa "
+        "configuration version et son jeu de variables.",
     )
 
     contenu = (repertoire / RAPPORT).read_text(encoding="utf-8")
-    assert contenu != SECOND, (
-        f"`{RAPPORT}` porte deja la valeur du second run.\n\nLe second plan "
-        "devait rester EN ATTENTE, comme un run arrete en « Needs "
-        "Confirmation ». Un plan qu'on applique aussitot ne montre plus rien "
-        "de la division entre le plan et l'apply."
+    assert contenu != SECOND, message(
+        en=f"`{RAPPORT}` already carries the value of the second run.\n\nThe second plan "
+        "was meant to stay PENDING, like a run stopped at \"Needs "
+        "Confirmation\". A plan applied straight away shows nothing "
+        "of the division between plan and apply.",
+        fr=f"`{RAPPORT}` porte déjà la valeur du second run.\n\nLe second plan "
+        "devait rester EN ATTENTE, comme un run arrêté en « Needs "
+        "Confirmation ». Un plan qu'on applique aussitôt ne montre plus rien "
+        "de la division entre le plan et l'apply.",
     )
 
 
@@ -230,20 +252,27 @@ def test_rejouer_le_premier_plan_est_refuse(joue: Path) -> None:
     n'est pas perime, et sans premier plan il n'y a rien a rejouer.
     """
     repertoire = joue / RUN
-    assert (repertoire / PLAN1).is_file(), (
-        f"`{RUN}/{PLAN1}` n'existe pas : gardez le plan du premier run."
+    assert (repertoire / PLAN1).is_file(), message(
+        en=f"`{RUN}/{PLAN1}` does not exist: keep the first run's plan.",
+        fr=f"`{RUN}/{PLAN1}` n'existe pas : gardez le plan du premier run.",
     )
 
     proc = terraform("apply", "-no-color", "-input=false", PLAN1, cwd=repertoire)
     sortie = proc.stdout + proc.stderr
 
-    assert PERIME in sortie, (
-        f"Rejouer `{PLAN1}` n'a pas ete refuse pour cause de plan perime.\n\n"
+    assert PERIME in sortie, message(
+        en=f"Replaying `{PLAN1}` was not refused as a stale plan.\n\n"
+        f"Expected: \"{PERIME}\". Got:\n\n{sortie[-1000:]}\n\n"
+        "That refusal is the local counterpart of a workspace's run queue: a "
+        "run in progress may change what a following run would do, so the following one "
+        "waits. If that message does not appear, the first plan was "
+        f"never applied.\n\nSource: {SOURCE_RUNS}",
+        fr=f"Rejouer `{PLAN1}` n'a pas été refusé pour cause de plan périmé.\n\n"
         f"Attendu : « {PERIME} ». Obtenu :\n\n{sortie[-1000:]}\n\n"
         "Ce refus est le pendant local de la file de runs d'un workspace : un "
         "run en cours peut changer ce qu'un run suivant ferait, donc le suivant "
-        "attend. Si ce message n'apparait pas, c'est que le premier plan n'a "
-        f"jamais ete applique.\n\nSource : {SOURCE_RUNS}"
+        "attend. Si ce message n'apparaît pas, c'est que le premier plan n'a "
+        f"jamais été appliqué.\n\nSource : {SOURCE_RUNS}",
     )
 
 
@@ -260,13 +289,16 @@ def test_un_plan_enregistre_verrouille_ses_variables(joue: Path) -> None:
     changements = {
         c["address"]: c["change"] for c in plan.get("resource_changes", [])
     }
-    assert "local_file.rapport" in changements, (
-        "Le second plan ne porte aucun changement sur `local_file.rapport` : "
-        f"{sorted(changements)}."
+    assert "local_file.rapport" in changements, message(
+        en="The second plan carries no change on `local_file.rapport`: "
+        f"{sorted(changements)}.",
+        fr="Le second plan ne porte aucun changement sur `local_file.rapport` : "
+        f"{sorted(changements)}.",
     )
     apres = changements["local_file.rapport"]["after"].get("content")
-    assert apres == SECOND, (
-        f"Le second plan ecrirait {apres!r}, {SECOND!r} attendu."
+    assert apres == SECOND, message(
+        en=f"The second plan would write {apres!r}, {SECOND!r} expected.",
+        fr=f"Le second plan écrirait {apres!r}, {SECOND!r} attendu.",
     )
 
     proc = terraform(
@@ -280,12 +312,17 @@ def test_un_plan_enregistre_verrouille_ses_variables(joue: Path) -> None:
     )
     sortie = proc.stdout + proc.stderr
 
-    assert VARIABLE_FIGEE in sortie, (
-        "Passer `-var` a l'apply d'un plan enregistre aurait du etre refuse.\n\n"
-        f"Attendu : « {VARIABLE_FIGEE} ». Obtenu :\n\n{sortie[-1000:]}\n\n"
-        "C'est la meme propriete que HCP Terraform applique a un run : « If you "
+    assert VARIABLE_FIGEE in sortie, message(
+        en="Passing `-var` to the apply of a saved plan should have been refused.\n\n"
+        f"Expected: \"{VARIABLE_FIGEE}\". Got:\n\n{sortie[-1000:]}\n\n"
+        "That is the same property HCP Terraform applies to a run: \"If you "
         "change variables or commit new code before the run finishes, it will "
-        "only affect future runs. »"
+        "only affect future runs.\"",
+        fr="Passer `-var` à l'apply d'un plan enregistré aurait dû être refusé.\n\n"
+        f"Attendu : « {VARIABLE_FIGEE} ». Obtenu :\n\n{sortie[-1000:]}\n\n"
+        "C'est la même propriété que HCP Terraform applique à un run : « If you "
+        "change variables or commit new code before the run finishes, it will "
+        "only affect future runs. »",
     )
 
 
@@ -297,15 +334,21 @@ def sorties(joue: Path) -> dict:
     repertoire = joue / ANALYSE
 
     init = terraform("init", "-input=false", "-no-color", cwd=repertoire)
-    assert init.returncode == 0, f"`init` a echoue.\n{init.stderr[-800:]}"
+    assert init.returncode == 0, message(
+        en=f"`init` failed.\n{init.stderr[-800:]}",
+        fr=f"`init` a échoué.\n{init.stderr[-800:]}",
+    )
 
     applique = terraform(
         "apply", "-auto-approve", "-input=false", "-no-color", cwd=repertoire
     )
-    assert applique.returncode == 0, (
-        f"`apply` a echoue dans `{ANALYSE}/`.\n\nLa configuration ne calcule "
+    assert applique.returncode == 0, message(
+        en=f"`apply` failed in `{ANALYSE}/`.\n\nThe configuration does not compute: "
+        f"a `???` remains, or an expression does not hold.\n"
+        f"{applique.stderr[-1200:]}",
+        fr=f"`apply` a échoué dans `{ANALYSE}/`.\n\nLa configuration ne calcule "
         f"pas : un `???` subsiste, ou une expression ne tient pas.\n"
-        f"{applique.stderr[-1200:]}"
+        f"{applique.stderr[-1200:]}",
     )
 
     return {c: v["value"] for c, v in output_json(repertoire).items()}
@@ -313,20 +356,25 @@ def sorties(joue: Path) -> dict:
 
 def test_les_six_runs_sont_tous_qualifies(sorties: dict) -> None:
     verdicts = sorties.get("verdicts")
-    assert isinstance(verdicts, dict), (
-        f"La sortie `verdicts` rend {type(verdicts).__name__}, une map attendue."
+    assert isinstance(verdicts, dict), message(
+        en=f"The `verdicts` output returns {type(verdicts).__name__}, a map was expected.",
+        fr=f"La sortie `verdicts` rend {type(verdicts).__name__}, une map attendue.",
     )
-    assert set(verdicts) == set(VERDICTS_ATTENDUS), (
-        f"Runs qualifies : {sorted(verdicts)}.\nAttendu les six : "
-        f"{sorted(VERDICTS_ATTENDUS)}."
+    assert set(verdicts) == set(VERDICTS_ATTENDUS), message(
+        en=f"Runs classified: {sorted(verdicts)}.\nAll six were expected: "
+        f"{sorted(VERDICTS_ATTENDUS)}.",
+        fr=f"Runs qualifiés : {sorted(verdicts)}.\nAttendu les six : "
+        f"{sorted(VERDICTS_ATTENDUS)}.",
     )
 
     hors_vocabulaire = {
         nom: v for nom, v in verdicts.items() if v not in VERDICTS_ADMIS
     }
-    assert not hors_vocabulaire, (
-        f"Ces verdicts ne sont pas dans le vocabulaire admis : "
-        f"{hors_vocabulaire}.\nAdmis : {sorted(VERDICTS_ADMIS)}."
+    assert not hors_vocabulaire, message(
+        en=f"These verdicts are not in the accepted vocabulary: "
+        f"{hors_vocabulaire}.\nAccepted: {sorted(VERDICTS_ADMIS)}.",
+        fr=f"Ces verdicts ne sont pas dans le vocabulaire admis : "
+        f"{hors_vocabulaire}.\nAdmis : {sorted(VERDICTS_ADMIS)}.",
     )
 
 
@@ -335,9 +383,11 @@ def test_chaque_run_recoit_le_bon_verdict(sorties: dict, cas: str) -> None:
     attendu, pourquoi = VERDICTS_ATTENDUS[cas]
     obtenu = sorties["verdicts"].get(cas)
 
-    assert obtenu == attendu, (
-        f"`{cas}` vaut {obtenu!r}, attendu {attendu!r}.\n\n{pourquoi.capitalize()}.\n\n"
-        f"Source : {SOURCE_RUNS}"
+    assert obtenu == attendu, message(
+        en=f"`{cas}` is {obtenu!r}, expected {attendu!r}.\n\n{pourquoi.capitalize()}.\n\n"
+        f"Source: {SOURCE_RUNS}",
+        fr=f"`{cas}` vaut {obtenu!r}, attendu {attendu!r}.\n\n{pourquoi.capitalize()}.\n\n"
+        f"Source : {SOURCE_RUNS}",
     )
 
 
@@ -346,30 +396,40 @@ def test_chaque_run_recoit_le_bon_verdict(sorties: dict, cas: str) -> None:
 # --------------------------------------------------------------------------
 def test_les_onze_etapes_dans_l_ordre(sorties: dict) -> None:
     obtenues = sorties.get("etapes_du_run")
-    assert isinstance(obtenues, list), (
-        f"`etapes_du_run` rend {type(obtenues).__name__}, une liste attendue."
+    assert isinstance(obtenues, list), message(
+        en=f"`etapes_du_run` returns {type(obtenues).__name__}, a list was expected.",
+        fr=f"`etapes_du_run` rend {type(obtenues).__name__}, une liste attendue.",
     )
 
-    assert set(obtenues) == set(ETAPES), (
-        f"Les etapes citees ne sont pas les onze attendues.\n"
+    assert set(obtenues) == set(ETAPES), message(
+        en=f"The steps named are not the eleven expected.\n"
+        f"Extra: {sorted(set(obtenues) - set(ETAPES))}\n"
+        f"Missing: {sorted(set(ETAPES) - set(obtenues))}",
+        fr=f"Les étapes citées ne sont pas les onze attendues.\n"
         f"En trop : {sorted(set(obtenues) - set(ETAPES))}\n"
-        f"Manquantes : {sorted(set(ETAPES) - set(obtenues))}"
+        f"Manquantes : {sorted(set(ETAPES) - set(obtenues))}",
     )
 
-    assert obtenues == ETAPES, (
-        f"L'ordre n'est pas celui de la documentation.\nObtenu  : {obtenues}\n"
+    assert obtenues == ETAPES, message(
+        en=f"The order is not the documentation's.\nGot     : {obtenues}\n"
+        f"Expected: {ETAPES}\n\nThe surprising point is in the middle: the "
+        "OPA check comes before the cost estimate, Sentinel's comes "
+        "after it. That is what makes a Sentinel rule able to read an "
+        f"estimated cost, and an OPA rule unable to.\n\nSource: {SOURCE_ETATS}",
+        fr=f"L'ordre n'est pas celui de la documentation.\nObtenu  : {obtenues}\n"
         f"Attendu : {ETAPES}\n\nLe point qui surprend est au milieu : la "
-        "verification OPA precede l'estimation de cout, celle de Sentinel la "
-        "suit. C'est ce qui fait qu'une regle Sentinel peut lire un cout "
-        f"estime, et qu'une regle OPA ne le peut pas.\n\nSource : {SOURCE_ETATS}"
+        "vérification OPA précède l'estimation de coût, celle de Sentinel la "
+        "suit. C'est ce qui fait qu'une règle Sentinel peut lire un coût "
+        f"estimé, et qu'une règle OPA ne le peut pas.\n\nSource : {SOURCE_ETATS}",
     )
 
 
 @pytest.mark.parametrize("fait", sorted(FAITS_ATTENDUS))
 def test_chaque_fait_etabli(sorties: dict, fait: str) -> None:
     faits = sorties.get("faits")
-    assert isinstance(faits, dict), (
-        f"`faits` rend {type(faits).__name__}, une map attendue."
+    assert isinstance(faits, dict), message(
+        en=f"`faits` returns {type(faits).__name__}, a map was expected.",
+        fr=f"`faits` rend {type(faits).__name__}, une map attendue.",
     )
 
     attendu, pourquoi = FAITS_ATTENDUS[fait]
@@ -377,7 +437,9 @@ def test_chaque_fait_etabli(sorties: dict, fait: str) -> None:
     if isinstance(attendu, list) and isinstance(obtenu, list):
         obtenu = sorted(obtenu)
 
-    assert obtenu == attendu, (
-        f"`{fait}` vaut {obtenu!r}, attendu {attendu!r}.\n\n"
-        f"{pourquoi.capitalize()}.\n\nSources : {SOURCE_ETATS} et {SOURCE_RUNS}"
+    assert obtenu == attendu, message(
+        en=f"`{fait}` is {obtenu!r}, expected {attendu!r}.\n\n"
+        f"{pourquoi.capitalize()}.\n\nSources: {SOURCE_ETATS} and {SOURCE_RUNS}",
+        fr=f"`{fait}` vaut {obtenu!r}, attendu {attendu!r}.\n\n"
+        f"{pourquoi.capitalize()}.\n\nSources : {SOURCE_ETATS} et {SOURCE_RUNS}",
     )

@@ -18,6 +18,7 @@ import pytest
 
 from conftest import (
     exiger_workdir,
+    message,
     output_json,
     show_json,
     terraform,
@@ -60,12 +61,19 @@ def applied() -> Path:
     exiger_workdir(WORKDIR, "write-code-for-each")
     init = terraform("init", "-input=false", "-no-color", cwd=WORKDIR)
     if init.returncode != 0:
-        pytest.fail(f"`terraform init` a échoué.\n{init.stderr[-1500:]}")
+        pytest.fail(message(
+            en=f"`terraform init` failed.\n{init.stderr[-1500:]}",
+            fr=f"`terraform init` a échoué.\n{init.stderr[-1500:]}",
+        ))
     apply = terraform("apply", "-auto-approve", "-input=false", "-no-color", cwd=WORKDIR)
     if apply.returncode != 0:
         pytest.fail(
-            "`terraform apply` a échoué : la configuration n'est pas encore valide.\n"
-            f"{apply.stderr[-1500:]}"
+            message(
+            en="`terraform apply` failed: the configuration is not valid yet.\n"
+            f"{apply.stderr[-1500:]}",
+            fr="`terraform apply` a échoué : la configuration n'est pas encore valide.\n"
+            f"{apply.stderr[-1500:]}",
+        )
         )
     return WORKDIR
 
@@ -83,21 +91,27 @@ def test_plus_aucun_index_numerique(etat: dict) -> None:
     """`for_each` adresse par clé, `count` adresserait par entier."""
     resources = etat["values"]["root_module"]["resources"]
     gerees = [r for r in resources if r.get("mode") == "managed"]
-    assert gerees, "Aucune ressource gérée dans le state."
+    assert gerees, message(
+        en="No managed resource in the state.",
+        fr="Aucune ressource gérée dans le state.",
+    )
     entiers = [
         f"{r['type']}[{r['index']}]" for r in gerees if isinstance(r.get("index"), int)
     ]
-    assert not entiers, (
-        f"Ces instances sont encore adressées par position : {entiers}. "
-        "Un index entier signale un count non migré."
+    assert not entiers, message(
+        en=f"These instances are still addressed by position: {entiers}. "
+        "An integer index signals a count that was not migrated.",
+        fr=f"Ces instances sont encore adressées par position : {entiers}. "
+        "Un index entier signale un count non migré.",
     )
 
 
 def test_les_quatre_services_presents(etat: dict) -> None:
     attendus = set(SERVICES_ORIGINE) | {SERVICE_AJOUTE}
     obtenues = set(identites(etat))
-    assert obtenues == attendus, (
-        f"Clés présentes : {sorted(obtenues)}. Attendu : {sorted(attendus)}."
+    assert obtenues == attendus, message(
+        en=f"Keys present: {sorted(obtenues)}. Expected: {sorted(attendus)}.",
+        fr=f"Clés présentes : {sorted(obtenues)}. Attendu : {sorted(attendus)}.",
     )
 
 
@@ -110,18 +124,25 @@ def test_identite_preservee(etat: dict, identites_depart: dict, service: str) ->
     """Une identité qui change trahit une ressource détruite puis recréée."""
     avant = identites_depart[service]
     apres = identites(etat).get(service)
-    assert apres == avant, (
-        f"Le service « {service} » avait l'identité {avant!r}, il porte maintenant "
+    assert apres == avant, message(
+        en=f"The service \"{service}\" had the identity {avant!r}, it now carries "
+        f"{apres!r}. The resource was therefore destroyed and then recreated, which the "
+        "instruction explicitly forbids.",
+        fr=f"Le service « {service} » avait l'identité {avant!r}, il porte maintenant "
         f"{apres!r}. La ressource a donc été détruite puis recréée, ce que la "
-        "demande interdit explicitement."
+        "demande interdit explicitement.",
     )
 
 
 def test_service_ajoute_est_bien_nouveau(etat: dict, identites_depart: dict) -> None:
     ajoutee = identites(etat).get(SERVICE_AJOUTE)
-    assert ajoutee, f"Le service « {SERVICE_AJOUTE} » est absent du state."
-    assert ajoutee not in identites_depart.values(), (
-        "Le nouveau service réutilise l'identité d'un service existant."
+    assert ajoutee, message(
+        en=f"The service \"{SERVICE_AJOUTE}\" is absent from the state.",
+        fr=f"Le service « {SERVICE_AJOUTE} » est absent du state.",
+    )
+    assert ajoutee not in identites_depart.values(), message(
+        en="The new service reuses the identity of an existing service.",
+        fr="Le nouveau service réutilise l'identité d'un service existant.",
     )
 
 
@@ -151,10 +172,16 @@ def test_readressage_declaratif(applied: Path) -> None:
             shutil.copytree(produits, tmp / "out")
 
         init = terraform("init", "-input=false", "-no-color", cwd=tmp)
-        assert init.returncode == 0, f"init du rejeu impossible :\n{init.stderr[-800:]}"
+        assert init.returncode == 0, message(
+            en=f"cannot init the replay:\n{init.stderr[-800:]}",
+            fr=f"init du rejeu impossible :\n{init.stderr[-800:]}",
+        )
 
         plan = terraform("plan", "-out=rejeu.tfplan", "-input=false", "-no-color", cwd=tmp)
-        assert plan.returncode == 0, f"plan du rejeu impossible :\n{plan.stderr[-800:]}"
+        assert plan.returncode == 0, message(
+            en=f"cannot plan the replay:\n{plan.stderr[-800:]}",
+            fr=f"plan du rejeu impossible :\n{plan.stderr[-800:]}",
+        )
 
         montre = terraform("show", "-json", "rejeu.tfplan", cwd=tmp)
         montre.check_returncode()
@@ -164,27 +191,36 @@ def test_readressage_declaratif(applied: Path) -> None:
             c["address"] for c in changements
             if "delete" in c.get("change", {}).get("actions", [])
         ]
-        assert not detruits, (
-            f"Rejoué devant le state d'origine, votre code détruit {detruits}. "
+        assert not detruits, message(
+            en=f"Replayed against the original state, your code destroys {detruits}. "
+            "The re-addressing is therefore not declarative: `moved` blocks are "
+            "missing from the configuration.",
+            fr=f"Rejoué devant le state d'origine, votre code détruit {detruits}. "
             "Le réadressage n'est donc pas déclaratif : il manque des blocs "
-            "`moved` dans la configuration."
+            "`moved` dans la configuration.",
         )
 
         readresses = [c for c in changements if c.get("previous_address")]
-        assert len(readresses) >= len(SERVICES_ORIGINE), (
-            f"Seuls {len(readresses)} réadressages sont déclarés, "
+        assert len(readresses) >= len(SERVICES_ORIGINE), message(
+            en=f"Only {len(readresses)} re-addressings are declared, "
+            f"at least {len(SERVICES_ORIGINE)} expected. "
+            "Every existing instance must be covered by a `moved` block.",
+            fr=f"Seuls {len(readresses)} réadressages sont déclarés, "
             f"au moins {len(SERVICES_ORIGINE)} sont attendus. "
-            "Chaque instance existante doit être couverte par un bloc `moved`."
+            "Chaque instance existante doit être couverte par un bloc `moved`.",
         )
 
         crees = [
             c["address"] for c in changements
             if c.get("change", {}).get("actions") == ["create"]
         ]
-        assert len(crees) == 2, (
-            f"Le rejeu crée {len(crees)} ressource(s) : {crees}. "
+        assert len(crees) == 2, message(
+            en=f"The replay creates {len(crees)} resource(s): {crees}. "
+            "Exactly two are expected, one per type, for the single "
+            f"service \"{SERVICE_AJOUTE}\".",
+            fr=f"Le rejeu crée {len(crees)} ressource(s) : {crees}. "
             "Exactement deux sont attendues, une par type, pour le seul "
-            f"service « {SERVICE_AJOUTE} »."
+            f"service « {SERVICE_AJOUTE} ».",
         )
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
@@ -197,13 +233,17 @@ def test_readressage_declaratif(applied: Path) -> None:
 def test_output_est_une_map(applied: Path) -> None:
     """Le splat est invalide sur une ressource `for_each` : il faut un `for`."""
     valeur = output_json(applied)["identites"]["value"]
-    assert isinstance(valeur, dict), (
-        f"L'output `identites` est de type {type(valeur).__name__}. "
+    assert isinstance(valeur, dict), message(
+        en=f"The `identites` output is of type {type(valeur).__name__}. "
+        "A map indexed by service name is expected, built with a "
+        "`for` expression.",
+        fr=f"L'output `identites` est de type {type(valeur).__name__}. "
         "Une map indexée par nom de service est attendue, construite avec une "
-        "expression `for`."
+        "expression `for`.",
     )
-    assert set(valeur) == set(SERVICES_ORIGINE) | {SERVICE_AJOUTE}, (
-        f"Les clés de l'output sont {sorted(valeur)}."
+    assert set(valeur) == set(SERVICES_ORIGINE) | {SERVICE_AJOUTE}, message(
+        en=f"The output's keys are {sorted(valeur)}.",
+        fr=f"Les clés de l'output sont {sorted(valeur)}.",
     )
 
 
@@ -223,15 +263,19 @@ def test_la_configuration_converge_et_l_etat_porte_les_quatre_services(
     """
     attendues = set(SERVICES_ORIGINE) | {SERVICE_AJOUTE}
     obtenues = set(identites(etat))
-    assert obtenues == attendues, (
-        f"Le state porte les clés {sorted(obtenues)}, attendu "
+    assert obtenues == attendues, message(
+        en=f"The state carries the keys {sorted(obtenues)}, expected "
+        f"{sorted(attendues)}. The plan can be empty and the addressing wrong: "
+        "that is what the two halves check together.",
+        fr=f"Le state porte les clés {sorted(obtenues)}, attendu "
         f"{sorted(attendues)}. Le plan peut être vide et l'adressage faux : "
-        "c'est ce que les deux moitiés vérifient ensemble."
+        "c'est ce que les deux moitiés vérifient ensemble.",
     )
 
     proc = terraform(
         "plan", "-detailed-exitcode", "-input=false", "-no-color", cwd=applied
     )
-    assert proc.returncode == 0, (
-        f"`terraform plan -detailed-exitcode` rend {proc.returncode}, attendu 0."
+    assert proc.returncode == 0, message(
+        en=f"`terraform plan -detailed-exitcode` returns {proc.returncode}, expected 0.",
+        fr=f"`terraform plan -detailed-exitcode` rend {proc.returncode}, attendu 0.",
     )

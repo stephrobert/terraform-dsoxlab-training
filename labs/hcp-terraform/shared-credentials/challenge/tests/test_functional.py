@@ -39,7 +39,7 @@ from pathlib import Path
 
 import pytest
 
-from conftest import exiger_workdir, workdir_lab
+from conftest import exiger_workdir, message, workdir_lab
 
 WORKDIR = workdir_lab(__file__)
 LAB_ID = "hcp-terraform-shared-credentials"
@@ -112,17 +112,23 @@ def _floci_joignable() -> bool:
 def _exiger_floci() -> None:
     if _floci_joignable():
         return
-    message = (
-        f"Floci n'est pas joignable sur {FLOCI_HOST}:{FLOCI_PORT}. Ce lab en a "
-        "besoin : Floci emule l'API AWS en local, sans compte ni carte "
-        "bancaire.\n\n"
-        f"Lancez le lab avec `dsoxlab run {LAB_ID}`, qui le demarre tout seul, "
-        "et faites votre `dsoxlab check` DEPUIS cette session : le service "
-        "s'arrete quand vous la quittez."
+    explication = message(
+        en=f"Floci cannot be reached on {FLOCI_HOST}:{FLOCI_PORT}. This lab needs "
+        "it: Floci emulates the AWS API locally, with no account and no credit "
+        "card.\n\n"
+        f"Start the lab with `dsoxlab run {LAB_ID}`, which starts it on its own, "
+        "and run your `dsoxlab check` FROM that session: the service "
+        "stops when you leave it.",
+        fr=f"Floci n'est pas joignable sur {FLOCI_HOST}:{FLOCI_PORT}. Ce lab en a "
+            "besoin : Floci émule l'API AWS en local, sans compte ni carte "
+            "bancaire.\n\n"
+            f"Lancez le lab avec `dsoxlab run {LAB_ID}`, qui le démarre tout seul, "
+            "et faites votre `dsoxlab check` DEPUIS cette session : le service "
+            "s'arrête quand vous la quittez.",
     )
     if os.environ.get("LAB_WORKDIR"):
-        pytest.fail(message)
-    pytest.skip(message)
+        pytest.fail(explication)
+    pytest.skip(explication)
 
 
 def _environnement_de_run(tmp: Path) -> dict[str, str]:
@@ -171,7 +177,10 @@ def applique(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Path]:
 
     init = _tf("init", "-input=false", "-no-color", cwd=repertoire, env=env)
     if init.returncode != 0:
-        pytest.fail(f"`terraform init` a echoue :\n{init.stderr[-800:]}")
+        pytest.fail(message(
+            en=f"`terraform init` failed:\n{init.stderr[-800:]}",
+            fr=f"`terraform init` a échoué :\n{init.stderr[-800:]}",
+        ))
 
     # L'emulateur refuse parfois une requete isolee alors qu'il est sain.
     applique = None
@@ -187,11 +196,18 @@ def applique(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Path]:
     if applique is None or applique.returncode != 0:
         sortie = (applique.stderr or applique.stdout) if applique else ""
         pytest.fail(
-            "`terraform apply` a echoue dans un environnement ou les "
+            message(
+            en="`terraform apply` failed in an environment where the "
+            "credentials come ONLY from the environment.\n\nThat is "
+            "precisely what HCP Terraform does: it puts them there, just "
+            "before the run. A configuration that cannot receive them "
+            f"answers \"No valid credential sources found\".\n{sortie[-1500:]}",
+            fr="`terraform apply` a échoué dans un environnement où les "
             "identifiants ne viennent QUE de l'environnement.\n\nC'est "
-            "precisement ce que fait HCP Terraform : il les pose la, juste "
+            "précisément ce que fait HCP Terraform : il les pose là, juste "
             "avant le run. Une configuration qui ne sait pas les recevoir "
-            f"repond « No valid credential sources found ».\n{sortie[-1500:]}"
+            f"répond « No valid credential sources found ».\n{sortie[-1500:]}",
+        )
         )
 
     yield repertoire
@@ -229,39 +245,52 @@ def test_le_jeton_n_apparait_nulle_part_dans_le_state(applique: Path) -> None:
     serait tout aussi expose, et une verification ciblee ne le verrait pas.
     """
     fichier = applique / "terraform.tfstate"
-    assert fichier.is_file(), (
-        "Aucun `terraform.tfstate` : la configuration n'a pas ete appliquee."
+    assert fichier.is_file(), message(
+        en="No `terraform.tfstate`: the configuration was not applied.",
+        fr="Aucun `terraform.tfstate` : la configuration n'a pas été appliquée.",
     )
 
     contenu = fichier.read_text(encoding="utf-8")
-    assert JETON not in contenu, (
-        f"Le state porte le jeton en clair.\n\nIl y apparait "
+    assert JETON not in contenu, message(
+        en=f"The state carries the token in clear.\n\nIt appears there "
+        f"{contenu.count(JETON)} times. The variable's `sensitive` annotation "
+        "changes nothing: it stops Terraform from DISPLAYING it, not from "
+        "recording it. A state is read, backed up and shared.\n\n"
+        "What must go there instead is a fingerprint: it allows verifying "
+        "a presented token without ever keeping it.",
+        fr=f"Le state porte le jeton en clair.\n\nIl y apparaît "
         f"{contenu.count(JETON)} fois. L'annotation `sensitive` de la variable "
-        "n'y change rien : elle empeche Terraform de l'AFFICHER, pas de "
+        "n'y change rien : elle empêche Terraform de l'AFFICHER, pas de "
         "l'enregistrer. Un state se lit, se sauvegarde et se partage.\n\n"
-        "Ce qu'il faut poser a la place est une empreinte : elle permet de "
-        "verifier un jeton presente, sans jamais le conserver."
+        "Ce qu'il faut poser à la place est une empreinte : elle permet de "
+        "vérifier un jeton présenté, sans jamais le conserver.",
     )
 
 
 def test_l_instance_porte_l_empreinte_du_jeton(etat: dict) -> None:
     instances = _instances(etat)
-    assert len(instances) == 1, (
-        f"{len(instances)} instance(s) dans le state, une attendue."
+    assert len(instances) == 1, message(
+        en=f"{len(instances)} instance(s) in the state, one expected.",
+        fr=f"{len(instances)} instance(s) dans le state, une attendue.",
     )
 
     etiquettes = instances[0]["values"].get("tags") or {}
-    assert "Jeton" not in etiquettes, (
-        "L'etiquette `Jeton` existe encore. C'est elle qui portait le secret."
+    assert "Jeton" not in etiquettes, message(
+        en="The `Jeton` tag still exists. That is what carried the secret.",
+        fr="L'étiquette `Jeton` existe encore. C'est elle qui portait le secret.",
     )
 
     attendue = hashlib.sha256(JETON.encode()).hexdigest()
     obtenue = etiquettes.get("Empreinte")
-    assert obtenue == attendue, (
-        f"L'etiquette `Empreinte` vaut {obtenue!r}, attendu {attendue!r}.\n\n"
+    assert obtenue == attendue, message(
+        en=f"The `Empreinte` tag is {obtenue!r}, expected {attendue!r}.\n\n"
+        "That is the SHA-256 fingerprint of the token, the one the "
+        "`sha256` function returns. It proves that a presented token is the right one, without "
+        "containing it.",
+        fr=f"L'étiquette `Empreinte` vaut {obtenue!r}, attendu {attendue!r}.\n\n"
         "C'est l'empreinte SHA-256 du jeton, celle que rend la fonction "
-        "`sha256`. Elle prouve qu'un jeton presente est le bon, sans le "
-        "contenir."
+        "`sha256`. Elle prouve qu'un jeton présenté est le bon, sans le "
+        "contenir.",
     )
 
 
@@ -303,26 +332,37 @@ def test_les_cles_ont_disparu_et_le_provider_s_authentifie_quand_meme(
         if trouves:
             fautifs[fichier.name] = trouves
 
-    assert not fautifs, (
-        f"Des identifiants sont encore declares dans la configuration : "
+    assert not fautifs, message(
+        en=f"Credentials are still declared in the configuration: "
+        f"{fautifs}\n\nHCP Terraform puts the credentials in "
+        "the run's environment and throws them away at the end. A configuration that "
+        "contains them puts them in the repository, in its history, and in "
+        "every working copy.",
+        fr=f"Des identifiants sont encore déclarés dans la configuration : "
         f"{fautifs}\n\nHCP Terraform pose les identifiants dans "
-        "l'environnement du run et les jette a la fin. Une configuration qui "
-        "les contient les met dans le depot, dans son historique, et dans "
-        "chaque copie de travail."
+        "l'environnement du run et les jette à la fin. Une configuration qui "
+        "les contient les met dans le dépôt, dans son historique, et dans "
+        "chaque copie de travail.",
     )
 
     instances = _instances(etat)
-    assert len(instances) == 1, (
-        f"{len(instances)} instance(s) dans le state, une attendue.\n\nSans "
-        "instance, rien ne prouve que le provider s'est authentifie : une "
-        "configuration qui ne cree rien satisferait la moitie de ce lab sans "
-        "rien demontrer."
+    assert len(instances) == 1, message(
+        en=f"{len(instances)} instance(s) in the state, one expected.\n\nWithout an "
+        "instance, nothing proves that the provider authenticated: a "
+        "configuration that creates nothing would satisfy half of this lab without "
+        "demonstrating anything.",
+        fr=f"{len(instances)} instance(s) dans le state, une attendue.\n\nSans "
+        "instance, rien ne prouve que le provider s'est authentifié : une "
+        "configuration qui ne crée rien satisferait la moitié de ce lab sans "
+        "rien démontrer.",
     )
 
     identifiant = instances[0]["values"].get("id") or ""
-    assert identifiant.startswith("i-"), (
-        f"L'instance porte l'identifiant {identifiant!r}, inattendu : l'API n'a "
-        "pas repondu comme elle le devrait."
+    assert identifiant.startswith("i-"), message(
+        en=f"The instance carries the identifier {identifiant!r}, which is unexpected: the API did "
+        "not answer as it should.",
+        fr=f"L'instance porte l'identifiant {identifiant!r}, inattendu : l'API n'a "
+        "pas répondu comme elle le devrait.",
     )
 
 
@@ -335,15 +375,21 @@ def reponses() -> dict:
     repertoire = WORKDIR / QUESTIONNAIRE
 
     init = _tf("init", "-input=false", "-no-color", cwd=repertoire)
-    assert init.returncode == 0, f"`init` a echoue.\n{init.stderr[-800:]}"
+    assert init.returncode == 0, message(
+        en=f"`init` failed.\n{init.stderr[-800:]}",
+        fr=f"`init` a échoué.\n{init.stderr[-800:]}",
+    )
 
     applique = _tf(
         "apply", "-auto-approve", "-input=false", "-no-color", cwd=repertoire
     )
-    assert applique.returncode == 0, (
-        f"`apply` a echoue dans `{QUESTIONNAIRE}/`.\n\nUne reponse hors de "
-        "l'enumere est refusee AU PLAN, et le message dit quoi ecrire.\n"
-        f"{applique.stderr[-1200:]}"
+    assert applique.returncode == 0, message(
+        en=f"`apply` failed in `{QUESTIONNAIRE}/`.\n\nAn answer outside the "
+        "enumeration is refused AT PLAN TIME, and the message says what to write.\n"
+        f"{applique.stderr[-1200:]}",
+        fr=f"`apply` a échoué dans `{QUESTIONNAIRE}/`.\n\nUne réponse hors de "
+        "l'énuméré est refusée AU PLAN, et le message dit quoi écrire.\n"
+        f"{applique.stderr[-1200:]}",
     )
 
     proc = _tf("output", "-json", cwd=repertoire)
@@ -355,7 +401,9 @@ def reponses() -> dict:
 def test_chaque_reponse_sur_les_identifiants(reponses: dict, question: str) -> None:
     attendue, pourquoi = REPONSES_ATTENDUES[question]
     obtenue = reponses.get(question)
-    assert obtenue == attendue, (
-        f"`{question}` vaut {obtenue!r}, {attendue!r} attendu.\n\n"
-        f"{pourquoi.capitalize()}.\n\nSource : {SOURCE}"
+    assert obtenue == attendue, message(
+        en=f"`{question}` is {obtenue!r}, {attendue!r} expected.\n\n"
+        f"{pourquoi.capitalize()}.\n\nSource: {SOURCE}",
+        fr=f"`{question}` vaut {obtenue!r}, {attendue!r} attendu.\n\n"
+        f"{pourquoi.capitalize()}.\n\nSource : {SOURCE}",
     )

@@ -25,7 +25,7 @@ from pathlib import Path
 
 import pytest
 
-from conftest import exiger_workdir, workdir_lab
+from conftest import exiger_workdir, message, workdir_lab
 
 WORKDIR = workdir_lab(__file__)
 LAB_ID = "aws-import-moved-drift"
@@ -59,15 +59,19 @@ def _floci_joignable() -> bool:
 def _exiger_floci() -> None:
     if _floci_joignable():
         return
-    message = (
-        f"Floci n'est pas joignable sur {FLOCI_HOST}:{FLOCI_PORT}. Ce lab en a "
-        "besoin : l'instance heritee y est creee par `dsoxlab run`, qui demarre "
-        f"le service tout seul.\n\nLancez `dsoxlab run {LAB_ID}` et faites votre "
-        "`dsoxlab check` DEPUIS cette session."
+    explication = message(
+        en=f"Floci cannot be reached on {FLOCI_HOST}:{FLOCI_PORT}. This lab needs "
+        "it: the inherited instance is created there by `dsoxlab run`, which starts "
+        f"the service on its own.\n\nRun `dsoxlab run {LAB_ID}` and do your "
+        "`dsoxlab check` FROM that session.",
+        fr=f"Floci n'est pas joignable sur {FLOCI_HOST}:{FLOCI_PORT}. Ce lab en a "
+            "besoin : l'instance héritée y est créée par `dsoxlab run`, qui démarre "
+            f"le service tout seul.\n\nLancez `dsoxlab run {LAB_ID}` et faites votre "
+            "`dsoxlab check` DEPUIS cette session.",
     )
     if os.environ.get("LAB_WORKDIR"):
-        pytest.fail(message)
-    pytest.skip(message)
+        pytest.fail(explication)
+    pytest.skip(explication)
 
 
 def _tf(*args: str, cwd: Path | None = None) -> subprocess.CompletedProcess[str]:
@@ -83,7 +87,10 @@ def _aws(*args: str) -> dict:
         capture_output=True, text=True, env=ENV, check=False,
     )
     if proc.returncode != 0:
-        pytest.fail(f"`aws {' '.join(args)}` a echoue :\n{proc.stderr[-600:]}")
+        pytest.fail(message(
+            en=f"`aws {' '.join(args)}` failed:\n{proc.stderr[-600:]}",
+            fr=f"`aws {' '.join(args)}` a échoué :\n{proc.stderr[-600:]}",
+        ))
     return json.loads(proc.stdout or "{}")
 
 
@@ -124,15 +131,21 @@ def _gerees() -> dict[str, dict]:
 def _instance_heritee() -> dict:
     """L'instance creee hors Terraform, retrouvee par son tag."""
     candidates = [i for i in _instances_vivantes() if _tags(i).get("Name") == NOM_HERITE]
-    assert candidates, (
-        f"Aucune instance vivante ne porte le tag `Name = {NOM_HERITE}`. La mise "
-        "en place du lab ne s'est pas faite : relancez `dsoxlab run`."
+    assert candidates, message(
+        en=f"No live instance carries the tag `Name = {NOM_HERITE}`. The lab's "
+        "setup did not happen: run `dsoxlab run` again.",
+        fr=f"Aucune instance vivante ne porte le tag `Name = {NOM_HERITE}`. La mise "
+        "en place du lab ne s'est pas faite : relancez `dsoxlab run`.",
     )
-    assert len(candidates) == 1, (
-        f"{len(candidates)} instances portent le tag `Name = {NOM_HERITE}` : "
-        f"{[i['InstanceId'] for i in candidates]}.\n\nL'objet reel a ete DUPLIQUE. "
+    assert len(candidates) == 1, message(
+        en=f"{len(candidates)} instances carry the tag `Name = {NOM_HERITE}`: "
+        f"{[i['InstanceId'] for i in candidates]}.\n\nThe real object was DUPLICATED. "
+        "That is the signature of a `moved` whose `from` is wrong: Terraform finds "
+        "nothing at that address, says nothing, and creates the new resource.",
+        fr=f"{len(candidates)} instances portent le tag `Name = {NOM_HERITE}` : "
+        f"{[i['InstanceId'] for i in candidates]}.\n\nL'objet réel a été DUPLIQUÉ. "
         "C'est la signature d'un `moved` dont le `from` est faux : Terraform ne "
-        "trouve rien a cette adresse, ne dit rien, et cree la nouvelle ressource."
+        "trouve rien à cette adresse, ne dit rien, et crée la nouvelle ressource.",
     )
     return candidates[0]
 
@@ -144,16 +157,22 @@ def test_l_instance_du_state_est_celle_qui_preexistait() -> None:
     reelle = _instance_heritee()
     gerees = _gerees()
 
-    assert ADRESSE_CIBLE in gerees, (
-        f"Le state ne porte pas `{ADRESSE_CIBLE}`. Adresses gerees : "
-        f"{sorted(gerees)}."
+    assert ADRESSE_CIBLE in gerees, message(
+        en=f"The state does not carry `{ADRESSE_CIBLE}`. Managed addresses: "
+        f"{sorted(gerees)}.",
+        fr=f"Le state ne porte pas `{ADRESSE_CIBLE}`. Adresses gérées : "
+        f"{sorted(gerees)}.",
     )
     identifiant = gerees[ADRESSE_CIBLE]["values"]["id"]
-    assert identifiant == reelle["InstanceId"], (
-        f"Le state porte l'instance {identifiant!r}, alors que celle qui "
-        f"preexistait est {reelle['InstanceId']!r}.\n\nUne instance a ete CREEE "
-        "au lieu d'etre importee. L'objet d'origine est toujours la, et plus "
-        "personne ne le gere."
+    assert identifiant == reelle["InstanceId"], message(
+        en=f"The state carries the instance {identifiant!r}, while the one that "
+        f"pre-existed is {reelle['InstanceId']!r}.\n\nAn instance was CREATED "
+        "instead of being imported. The original object is still there, and "
+        "nobody manages it any more.",
+        fr=f"Le state porte l'instance {identifiant!r}, alors que celle qui "
+        f"préexistait est {reelle['InstanceId']!r}.\n\nUne instance a été CRÉÉE "
+        "au lieu d'être importée. L'objet d'origine est toujours là, et plus "
+        "personne ne le gère.",
     )
 
 
@@ -162,13 +181,19 @@ def test_l_instance_du_state_est_celle_qui_preexistait() -> None:
 # --------------------------------------------------------------------------
 def test_la_configuration_est_fidele_a_l_objet_importe() -> None:
     plan = _tf("plan", "-detailed-exitcode", "-input=false", "-no-color")
-    assert plan.returncode == 0, (
-        f"`plan -detailed-exitcode` rend {plan.returncode}, attendu 0.\n\n"
-        "C'est le VRAI critere de reussite d'un import : la ressource dans le "
+    assert plan.returncode == 0, message(
+        en=f"`plan -detailed-exitcode` returns {plan.returncode}, expected 0.\n\n"
+        "That is the REAL success criterion of an import: having the resource in the "
+        "state is not enough, the configuration must also match "
+        "it. `-generate-config-out` produces arguments that the API "
+        "returns and that the configuration does not have to carry: as long as they are there, "
+        f"the plan is never empty.\n{plan.stdout[-1200:]}",
+        fr=f"`plan -detailed-exitcode` rend {plan.returncode}, attendu 0.\n\n"
+        "C'est le VRAI critère de réussite d'un import : la ressource dans le "
         "state ne suffit pas, encore faut-il que la configuration lui "
         "corresponde. `-generate-config-out` produit des arguments que l'API "
-        "rend et que la configuration n'a pas a porter : tant qu'ils sont la, "
-        f"le plan n'est jamais vide.\n{plan.stdout[-1200:]}"
+        "rend et que la configuration n'a pas à porter : tant qu'ils sont là, "
+        f"le plan n'est jamais vide.\n{plan.stdout[-1200:]}",
     )
 
 
@@ -178,11 +203,15 @@ def test_la_configuration_est_fidele_a_l_objet_importe() -> None:
 def test_plus_rien_a_rafraichir() -> None:
     plan = _tf("plan", "-refresh-only", "-detailed-exitcode", "-input=false",
                "-no-color")
-    assert plan.returncode == 0, (
-        f"`plan -refresh-only -detailed-exitcode` rend {plan.returncode}, "
-        "attendu 0.\n\nLe premier plan prouve que le REEL colle au CODE ; "
-        "celui-ci prouve que le STATE colle au REEL. Les deux doivent tomber "
-        f"ensemble, sinon une derive subsiste.\n{plan.stdout[-1000:]}"
+    assert plan.returncode == 0, message(
+        en=f"`plan -refresh-only -detailed-exitcode` returns {plan.returncode}, "
+        "expected 0.\n\nThe first plan proves that REALITY matches the CODE; "
+        "this one proves that the STATE matches REALITY. Both must come out "
+        f"together, otherwise a drift remains.\n{plan.stdout[-1000:]}",
+        fr=f"`plan -refresh-only -detailed-exitcode` rend {plan.returncode}, "
+        "attendu 0.\n\nLe premier plan prouve que le RÉEL colle au CODE ; "
+        "celui-ci prouve que le STATE colle au RÉEL. Les deux doivent tomber "
+        f"ensemble, sinon une dérive subsiste.\n{plan.stdout[-1000:]}",
     )
 
 
@@ -204,30 +233,43 @@ def test_le_bloc_moved_existe_et_a_ete_applique(tmp_path: Path) -> None:
     shutil.copytree(WORKDIR, copie)
 
     renomme = _tf("state", "mv", ADRESSE_CIBLE, "aws_instance.legacy", cwd=copie)
-    assert renomme.returncode == 0, (
-        f"Impossible de remettre l'ancienne adresse dans le state copie :\n"
-        f"{renomme.stderr[-600:]}"
+    assert renomme.returncode == 0, message(
+        en=f"Cannot put the old address back into the copied state:\n"
+        f"{renomme.stderr[-600:]}",
+        fr=f"Impossible de remettre l'ancienne adresse dans le state copié :\n"
+        f"{renomme.stderr[-600:]}",
     )
 
     plan = _tf("plan", "-input=false", "-no-color", "-out=retour.tfplan", cwd=copie)
-    assert plan.returncode == 0, f"Le plan a echoue :\n{plan.stderr[-800:]}"
+    assert plan.returncode == 0, message(
+        en=f"The plan failed:\n{plan.stderr[-800:]}",
+        fr=f"Le plan a échoué :\n{plan.stderr[-800:]}",
+    )
 
     montre = _tf("show", "-json", "retour.tfplan", cwd=copie)
     changements = json.loads(montre.stdout).get("resource_changes", [])
 
     deplacements = [c for c in changements if c.get("previous_address")]
-    assert deplacements, (
-        "Le plan ne porte aucun `previous_address` : Terraform n'a reconnu "
-        "aucun deplacement.\n\nLe bloc `moved` a ete supprime, ou son `from` ne "
-        "designe pas l'ancienne adresse. Le supprimer est un changement cassant "
-        "pour quiconque part encore de l'ancien nom."
+    assert deplacements, message(
+        en="The plan carries no `previous_address`: Terraform recognised "
+        "no move.\n\nThe `moved` block was deleted, or its `from` does not "
+        "name the old address. Deleting it is a breaking change "
+        "for anyone still starting from the old name.",
+        fr="Le plan ne porte aucun `previous_address` : Terraform n'a reconnu "
+        "aucun déplacement.\n\nLe bloc `moved` a été supprimé, ou son `from` ne "
+        "désigne pas l'ancienne adresse. Le supprimer est un changement cassant "
+        "pour quiconque part encore de l'ancien nom.",
     )
     for deplacement in deplacements:
-        assert deplacement["change"]["actions"] == ["no-op"], (
-            f"Le deplacement de {deplacement.get('previous_address')} vers "
+        assert deplacement["change"]["actions"] == ["no-op"], message(
+            en=f"Moving {deplacement.get('previous_address')} to "
+            f"{deplacement['address']} announces "
+            f"{deplacement['change']['actions']}, expected `['no-op']`.\n\n"
+            "A rename must destroy and create NOTHING: it is the same object.",
+            fr=f"Le déplacement de {deplacement.get('previous_address')} vers "
             f"{deplacement['address']} annonce "
             f"{deplacement['change']['actions']}, attendu `['no-op']`.\n\n"
-            "Un renommage ne doit RIEN detruire ni creer : c'est le meme objet."
+            "Un renommage ne doit RIEN détruire ni créer : c'est le même objet.",
         )
 
 
@@ -238,18 +280,24 @@ def test_la_derive_a_ete_acceptee_et_le_code_aligne() -> None:
     reelle = _instance_heritee()
     owner_reel = _tags(reelle).get("Owner")
 
-    assert owner_reel != OWNER_INITIAL, (
-        f"Le tag `Owner` vaut encore {owner_reel!r} cote emulateur.\n\nLa derive "
-        "a ete ECRASEE : un `apply` a remis la valeur du code par-dessus le "
-        "changement manuel. C'est le reflexe que ce lab combat, et sur un vrai "
-        "systeme il efface le travail de quelqu'un sans que personne ne le sache."
+    assert owner_reel != OWNER_INITIAL, message(
+        en=f"The `Owner` tag is still {owner_reel!r} on the emulator side.\n\nThe drift "
+        "was OVERWRITTEN: an `apply` put the code's value back over the "
+        "manual change. That is the reflex this lab fights, and on a real "
+        "system it erases someone's work without anybody knowing.",
+        fr=f"Le tag `Owner` vaut encore {owner_reel!r} côté émulateur.\n\nLa dérive "
+        "a été ÉCRASÉE : un `apply` a remis la valeur du code par-dessus le "
+        "changement manuel. C'est le réflexe que ce lab combat, et sur un vrai "
+        "système il efface le travail de quelqu'un sans que personne ne le sache.",
     )
 
     gerees = _gerees()
     owner_state = gerees[ADRESSE_CIBLE]["values"].get("tags", {}).get("Owner")
-    assert owner_state == owner_reel, (
-        f"Le state porte `Owner = {owner_state!r}` et l'emulateur "
-        f"{owner_reel!r} : le state ne reflete pas la realite."
+    assert owner_state == owner_reel, message(
+        en=f"The state carries `Owner = {owner_state!r}` and the emulator "
+        f"{owner_reel!r}: the state does not reflect reality.",
+        fr=f"Le state porte `Owner = {owner_state!r}` et l'émulateur "
+        f"{owner_reel!r} : le state ne reflète pas la réalité.",
     )
 
 
@@ -265,19 +313,27 @@ def test_aucune_instance_supplementaire_n_a_ete_creee() -> None:
     ou une instance terminee.
     """
     vivantes = _instances_vivantes()
-    assert len(vivantes) == 1, (
-        f"{len(vivantes)} instances vivantes cote emulateur : "
+    assert len(vivantes) == 1, message(
+        en=f"{len(vivantes)} live instances on the emulator side: "
+        f"{[i['InstanceId'] for i in vivantes]}.\n\nA single one is expected, "
+        "the one that pre-existed. A failed import, a `moved` with a wrong `from`, or "
+        "an unfortunate `destroy` leave two.",
+        fr=f"{len(vivantes)} instances vivantes côté émulateur : "
         f"{[i['InstanceId'] for i in vivantes]}.\n\nUne seule est attendue, "
-        "celle qui preexistait. Un import rate, un `moved` au `from` faux, ou "
-        "un `destroy` malencontreux en laissent deux."
+        "celle qui préexistait. Un import raté, un `moved` au `from` faux, ou "
+        "un `destroy` malencontreux en laissent deux.",
     )
 
     gerees = _gerees()
-    assert set(gerees) == {ADRESSE_CIBLE}, (
-        f"Le state gere {sorted(gerees)}, attendu la seule adresse "
+    assert set(gerees) == {ADRESSE_CIBLE}, message(
+        en=f"The state manages {sorted(gerees)}, the single address "
+        f"`{ADRESSE_CIBLE}` was expected.\n\nThe old address remains: the `moved` was not "
+        "applied, it was only planned.",
+        fr=f"Le state gère {sorted(gerees)}, attendu la seule adresse "
         f"`{ADRESSE_CIBLE}`.\n\nL'ancienne adresse subsiste : le `moved` n'a pas "
-        "ete applique, il a seulement ete planifie."
+        "été appliqué, il a seulement été planifié.",
     )
-    assert gerees[ADRESSE_CIBLE]["values"]["id"] == vivantes[0]["InstanceId"], (
-        "Le state ne designe pas l'instance vivante."
+    assert gerees[ADRESSE_CIBLE]["values"]["id"] == vivantes[0]["InstanceId"], message(
+        en="The state does not name the live instance.",
+        fr="Le state ne désigne pas l'instance vivante.",
     )

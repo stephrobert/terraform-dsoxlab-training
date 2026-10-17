@@ -14,6 +14,8 @@ import urllib.error
 import urllib.request
 from urllib.parse import quote, urlparse
 
+from conftest import message
+
 REGION = "us-east-1"
 
 
@@ -57,12 +59,18 @@ class S3:
 
     def cles(self) -> list[str]:
         code, corps = self._requete("GET", requete={"list-type": "2"})
-        assert code == 200, f"liste du bucket refusée ({code}) : {corps[:200]!r}"
+        assert code == 200, message(
+            en=f"listing the bucket was refused ({code}): {corps[:200]!r}",
+            fr=f"liste du bucket refusée ({code}) : {corps[:200]!r}",
+        )
         return re.findall(r"<Key>([^<]+)</Key>", corps.decode())
 
     def lire(self, cle: str) -> bytes:
         code, corps = self._requete("GET", cle)
-        assert code == 200, f"lecture de {cle} refusée ({code})"
+        assert code == 200, message(
+            en=f"reading {cle} was refused ({code})",
+            fr=f"lecture de {cle} refusée ({code})",
+        )
         return corps
 
     def ecrire(self, cle: str, corps: bytes) -> int:
