@@ -185,4 +185,4 @@ Il se joue **hors ligne** : la bibliothèque est un dépôt Git local.
 
 Sous-objectif d'examen visé : **4c** (refactorer et versionner un module).
 
-Référence : [versionner ses modules](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/versionner-modules/)
+Référence : [versionner ses modules](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/versionner-modules/)

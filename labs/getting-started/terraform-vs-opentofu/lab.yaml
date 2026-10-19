@@ -17,7 +17,7 @@ skills:
 - vs-opentofu
 distros:
 - debian13
-doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/decouvrir/terraform-vs-opentofu/
+doc_url: https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/decouvrir/terraform-vs-opentofu/
 certification_tags:
 - tf-associate
 runtime:

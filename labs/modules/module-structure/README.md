@@ -191,4 +191,4 @@ dsoxlab hint modules-module-structure
 Target exam sub-objective: **4a** (write and use modules), Associate and
 Professional level.
 
-Reference: [standard module structure](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/structure-module/)
+Reference: [standard module structure](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/structure-module/)

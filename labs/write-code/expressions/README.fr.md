@@ -126,4 +126,4 @@ dsoxlab hint write-code-expressions
 
 Sous-objectif d'examen visé : **2e** (expressions, types et valeurs).
 
-Référence : [Les expressions en Terraform](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/expressions-terraform/)
+Référence : [Les expressions en Terraform](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/expressions-terraform/)

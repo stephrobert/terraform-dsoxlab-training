@@ -35,4 +35,4 @@ The tests drive Terraform and never assert on the content of the learner's `.tf`
 5. `terraform output -json`: `noms_workers` is a list of three, `chemins_services` a map of three named keys, `rapport` is null. Then `plan -var 'rapport=true'`: a single planned creation, `local_file.rapport[0]`.
 6. `terraform plan -detailed-exitcode` returns 0 right after apply.
 
-Reference: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/count-terraform/
+Reference: https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/count-terraform/

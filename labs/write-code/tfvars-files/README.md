@@ -57,4 +57,4 @@ dsoxlab hint write-code-tfvars-files
 
 Exam objective: **2e** (configure input variables and outputs).
 
-Reference: [tfvars files in Terraform](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/fichiers-tfvars/)
+Reference: [tfvars files in Terraform](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/fichiers-tfvars/)

@@ -193,4 +193,4 @@ Ce lab exige un **accès réseau** à `registry.terraform.io` et à `github.com`
 
 Sous-objectif d'examen visé : **4b** (utiliser un module), niveau Associate.
 
-Référence : [utiliser un module du registre](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/module-registry/)
+Référence : [utiliser un module du registre](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/module-registry/)

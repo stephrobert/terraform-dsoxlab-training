@@ -43,4 +43,4 @@ Les tests pilotent Terraform et ne lisent jamais les fichiers `.tf`.
 
 Aucun de ces contrôles ne passe sur un répertoire vide, ni si l'apprenant se contente de recopier les blocs sans les rattacher à la bonne ressource.
 
-Référence : https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/lifecycle-terraform/
+Référence : https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/lifecycle-terraform/

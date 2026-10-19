@@ -203,4 +203,4 @@ dsoxlab hint modules-module-variables-outputs
 Sous-objectif d'examen visé : **2e** (variables et outputs, types complexes), en
 appui sur **4a** et **2f**.
 
-Référence : [variables et outputs d'un module](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/variables-outputs-module/)
+Référence : [variables et outputs d'un module](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/variables-outputs-module/)

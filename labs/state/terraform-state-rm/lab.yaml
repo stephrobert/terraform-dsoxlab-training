@@ -13,7 +13,7 @@ skills:
 - state-rm
 distros:
 - debian13
-doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/terraform-state-rm/
+doc_url: https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/terraform-state-rm/
 certification_tags:
 - tf-associate
 - tf-professional

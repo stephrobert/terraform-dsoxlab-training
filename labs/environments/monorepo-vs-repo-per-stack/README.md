@@ -118,4 +118,4 @@ It runs **offline**, on the `local` and `random` providers.
 
 Exam sub-objective covered: **3d**, with **3b** in support.
 
-Reference: [monorepo vs repo per stack](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/monorepo-vs-repo-par-stack/)
+Reference: [monorepo vs repo per stack](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/monorepo-vs-repo-par-stack/)

@@ -240,7 +240,7 @@ positive build and a non-empty file:
 
 `self` only exists in a postcondition: it is the only mechanism able to read the
 produced object back. The subject is explored in
-[validating a Terraform configuration's inputs](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/conditions-terraform/).
+[validating a Terraform configuration's inputs](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/conditions-terraform/).
 
 ## Over to you
 
@@ -264,4 +264,4 @@ dsoxlab hint write-code-lifecycle
 Exam objective targeted: **2d** (Terraform Authoring and Operations
 Professional).
 
-Reference: [the Terraform lifecycle block](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/lifecycle-terraform/)
+Reference: [the Terraform lifecycle block](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/lifecycle-terraform/)

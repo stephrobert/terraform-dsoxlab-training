@@ -43,4 +43,4 @@ Les tests n'ouvrent jamais les `.tf` de l'apprenant. Ils lisent `terraform versi
 3. `.terraform.lock.hcl` contient au moins deux empreintes `h1:` et la version `2.5.1`.
 4. `terraform apply` réussit (le required_version littéral est satisfait), puis `terraform plan -detailed-exitcode` retourne 0.
 
-Référence : https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/version-constraints-terraform/
+Référence : https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/version-constraints-terraform/

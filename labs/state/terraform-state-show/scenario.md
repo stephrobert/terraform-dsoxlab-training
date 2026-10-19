@@ -67,4 +67,4 @@ attributes are absent from it, `state show` rejects `-json` (exit 1), and
 modification, while `plan -detailed-exitcode` returns 2). Finally,
 `terraform plan -detailed-exitcode` must exit 0 for state 7.
 
-Reference: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/terraform-state-show/
+Reference: https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/terraform-state-show/

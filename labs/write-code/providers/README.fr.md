@@ -95,4 +95,4 @@ dsoxlab hint write-code-providers
 
 Sous-objectif d'examen visé : **5b** (configuration des providers, alias).
 
-Référence : [Les providers en Terraform](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/providers-terraform/)
+Référence : [Les providers en Terraform](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/providers-terraform/)

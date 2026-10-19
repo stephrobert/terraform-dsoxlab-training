@@ -180,4 +180,4 @@ dsoxlab hint write-code-dynamic-blocks
 Sous-objectif d'examen visé : **2d** (Terraform Authoring and Operations
 Professional).
 
-Référence : [Les blocs dynamiques en Terraform](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/blocs-dynamiques/)
+Référence : [Les blocs dynamiques en Terraform](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/blocs-dynamiques/)

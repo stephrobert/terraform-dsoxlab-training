@@ -77,4 +77,4 @@ itself, which is exactly what happened on the first measurement pass.
 None of this passes on an empty directory, nor on an apply too fast for a lock to
 be observed.
 
-Reference: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/terraform-en-automation/
+Reference: https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/terraform-en-automation/

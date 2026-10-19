@@ -118,4 +118,4 @@ dsoxlab hint write-code-expressions
 
 Exam objective: **2e** (expressions, types and values).
 
-Reference: [Expressions in Terraform](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/expressions-terraform/)
+Reference: [Expressions in Terraform](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/expressions-terraform/)

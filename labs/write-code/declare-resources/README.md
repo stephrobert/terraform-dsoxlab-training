@@ -153,4 +153,4 @@ dsoxlab hint write-code-declare-resources
 Exam objective targeted: **1c** (Terraform Authoring and Operations
 Professional).
 
-Reference: [declaring Terraform resources](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/declarer-ressources/)
+Reference: [declaring Terraform resources](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/declarer-ressources/)

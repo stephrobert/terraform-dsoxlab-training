@@ -93,4 +93,4 @@ The tests drive Terraform and never read the learner's `.tf` or `.tfvars` files.
 None of these checks passes on an empty `challenge/work`: the first plan finds
 neither variables nor resources there.
 
-Reference: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/variables-par-environnement/
+Reference: https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/variables-par-environnement/

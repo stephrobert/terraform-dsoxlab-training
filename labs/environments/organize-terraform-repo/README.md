@@ -118,4 +118,4 @@ It runs **offline**.
 
 Target exam sub-objective: **1b** (generate an execution plan).
 
-Reference: [organising a Terraform repository](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/organiser-repo-terraform/)
+Reference: [organising a Terraform repository](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/organiser-repo-terraform/)

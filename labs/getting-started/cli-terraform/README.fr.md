@@ -99,4 +99,4 @@ confirmation interactive**.
 
 Sous-objectif d'examen visé : **3c**, exécuter le workflow en automation.
 
-Référence : [la CLI Terraform](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/decouvrir/cli-terraform/)
+Référence : [la CLI Terraform](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/decouvrir/cli-terraform/)

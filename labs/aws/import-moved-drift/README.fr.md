@@ -105,4 +105,4 @@ create.
 
 Sous-objectif d'examen visé : **1e**.
 
-Référence : [import, moved et dérive](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/aws/import-moved-drift/)
+Référence : [import, moved et dérive](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/aws/import-moved-drift/)

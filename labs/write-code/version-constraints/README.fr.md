@@ -78,4 +78,4 @@ dsoxlab hint write-code-version-constraints
 
 Sous-objectif d'examen visé : **3a** (contraintes de version, lock file).
 
-Référence : [Les contraintes de version en Terraform](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/version-constraints-terraform/)
+Référence : [Les contraintes de version en Terraform](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/version-constraints-terraform/)

@@ -62,4 +62,4 @@ confond.
 
 Objectif d'examen visé : **6**, en entier.
 
-Référence : [Exercices Professional](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/certifications/professional/exercices/)
+Référence : [Exercices Professional](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/certifications/professional/exercices/)

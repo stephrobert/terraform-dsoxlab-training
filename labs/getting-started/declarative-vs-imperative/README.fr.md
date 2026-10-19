@@ -152,4 +152,4 @@ dsoxlab hint getting-started-declarative-vs-imperative
 Sous-objectif d'examen visé : **1b** (`plan` : prouver l'idempotence, détecter
 une dérive et la corriger).
 
-Référence : [Déclaratif contre impératif](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/decouvrir/declaratif-vs-imperatif/)
+Référence : [Déclaratif contre impératif](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/decouvrir/declaratif-vs-imperatif/)

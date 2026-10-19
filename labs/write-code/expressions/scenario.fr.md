@@ -42,4 +42,4 @@ Les tests n'ouvrent jamais les `.tf` de l'apprenant et ne parsent aucune sortie 
 4. `perm_effective` vaut `0777` par défaut ; un rejeu avec `-var perm_forcee=0600` le fait passer à `0600`, puis l'état est restauré.
 5. `terraform plan -detailed-exitcode` retourne 0 juste après l'apply.
 
-Référence : https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/expressions-terraform/
+Référence : https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/expressions-terraform/

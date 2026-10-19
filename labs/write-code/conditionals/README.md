@@ -227,4 +227,4 @@ The choice does not depend on the condition to write, but on two questions:
 Exam objective targeted: **2a** (Terraform Authoring and Operations
 Professional).
 
-Reference: [validating a Terraform configuration's inputs](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/conditions-terraform/)
+Reference: [validating a Terraform configuration's inputs](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/conditions-terraform/)

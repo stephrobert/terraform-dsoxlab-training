@@ -189,4 +189,4 @@ dsoxlab hint state-diagnose-state
 Target exam sub-objective: **1e** (manage state), Associate and Professional
 level.
 
-Reference: [diagnose the state](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/diagnostiquer-state/)
+Reference: [diagnose the state](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/diagnostiquer-state/)

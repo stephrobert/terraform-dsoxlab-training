@@ -172,4 +172,4 @@ Il se joue **hors ligne**.
 Sous-objectif d'examen visé : **5b** (configurations de providers dans les
 modules).
 
-Référence : [bonnes pratiques des modules](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/bonnes-pratiques-modules/)
+Référence : [bonnes pratiques des modules](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/bonnes-pratiques-modules/)

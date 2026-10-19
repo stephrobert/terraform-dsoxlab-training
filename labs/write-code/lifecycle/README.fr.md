@@ -241,7 +241,7 @@ positif et un fichier non vide :
 
 `self` n'existe que dans une postcondition : c'est le seul mécanisme capable de
 relire l'objet produit. Le sujet est creusé dans
-[valider les entrées d'une configuration Terraform](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/conditions-terraform/).
+[valider les entrées d'une configuration Terraform](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/conditions-terraform/).
 
 ## À vous de jouer
 
@@ -265,4 +265,4 @@ dsoxlab hint write-code-lifecycle
 Sous-objectif d'examen visé : **2d** (Terraform Authoring and Operations
 Professional).
 
-Référence : [Le bloc lifecycle Terraform](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/lifecycle-terraform/)
+Référence : [Le bloc lifecycle Terraform](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/lifecycle-terraform/)

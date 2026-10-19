@@ -145,4 +145,4 @@ dsoxlab hint write-code-variables
 Exam objectives: **2e** (variables and complex types) and **2f** (sensitive
 data).
 
-Reference: [Variables in Terraform](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/variables-terraform/)
+Reference: [Variables in Terraform](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/variables-terraform/)

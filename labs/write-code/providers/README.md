@@ -90,4 +90,4 @@ dsoxlab hint write-code-providers
 
 Exam objective: **5b** (provider configuration, aliases).
 
-Reference: [Providers in Terraform](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/providers-terraform/)
+Reference: [Providers in Terraform](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/providers-terraform/)

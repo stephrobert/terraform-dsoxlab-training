@@ -16,7 +16,7 @@ skills:
 - local-paths
 distros:
 - debian13
-doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/module-local/
+doc_url: https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/module-local/
 certification_tags:
 - tf-associate
 - tf-professional

@@ -93,4 +93,4 @@ lock to be **observable**.
 
 Exam sub-objective covered: **3c**.
 
-Reference: [running Terraform in automation](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/terraform-en-automation/)
+Reference: [running Terraform in automation](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/terraform-en-automation/)

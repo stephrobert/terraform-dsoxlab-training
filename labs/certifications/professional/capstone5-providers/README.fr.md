@@ -108,4 +108,4 @@ un vrai conteneur chez Floci, avec un port retenu.
 
 Objectif d'examen visé : **5**, dans ses quatre sous-objectifs.
 
-Référence : [Exercices Professional](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/certifications/professional/exercices/)
+Référence : [Exercices Professional](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/certifications/professional/exercices/)

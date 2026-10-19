@@ -152,4 +152,4 @@ dsoxlab hint write-code-count
 Exam objectives: **4b** (Terraform Associate, meta-arguments) and the
 Professional `moved` migration.
 
-Reference: [count and for_each in Terraform](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/count-terraform/)
+Reference: [count and for_each in Terraform](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/count-terraform/)

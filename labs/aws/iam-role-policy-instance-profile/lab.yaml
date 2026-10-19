@@ -13,7 +13,7 @@ skills:
 - iam-role-policy-instance-profile
 distros:
 - debian13
-doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/aws/iam-role-policy-instance-profile/
+doc_url: https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/aws/iam-role-policy-instance-profile/
 certification_tags:
 - tf-professional
 runtime:

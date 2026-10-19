@@ -39,4 +39,4 @@ The tests never open the learner's `.tf` files. They read `terraform output -jso
 3. `region` is `eu-west-3`.
 4. `terraform plan -detailed-exitcode` returns 0 right after apply.
 
-Reference: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/fichiers-tfvars/
+Reference: https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/fichiers-tfvars/

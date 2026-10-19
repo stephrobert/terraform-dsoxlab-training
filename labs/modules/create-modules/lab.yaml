@@ -16,7 +16,7 @@ skills:
 - configuration-aliases
 distros:
 - debian13
-doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/creation-modules/
+doc_url: https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/creation-modules/
 certification_tags:
 - tf-associate
 - tf-professional

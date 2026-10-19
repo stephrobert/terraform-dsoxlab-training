@@ -13,7 +13,7 @@ skills:
 - verrouillage-state
 distros:
 - debian13
-doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/verrouillage-state/
+doc_url: https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/verrouillage-state/
 certification_tags:
 - tf-associate
 - tf-professional

@@ -111,4 +111,4 @@ lab reste ainsi rejouable sans tout réappliquer.
 
 Sous-objectif d'examen visé : **2b**, avec appui sur **5b**.
 
-Référence : [providers, ressources et data sources](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/decouvrir/providers-resources-data-sources/)
+Référence : [providers, ressources et data sources](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/decouvrir/providers-resources-data-sources/)

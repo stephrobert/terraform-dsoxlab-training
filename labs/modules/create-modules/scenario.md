@@ -65,4 +65,4 @@ The tests drive Terraform and never read the `.tf` files.
 
 None of these checks passes on an empty directory, nor on the starting configuration, whose `validate` fails.
 
-Reference: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/creation-modules/
+Reference: https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/creation-modules/

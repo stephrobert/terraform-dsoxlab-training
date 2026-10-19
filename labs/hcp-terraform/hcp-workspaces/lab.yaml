@@ -16,7 +16,7 @@ skills:
 - workspaces-hcp
 distros:
 - debian13
-doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/hcp-terraform/workspaces-hcp/
+doc_url: https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/hcp-terraform/workspaces-hcp/
 certification_tags:
 - tf-professional
 runtime:

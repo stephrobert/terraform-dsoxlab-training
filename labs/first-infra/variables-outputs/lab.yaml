@@ -15,7 +15,7 @@ skills:
 - variables-outputs
 distros:
 - debian13
-doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/premieres-infras/variables-outputs/
+doc_url: https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/premieres-infras/variables-outputs/
 certification_tags:
 - tf-associate
 runtime:

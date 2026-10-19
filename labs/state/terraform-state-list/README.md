@@ -137,4 +137,4 @@ dsoxlab hint state-terraform-state-list
 
 Target exam objective: **1e** (inspect state), Associate level.
 
-Reference: [terraform state list](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/terraform-state-list/)
+Reference: [terraform state list](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/terraform-state-list/)

@@ -192,4 +192,4 @@ dsoxlab hint state-backup-restore-state
 Sous-objectif d'examen visé : **1e** (gérer le state), niveau Associate et
 Professional.
 
-Référence : [sauvegarder et restaurer le state](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/sauvegarder-restaurer-state/)
+Référence : [sauvegarder et restaurer le state](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/sauvegarder-restaurer-state/)

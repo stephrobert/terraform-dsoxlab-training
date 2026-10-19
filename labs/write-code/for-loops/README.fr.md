@@ -206,4 +206,4 @@ secondes avant d'entrer dans un `local`.
 Sous-objectif d'examen visé : **2c** (Terraform Authoring and Operations
 Professional).
 
-Référence : [Les expressions for en Terraform](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/boucles-for-terraform/)
+Référence : [Les expressions for en Terraform](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/boucles-for-terraform/)

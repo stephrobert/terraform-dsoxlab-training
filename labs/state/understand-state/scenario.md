@@ -37,4 +37,4 @@ The tests drive Terraform and never read the learner's `.tf` files. The `mot-de-
 
 None of these checks passes on an empty `challenge/work`, nor on a directory where the learner just did an `init` followed by an `apply`.
 
-Reference: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/comprendre-state/
+Reference: https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/comprendre-state/

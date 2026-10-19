@@ -47,4 +47,4 @@ The tests drive Terraform and never read the `.tf` files.
 
 None of these checks passes on an empty `challenge/work`: the first `show -json` finds no resource there.
 
-Reference: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/blocs-dynamiques/
+Reference: https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/blocs-dynamiques/

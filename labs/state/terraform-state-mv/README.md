@@ -144,4 +144,4 @@ dsoxlab hint state-terraform-state-mv
 
 Target exam objective: **1e** (inspect and manipulate state), Associate level.
 
-Reference: [terraform state mv](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/terraform-state-mv/)
+Reference: [terraform state mv](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/terraform-state-mv/)

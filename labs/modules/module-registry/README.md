@@ -193,4 +193,4 @@ This lab requires **network access** to `registry.terraform.io` and to
 
 Target exam sub-objective: **4b** (use a module), Associate level.
 
-Reference: [using a registry module](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/module-registry/)
+Reference: [using a registry module](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/module-registry/)

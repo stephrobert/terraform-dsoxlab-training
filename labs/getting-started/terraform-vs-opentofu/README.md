@@ -108,4 +108,4 @@ dsoxlab hint getting-started-terraform-vs-opentofu
 Exam sub-objective covered: **5b** (provider configuration: sourcing and
 versioning), leaning on **3a**.
 
-Reference: [Terraform or OpenTofu](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/decouvrir/terraform-vs-opentofu/)
+Reference: [Terraform or OpenTofu](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/decouvrir/terraform-vs-opentofu/)

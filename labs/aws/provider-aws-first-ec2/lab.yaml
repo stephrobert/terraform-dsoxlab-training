@@ -14,7 +14,7 @@ skills:
 - version-pinning
 distros:
 - debian13
-doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/aws/provider-aws-premiere-ec2/
+doc_url: https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/aws/provider-aws-premiere-ec2/
 certification_tags:
 - tf-associate
 runtime:

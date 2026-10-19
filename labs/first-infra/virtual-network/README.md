@@ -92,4 +92,4 @@ network level, and the network is destroyed on exit whatever happens.
 
 Exam objective targeted: **2d**, meta-arguments.
 
-Reference: [creating a virtual network](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/premieres-infras/reseau-virtuel/)
+Reference: [creating a virtual network](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/premieres-infras/reseau-virtuel/)

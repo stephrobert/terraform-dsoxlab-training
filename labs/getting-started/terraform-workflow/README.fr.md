@@ -108,4 +108,4 @@ dsoxlab hint getting-started-terraform-workflow
 
 Sous-objectif d'examen visé : **6d** (générer et relire un plan d'exécution).
 
-Référence : [Le workflow Terraform](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/decouvrir/workflow-terraform/)
+Référence : [Le workflow Terraform](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/decouvrir/workflow-terraform/)

@@ -122,4 +122,4 @@ dsoxlab hint state-state-locking
 
 Sous-objectif d'examen visé : **3b** (verrouillage du state), niveau Professional.
 
-Référence : [Verrouiller le state Terraform](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/verrouillage-state/)
+Référence : [Verrouiller le state Terraform](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/verrouillage-state/)

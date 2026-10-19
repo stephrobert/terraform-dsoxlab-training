@@ -52,4 +52,4 @@ The tests never open the learner's `.tf` files and parse no human output. They d
 4. `terraform show -json`: two `random_pet` in the state.
 5. `terraform plan -detailed-exitcode` returns 0 right after apply.
 
-Reference: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/providers-terraform/
+Reference: https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/providers-terraform/

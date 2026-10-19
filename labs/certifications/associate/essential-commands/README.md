@@ -184,4 +184,4 @@ rather than your work being failed.
 
 Exam objective targeted: **3d**.
 
-Reference: [Associate exercises](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/certifications/associate/exercices/)
+Reference: [Associate exercises](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/certifications/associate/exercices/)

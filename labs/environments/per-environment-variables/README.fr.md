@@ -115,4 +115,4 @@ Il se joue **hors ligne**, avec les providers `local` et `random`.
 
 Sous-objectif d'examen visé : **2e**.
 
-Référence : [gérer les variables par environnement](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/variables-par-environnement/)
+Référence : [gérer les variables par environnement](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/variables-par-environnement/)

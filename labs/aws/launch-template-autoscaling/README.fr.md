@@ -112,4 +112,4 @@ sortirait en 0.
 
 Sous-objectif d'examen visé : **1b**.
 
-Référence : [launch template et autoscaling](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/aws/launch-template-autoscaling/)
+Référence : [launch template et autoscaling](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/aws/launch-template-autoscaling/)

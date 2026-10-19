@@ -113,4 +113,4 @@ and **one** egress rule.
 
 Exam objective targeted: **2d**, meta-arguments.
 
-Reference: [security group, subnet and instance](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/aws/sg-subnet-instance/)
+Reference: [security group, subnet and instance](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/aws/sg-subnet-instance/)

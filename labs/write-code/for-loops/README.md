@@ -205,4 +205,4 @@ it goes into a `local`.
 Exam objective targeted: **2c** (Terraform Authoring and Operations
 Professional).
 
-Reference: [for expressions in Terraform](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/boucles-for-terraform/)
+Reference: [for expressions in Terraform](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/boucles-for-terraform/)

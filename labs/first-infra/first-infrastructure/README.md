@@ -113,4 +113,4 @@ on the `PATH`. Network access is only needed for the first `init`.
 Exam objective targeted: **1c**, run inside a full cycle **1a** `init`, **1b**
 `plan`, **1c** `apply`, **1d** `destroy`.
 
-Reference: [first infrastructure](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/premieres-infras/premiere-infrastructure/)
+Reference: [first infrastructure](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/premieres-infras/premiere-infrastructure/)

@@ -51,4 +51,4 @@ The tests never open the learner's `.tf` files to parse them. They drive Terrafo
 8. The `.gitignore` ignores `.terraform/` and `terraform.tfstate*`, and no pattern ignores `.terraform.lock.hcl`.
 9. `terraform plan -detailed-exitcode` returns 0 right after apply.
 
-Reference: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/style-guide-terraform/
+Reference: https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/style-guide-terraform/

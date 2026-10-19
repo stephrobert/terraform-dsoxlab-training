@@ -73,4 +73,4 @@ the inherited workspace and its file always come back. The two checks that prove
 a **removal** (points 1 and 6) therefore abstain explicitly in that mode, with a
 message saying so. They are played in full on the learner path.
 
-Reference: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/workspace/
+Reference: https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/workspace/

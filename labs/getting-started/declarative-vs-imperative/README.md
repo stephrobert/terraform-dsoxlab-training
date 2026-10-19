@@ -151,4 +151,4 @@ dsoxlab hint getting-started-declarative-vs-imperative
 Exam sub-objective covered: **1b** (`plan`: prove idempotence, detect drift and
 fix it).
 
-Reference: [Declarative vs imperative](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/decouvrir/declaratif-vs-imperatif/)
+Reference: [Declarative vs imperative](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/decouvrir/declaratif-vs-imperatif/)

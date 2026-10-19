@@ -50,4 +50,4 @@ The tests drive Terraform and never read the `.tf` files.
 
 None of these checks passes on an empty directory, nor on the starting configuration, whose apply stops in error.
 
-Reference: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/depends-on/
+Reference: https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/depends-on/

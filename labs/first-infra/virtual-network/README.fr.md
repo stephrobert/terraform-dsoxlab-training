@@ -97,4 +97,4 @@ arrive.
 
 Sous-objectif d'examen visé : **2d**, les méta-arguments.
 
-Référence : [créer un réseau virtuel](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/premieres-infras/reseau-virtuel/)
+Référence : [créer un réseau virtuel](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/premieres-infras/reseau-virtuel/)

@@ -96,4 +96,4 @@ existence du fichier passerait sur un plan mutilé.
 
 Sous-objectif d'examen visé : **1d**, avec appui sur **1e**.
 
-Référence : [détruire proprement](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/premieres-infras/destroy-propre/)
+Référence : [détruire proprement](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/premieres-infras/destroy-propre/)

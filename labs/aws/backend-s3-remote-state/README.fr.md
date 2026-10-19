@@ -120,4 +120,4 @@ seul**, sur `http://localhost:14566`. Aucun compte AWS n'est nécessaire.
 
 Sous-objectif d'examen visé : **3b**, avec **3d** en appui.
 
-Référence : [backend S3 et terraform_remote_state](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/aws/backend-s3-remote-state/)
+Référence : [backend S3 et terraform_remote_state](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/aws/backend-s3-remote-state/)

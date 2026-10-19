@@ -96,4 +96,4 @@ confirmation**.
 
 Exam objective targeted: **3c**, run the Terraform workflow in automation.
 
-Reference: [the Terraform CLI](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/decouvrir/cli-terraform/)
+Reference: [the Terraform CLI](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/decouvrir/cli-terraform/)

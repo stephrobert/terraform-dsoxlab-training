@@ -162,4 +162,4 @@ dsoxlab hint write-code-locals
 Sous-objectif d'examen visé : **2c** (Terraform Authoring and Operations
 Professional), avec un débord sur 2f pour la sensibilité.
 
-Référence : [Les valeurs locales en Terraform](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/locals-terraform/)
+Référence : [Les valeurs locales en Terraform](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/locals-terraform/)

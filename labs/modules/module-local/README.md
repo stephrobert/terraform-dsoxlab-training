@@ -196,4 +196,4 @@ dsoxlab hint modules-module-local
 
 Target exam sub-objective: **4b** (use a module), Associate level.
 
-Reference: [using a local module](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/module-local/)
+Reference: [using a local module](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/module-local/)

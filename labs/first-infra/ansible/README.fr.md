@@ -100,4 +100,4 @@ mieux qu'une constante.
 
 Sous-objectif d'examen visé : **2e**, avec appui sur **1e**.
 
-Référence : [Terraform et Ansible](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/premieres-infras/ansible/)
+Référence : [Terraform et Ansible](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/premieres-infras/ansible/)

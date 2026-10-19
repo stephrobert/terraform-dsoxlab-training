@@ -192,4 +192,4 @@ dsoxlab hint state-diagnose-state
 Sous-objectif d'examen visé : **1e** (gérer le state), niveau Associate et
 Professional.
 
-Référence : [diagnostiquer le state](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/diagnostiquer-state/)
+Référence : [diagnostiquer le state](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/diagnostiquer-state/)

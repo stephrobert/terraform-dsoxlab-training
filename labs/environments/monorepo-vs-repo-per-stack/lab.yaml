@@ -14,7 +14,7 @@ skills:
 - modules
 distros:
 - debian13
-doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/monorepo-vs-repo-par-stack/
+doc_url: https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/monorepo-vs-repo-par-stack/
 certification_tags:
 - tf-professional
 runtime:

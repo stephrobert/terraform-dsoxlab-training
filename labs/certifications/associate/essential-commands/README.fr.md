@@ -188,4 +188,4 @@ et non votre travail qui sera recalé.
 
 Sous-objectif d'examen visé : **3d**.
 
-Référence : [Exercices Associate](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/certifications/associate/exercices/)
+Référence : [Exercices Associate](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/certifications/associate/exercices/)

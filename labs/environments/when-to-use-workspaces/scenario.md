@@ -79,4 +79,4 @@ The tests never open a learner `.tf` file, they query the structured state.
 An empty `challenge/work` scores 0 out of 9: with nothing applied, there is no
 state to read.
 
-Reference: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/quand-utiliser-workspaces/
+Reference: https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/quand-utiliser-workspaces/

@@ -123,4 +123,4 @@ Il se joue **hors ligne**.
 
 Sous-objectif d'examen visé : **2a** (écrire et organiser une configuration).
 
-Référence : [organiser un dépôt Terraform](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/organiser-repo-terraform/)
+Référence : [organiser un dépôt Terraform](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/organiser-repo-terraform/)

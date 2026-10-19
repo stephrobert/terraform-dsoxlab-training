@@ -108,4 +108,4 @@ réellement l'environnement et les fichiers, jamais en relisant votre HCL.
 
 Sous-objectif d'examen visé : **2e**.
 
-Référence : [variables et outputs](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/premieres-infras/variables-outputs/)
+Référence : [variables et outputs](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/premieres-infras/variables-outputs/)

@@ -183,4 +183,4 @@ It runs **offline**: the library is a local Git repository.
 
 Target exam sub-objective: **4c** (refactor and version a module).
 
-Reference: [versioning your modules](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/versionner-modules/)
+Reference: [versioning your modules](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/versionner-modules/)

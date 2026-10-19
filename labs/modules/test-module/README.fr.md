@@ -187,4 +187,4 @@ Il se joue **hors ligne**, sans aucun provider.
 
 Sous-objectif d'examen visé : **4d** (tester un module).
 
-Référence : [tester un module](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/tester-module/)
+Référence : [tester un module](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/tester-module/)

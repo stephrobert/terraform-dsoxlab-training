@@ -15,7 +15,7 @@ skills:
 - launch-template-autoscaling
 distros:
 - debian13
-doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/aws/launch-template-autoscaling/
+doc_url: https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/aws/launch-template-autoscaling/
 certification_tags:
 - tf-professional
 runtime:

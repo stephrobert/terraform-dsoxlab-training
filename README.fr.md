@@ -11,7 +11,7 @@
 Formation **Terraform** pratique, pilotée par la CLI
 [`dsoxlab`](https://github.com/stephrobert/dsoxlab). Ce dépôt est le **catalogue
 de labs** du parcours Terraform de
-[blog.stephane-robert.info](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/parcours/),
+[www.stephane-robert.info](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/parcours/),
 orienté vers les certifications **Terraform Associate (004)** et **Terraform
 Authoring and Operations Professional**.
 
@@ -39,7 +39,7 @@ s'installe **séparément**.
 - **`terraform` (ou `tofu`) sur le PATH** : tous les labs.
 - **`libvirtd` et le provider `dmacvicar/libvirt`** : section `first-infra`
   uniquement, qui provisionne de vraies ressources locales.
-- **Docker et [Floci](https://blog.stephane-robert.info/docs/cloud/aws/floci/)**,
+- **Docker et [Floci](https://www.stephane-robert.info/docs/cloud/aws/floci/)**,
   émulateur AWS local sous licence MIT (`floci/floci:1.6.0`) : section `aws` et
   quelques labs qui visent AWS. Le provider `hashicorp/aws` pointe vers Floci par
   un bloc `endpoints` : zéro compte AWS, zéro facture. Les labs concernés
@@ -173,147 +173,147 @@ est générée à partir des vrais `lab.yaml` : lancez
 
 | Lab (id) | Titre | Niveau | Certif | Runtime | Guide compagnon |
 |---|---|---|---|---|---|
-| `getting-started-terraform-overview` | Prouver que Terraform a une mémoire | l1 | TF-ASSOCIATE | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/decouvrir/presentation-terraform/) |
-| `getting-started-declarative-vs-imperative` | Prouver l'idempotence là où le script impératif diverge | l1 | TF-ASSOCIATE | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/decouvrir/declaratif-vs-imperatif/) |
-| `getting-started-terraform-vs-opentofu` | Prouver la compatibilité Terraform / OpenTofu, et où elle s'arrête | l1 | TF-ASSOCIATE | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/decouvrir/terraform-vs-opentofu/) |
-| `getting-started-install-terraform` | Contraindre la version de la CLI et verrouiller les providers | l1 | TF-ASSOCIATE | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/version-constraints-terraform/) |
-| `getting-started-cli-terraform` | Mettre d'accord fmt, validate et les outputs | l1 | TF-ASSOCIATE | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/decouvrir/cli-terraform/) |
-| `getting-started-terraform-workflow` | Lire un plan avant de l'appliquer | l1 | TF-ASSOCIATE | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/decouvrir/workflow-terraform/) |
-| `getting-started-providers-resources-data-sources` | Ce que Terraform gère, ce qu'il se contente de lire | l1 | TF-ASSOCIATE | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/decouvrir/providers-resources-data-sources/) |
-| `getting-started-terraform-project-structure` | Découper un monolithe sans bouger le plan | l1 | TF-ASSOCIATE | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/decouvrir/structure-projet-terraform/) |
+| `getting-started-terraform-overview` | Prouver que Terraform a une mémoire | l1 | TF-ASSOCIATE | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/decouvrir/presentation-terraform/) |
+| `getting-started-declarative-vs-imperative` | Prouver l'idempotence là où le script impératif diverge | l1 | TF-ASSOCIATE | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/decouvrir/declaratif-vs-imperatif/) |
+| `getting-started-terraform-vs-opentofu` | Prouver la compatibilité Terraform / OpenTofu, et où elle s'arrête | l1 | TF-ASSOCIATE | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/decouvrir/terraform-vs-opentofu/) |
+| `getting-started-install-terraform` | Contraindre la version de la CLI et verrouiller les providers | l1 | TF-ASSOCIATE | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/version-constraints-terraform/) |
+| `getting-started-cli-terraform` | Mettre d'accord fmt, validate et les outputs | l1 | TF-ASSOCIATE | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/decouvrir/cli-terraform/) |
+| `getting-started-terraform-workflow` | Lire un plan avant de l'appliquer | l1 | TF-ASSOCIATE | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/decouvrir/workflow-terraform/) |
+| `getting-started-providers-resources-data-sources` | Ce que Terraform gère, ce qu'il se contente de lire | l1 | TF-ASSOCIATE | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/decouvrir/providers-resources-data-sources/) |
+| `getting-started-terraform-project-structure` | Découper un monolithe sans bouger le plan | l1 | TF-ASSOCIATE | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/decouvrir/structure-projet-terraform/) |
 
 ### First infrastructures
 
 | Lab (id) | Titre | Niveau | Certif | Runtime | Guide compagnon |
 |---|---|---|---|---|---|
-| `first-infra-first-infrastructure` | Première infrastructure : le cycle complet, prouvé | l1 | TF-ASSOCIATE | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/premieres-infras/premiere-infrastructure/) |
-| `first-infra-variables-outputs` | Variables, locals et l'ordre de précédence réel | l1 | TF-ASSOCIATE | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/premieres-infras/variables-outputs/) |
-| `first-infra-virtual-network` | La dépendance que Terraform ne peut pas deviner | l1 | TF-ASSOCIATE | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/premieres-infras/reseau-virtuel/) |
-| `first-infra-vm-libvirt` | Mise à jour en place ou remplacement : le lire dans le plan | l1 | TF-ASSOCIATE | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/premieres-infras/vm-libvirt/) |
-| `first-infra-ansible` | Produire un inventaire Ansible depuis le state | l1 | TF-ASSOCIATE | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/premieres-infras/ansible/) |
-| `first-infra-debug-apply` | Reprendre après un apply qui a échoué, sans refaire le travail | l1 | TF-ASSOCIATE | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/premieres-infras/debug-apply/) |
-| `first-infra-clean-destroy` | Détruire proprement, et les quatre choses que cela recouvre | l1 | TF-ASSOCIATE | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/premieres-infras/destroy-propre/) |
+| `first-infra-first-infrastructure` | Première infrastructure : le cycle complet, prouvé | l1 | TF-ASSOCIATE | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/premieres-infras/premiere-infrastructure/) |
+| `first-infra-variables-outputs` | Variables, locals et l'ordre de précédence réel | l1 | TF-ASSOCIATE | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/premieres-infras/variables-outputs/) |
+| `first-infra-virtual-network` | La dépendance que Terraform ne peut pas deviner | l1 | TF-ASSOCIATE | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/premieres-infras/reseau-virtuel/) |
+| `first-infra-vm-libvirt` | Mise à jour en place ou remplacement : le lire dans le plan | l1 | TF-ASSOCIATE | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/premieres-infras/vm-libvirt/) |
+| `first-infra-ansible` | Produire un inventaire Ansible depuis le state | l1 | TF-ASSOCIATE | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/premieres-infras/ansible/) |
+| `first-infra-debug-apply` | Reprendre après un apply qui a échoué, sans refaire le travail | l1 | TF-ASSOCIATE | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/premieres-infras/debug-apply/) |
+| `first-infra-clean-destroy` | Détruire proprement, et les quatre choses que cela recouvre | l1 | TF-ASSOCIATE | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/premieres-infras/destroy-propre/) |
 
 ### Writing Terraform code
 
 | Lab (id) | Titre | Niveau | Certif | Runtime | Guide compagnon |
 |---|---|---|---|---|---|
-| `write-code-providers` | Source explicite et alias de provider | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/providers-terraform/) |
-| `write-code-declare-resources` | Lire le cycle de vie d'une ressource dans le plan | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/declarer-ressources/) |
-| `write-code-variables` | Variables, typage, validation et précédence | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/variables-terraform/) |
-| `write-code-outputs` | Le secret que l'output ne cache pas | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/outputs-terraform/) |
-| `write-code-locals` | Le local qui ne se calcule pas au plan | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/locals-terraform/) |
-| `write-code-data-sources` | À quel moment Terraform lit-il une data source ? | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/data-sources/) |
-| `write-code-expressions` | Ce que les expressions calculent vraiment | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/expressions-terraform/) |
-| `write-code-functions` | Composer des valeurs avec les fonctions HCL | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/fonctions-terraform/) |
-| `write-code-provider-defined-functions` | Fonctions définies par les providers | l2 | TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/provider-defined-functions/) |
-| `write-code-conditionals` | La configuration qui refuse les valeurs absurdes | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/conditions-terraform/) |
-| `write-code-validation-check-preconditions` | Conditions personnalisées : precondition, postcondition et blocs check | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/custom-conditions/) |
-| `write-code-count` | count indexé par position, et la position ment | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/count-terraform/) |
-| `write-code-for-each` | Ajouter une instance sans détruire les autres | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/for-each-terraform/) |
-| `write-code-for-loops` | Transformer un catalogue avec les expressions for | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/boucles-for-terraform/) |
-| `write-code-dynamic-blocks` | Générer des blocs, et savoir ne pas le faire | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/blocs-dynamiques/) |
-| `write-code-depends-on` | depends_on ne se pose que là où une référence ne peut aller | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/depends-on/) |
-| `write-code-lifecycle` | Le bloc lifecycle décide de l'ordre, pas vous | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/lifecycle-terraform/) |
-| `write-code-tfvars-files` | La faute de frappe qui ne casse rien | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/fichiers-tfvars/) |
-| `write-code-version-constraints` | Contraintes de version et lock file | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/version-constraints-terraform/) |
-| `write-code-style-guide` | La configuration qui marche mais qu'aucune CI n'accepte | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/style-guide-terraform/) |
-| `write-code-sensitive-data-sensitive-values` | Quand la sensibilité casse for_each | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/gestion-donnees-sensibles/sensitive-terraform/) |
-| `write-code-sensitive-data-ephemeral-values` | La valeur qui ne touche jamais le state | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/gestion-donnees-sensibles/ephemeral-values/) |
-| `write-code-sensitive-data-write-only-arguments` | Arguments write-only : un secret qui n'atterrit jamais dans le state | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell + floci | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/gestion-donnees-sensibles/write-only-arguments/) |
-| `write-code-sensitive-data-vault-secrets` | Lire des secrets depuis Vault | l2 | TF-PROFESSIONAL | shell + vault | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/gestion-donnees-sensibles/vault-secrets/) |
+| `write-code-providers` | Source explicite et alias de provider | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/providers-terraform/) |
+| `write-code-declare-resources` | Lire le cycle de vie d'une ressource dans le plan | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/declarer-ressources/) |
+| `write-code-variables` | Variables, typage, validation et précédence | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/variables-terraform/) |
+| `write-code-outputs` | Le secret que l'output ne cache pas | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/outputs-terraform/) |
+| `write-code-locals` | Le local qui ne se calcule pas au plan | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/locals-terraform/) |
+| `write-code-data-sources` | À quel moment Terraform lit-il une data source ? | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/data-sources/) |
+| `write-code-expressions` | Ce que les expressions calculent vraiment | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/expressions-terraform/) |
+| `write-code-functions` | Composer des valeurs avec les fonctions HCL | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/fonctions-terraform/) |
+| `write-code-provider-defined-functions` | Fonctions définies par les providers | l2 | TF-PROFESSIONAL | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/provider-defined-functions/) |
+| `write-code-conditionals` | La configuration qui refuse les valeurs absurdes | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/conditions-terraform/) |
+| `write-code-validation-check-preconditions` | Conditions personnalisées : precondition, postcondition et blocs check | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/custom-conditions/) |
+| `write-code-count` | count indexé par position, et la position ment | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/count-terraform/) |
+| `write-code-for-each` | Ajouter une instance sans détruire les autres | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/for-each-terraform/) |
+| `write-code-for-loops` | Transformer un catalogue avec les expressions for | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/boucles-for-terraform/) |
+| `write-code-dynamic-blocks` | Générer des blocs, et savoir ne pas le faire | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/blocs-dynamiques/) |
+| `write-code-depends-on` | depends_on ne se pose que là où une référence ne peut aller | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/depends-on/) |
+| `write-code-lifecycle` | Le bloc lifecycle décide de l'ordre, pas vous | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/lifecycle-terraform/) |
+| `write-code-tfvars-files` | La faute de frappe qui ne casse rien | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/fichiers-tfvars/) |
+| `write-code-version-constraints` | Contraintes de version et lock file | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/version-constraints-terraform/) |
+| `write-code-style-guide` | La configuration qui marche mais qu'aucune CI n'accepte | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/style-guide-terraform/) |
+| `write-code-sensitive-data-sensitive-values` | Quand la sensibilité casse for_each | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/gestion-donnees-sensibles/sensitive-terraform/) |
+| `write-code-sensitive-data-ephemeral-values` | La valeur qui ne touche jamais le state | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/gestion-donnees-sensibles/ephemeral-values/) |
+| `write-code-sensitive-data-write-only-arguments` | Arguments write-only : un secret qui n'atterrit jamais dans le state | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell + floci | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/gestion-donnees-sensibles/write-only-arguments/) |
+| `write-code-sensitive-data-vault-secrets` | Lire des secrets depuis Vault | l2 | TF-PROFESSIONAL | shell + vault | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/gestion-donnees-sensibles/vault-secrets/) |
 
 ### Terraform State
 
 | Lab (id) | Titre | Niveau | Certif | Runtime | Guide compagnon |
 |---|---|---|---|---|---|
-| `state-understand-state` | Reprendre un secret déjà en service, sans le régénérer | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/comprendre-state/) |
-| `state-backends` | Migrer le state sans casser sa lignée | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/backends-terraform/) |
-| `state-state-locking` | Verrouillage du state, ce qu'il bloque vraiment | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/verrouillage-state/) |
-| `state-terraform-state-list` | terraform state list, l'adresse est l'identité | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/terraform-state-list/) |
-| `state-terraform-state-show` | terraform state show, ce que la fiche cache | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/terraform-state-show/) |
-| `state-terraform-state-mv` | terraform state mv et le bloc moved, refactorer sans détruire | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/terraform-state-mv/) |
-| `state-terraform-state-rm` | terraform state rm et le bloc removed, cesser de gérer sans détruire | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/terraform-state-rm/) |
-| `state-removed-block` | Le bloc removed : léguer une infrastructure sans la détruire | l2 | TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/bloc-removed/) |
-| `state-backup-restore-state` | Restaurer un state amputé : choisir la bonne sauvegarde, prouver que rien n'a été recréé | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/sauvegarder-restaurer-state/) |
-| `state-diagnose-state` | Diagnostiquer une dérive et adopter une orpheline, sans perdre sa valeur | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/diagnostiquer-state/) |
+| `state-understand-state` | Reprendre un secret déjà en service, sans le régénérer | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/comprendre-state/) |
+| `state-backends` | Migrer le state sans casser sa lignée | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/backends-terraform/) |
+| `state-state-locking` | Verrouillage du state, ce qu'il bloque vraiment | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/verrouillage-state/) |
+| `state-terraform-state-list` | terraform state list, l'adresse est l'identité | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/terraform-state-list/) |
+| `state-terraform-state-show` | terraform state show, ce que la fiche cache | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/terraform-state-show/) |
+| `state-terraform-state-mv` | terraform state mv et le bloc moved, refactorer sans détruire | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/terraform-state-mv/) |
+| `state-terraform-state-rm` | terraform state rm et le bloc removed, cesser de gérer sans détruire | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/terraform-state-rm/) |
+| `state-removed-block` | Le bloc removed : léguer une infrastructure sans la détruire | l2 | TF-PROFESSIONAL | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/bloc-removed/) |
+| `state-backup-restore-state` | Restaurer un state amputé : choisir la bonne sauvegarde, prouver que rien n'a été recréé | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/sauvegarder-restaurer-state/) |
+| `state-diagnose-state` | Diagnostiquer une dérive et adopter une orpheline, sans perdre sa valeur | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/diagnostiquer-state/) |
 
 ### Terraform Modules
 
 | Lab (id) | Titre | Niveau | Certif | Runtime | Guide compagnon |
 |---|---|---|---|---|---|
-| `modules-create-modules` | Un module réutilisable ne configure aucun provider | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/creation-modules/) |
-| `modules-module-structure` | Refactorer un monolithe vers la structure standard | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/structure-module/) |
-| `modules-module-variables-outputs` | L'interface d'un module est un contrat, pas seulement des types | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/variables-outputs-module/) |
-| `modules-module-local` | Un module local se lit sur place, il ne s'installe pas | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/module-local/) |
-| `modules-module-registry` | Un module de registre est téléchargé, versionné, et jamais verrouillé | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/module-registry/) |
-| `modules-version-modules` | Publier et consommer des versions de module avec des tags Git | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/versionner-modules/) |
-| `modules-test-module` | Prouver un module avec terraform test, mutations comprises | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/tester-module/) |
-| `modules-module-best-practices` | Rendre un module composable, et le prouver depuis le JSON du plan | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/bonnes-pratiques-modules/) |
-| `modules-module-anti-patterns` | Refactorer un projet copié-collé sans rien détruire | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/anti-patterns-modules/) |
+| `modules-create-modules` | Un module réutilisable ne configure aucun provider | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/creation-modules/) |
+| `modules-module-structure` | Refactorer un monolithe vers la structure standard | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/structure-module/) |
+| `modules-module-variables-outputs` | L'interface d'un module est un contrat, pas seulement des types | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/variables-outputs-module/) |
+| `modules-module-local` | Un module local se lit sur place, il ne s'installe pas | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/module-local/) |
+| `modules-module-registry` | Un module de registre est téléchargé, versionné, et jamais verrouillé | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/module-registry/) |
+| `modules-version-modules` | Publier et consommer des versions de module avec des tags Git | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/versionner-modules/) |
+| `modules-test-module` | Prouver un module avec terraform test, mutations comprises | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/tester-module/) |
+| `modules-module-best-practices` | Rendre un module composable, et le prouver depuis le JSON du plan | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/bonnes-pratiques-modules/) |
+| `modules-module-anti-patterns` | Refactorer un projet copié-collé sans rien détruire | l2 | TF-ASSOCIATE · TF-PROFESSIONAL | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/anti-patterns-modules/) |
 
 ### Environments
 
 | Lab (id) | Titre | Niveau | Certif | Runtime | Guide compagnon |
 |---|---|---|---|---|---|
-| `environments-organize-terraform-repo` | Découper une configuration monolithique, et prouver que le plan n'a pas bougé | l3 | TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/organiser-repo-terraform/) |
-| `environments-separate-environments` | Deux racines, deux états, un seul module partagé | l3 | TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/separer-environnements/) |
-| `environments-per-environment-variables` | Quelle valeur gagne, et comment le prouver | l3 | TF-ASSOCIATE | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/variables-par-environnement/) |
-| `environments-workspace` | Un seul répertoire, trois états qui ne se voient pas | l3 | TF-ASSOCIATE | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/workspace/) |
-| `environments-when-to-use-workspaces` | Workspaces ou configurations separees, et ce que coute la decoupe | l3 | TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/quand-utiliser-workspaces/) |
-| `environments-monorepo-vs-repo-per-stack` | Decouper un monorepo en deux stacks qui se parlent | l3 | TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/monorepo-vs-repo-par-stack/) |
-| `environments-terraform-in-automation` | Exécuter Terraform en automation (CI/CD) | l3 | TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/terraform-en-automation/) |
+| `environments-organize-terraform-repo` | Découper une configuration monolithique, et prouver que le plan n'a pas bougé | l3 | TF-PROFESSIONAL | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/organiser-repo-terraform/) |
+| `environments-separate-environments` | Deux racines, deux états, un seul module partagé | l3 | TF-PROFESSIONAL | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/separer-environnements/) |
+| `environments-per-environment-variables` | Quelle valeur gagne, et comment le prouver | l3 | TF-ASSOCIATE | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/variables-par-environnement/) |
+| `environments-workspace` | Un seul répertoire, trois états qui ne se voient pas | l3 | TF-ASSOCIATE | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/workspace/) |
+| `environments-when-to-use-workspaces` | Workspaces ou configurations separees, et ce que coute la decoupe | l3 | TF-PROFESSIONAL | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/quand-utiliser-workspaces/) |
+| `environments-monorepo-vs-repo-per-stack` | Decouper un monorepo en deux stacks qui se parlent | l3 | TF-PROFESSIONAL | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/monorepo-vs-repo-par-stack/) |
+| `environments-terraform-in-automation` | Exécuter Terraform en automation (CI/CD) | l3 | TF-PROFESSIONAL | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/terraform-en-automation/) |
 
 ### Terraform on AWS (via Floci)
 
 | Lab (id) | Titre | Niveau | Certif | Runtime | Guide compagnon |
 |---|---|---|---|---|---|
-| `aws-provider-aws-first-ec2` | Provider AWS : authentification, endpoints et tags par defaut | l3 | TF-ASSOCIATE | shell + floci | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/aws/provider-aws-premiere-ec2/) |
-| `aws-sg-subnet-instance` | Security group : règles dédiées, for_each et subnet déterministe | l3 | TF-ASSOCIATE | shell + floci | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/aws/sg-subnet-instance/) |
-| `aws-iam-role-policy-instance-profile` | Composer la chaîne IAM, et nommer ses deux policies correctement | l3 | TF-PROFESSIONAL | shell + floci | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/aws/iam-role-policy-instance-profile/) |
-| `aws-backend-s3-remote-state` | Un state distant, verrouillé, et lu par une autre stack | l3 | TF-PROFESSIONAL | shell + floci | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/aws/backend-s3-remote-state/) |
-| `aws-launch-template-autoscaling` | Lire un remplacement dans le plan, avant qu'il n'arrive | l3 | TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/aws/launch-template-autoscaling/) |
-| `aws-import-moved-drift` | Import, moved et dérive : les trois pièges qu'un tutoriel ne montre jamais | l3 | TF-PROFESSIONAL | shell + floci | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/aws/import-moved-drift/) |
+| `aws-provider-aws-first-ec2` | Provider AWS : authentification, endpoints et tags par defaut | l3 | TF-ASSOCIATE | shell + floci | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/aws/provider-aws-premiere-ec2/) |
+| `aws-sg-subnet-instance` | Security group : règles dédiées, for_each et subnet déterministe | l3 | TF-ASSOCIATE | shell + floci | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/aws/sg-subnet-instance/) |
+| `aws-iam-role-policy-instance-profile` | Composer la chaîne IAM, et nommer ses deux policies correctement | l3 | TF-PROFESSIONAL | shell + floci | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/aws/iam-role-policy-instance-profile/) |
+| `aws-backend-s3-remote-state` | Un state distant, verrouillé, et lu par une autre stack | l3 | TF-PROFESSIONAL | shell + floci | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/aws/backend-s3-remote-state/) |
+| `aws-launch-template-autoscaling` | Lire un remplacement dans le plan, avant qu'il n'arrive | l3 | TF-PROFESSIONAL | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/aws/launch-template-autoscaling/) |
+| `aws-import-moved-drift` | Import, moved et dérive : les trois pièges qu'un tutoriel ne montre jamais | l3 | TF-PROFESSIONAL | shell + floci | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/aws/import-moved-drift/) |
 
 ### HCP Terraform
 
 | Lab (id) | Titre | Niveau | Certif | Runtime | Guide compagnon |
 |---|---|---|---|---|---|
-| `hcp-terraform-hcp-terraform-overview` | Le workflow d'un run : joué en deux temps, puis qualifié | l3 | TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/hcp-terraform/presentation-hcp-terraform/) |
-| `hcp-terraform-hcp-workspaces` | Workspaces : un mot, deux sens, deux stratégies de rattachement | l3 | TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/hcp-terraform/workspaces-hcp/) |
-| `hcp-terraform-remote-runs` | Le flux qu'un run renvoie, et les trois façons de le lancer | l3 | TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/hcp-terraform/remote-runs/) |
-| `hcp-terraform-variable-sets` | Quinze niveaux de précédence, et une inversion | l3 | TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/hcp-terraform/variable-sets/) |
-| `hcp-terraform-shared-credentials` | Les identifiants ne vivent ni dans le code, ni dans le state | l3 | TF-PROFESSIONAL | shell + floci | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/hcp-terraform/credentials-partage/) |
-| `hcp-terraform-projects-teams` | Les permissions s'additionnent, elles ne s'écrasent pas | l3 | TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/hcp-terraform/projects-equipes/) |
-| `hcp-terraform-policy-as-code` | Policy as code : qui bloque un run, et qui peut passer outre | l3 | TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/hcp-terraform/policy-as-code/) |
-| `hcp-terraform-premier-run-distant` | Le premier run distant, pour de vrai (optionnel, demande un compte) | l3 | TF-PROFESSIONAL | shell + compte HCP | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/hcp-terraform/remote-runs/) |
+| `hcp-terraform-hcp-terraform-overview` | Le workflow d'un run : joué en deux temps, puis qualifié | l3 | TF-PROFESSIONAL | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/hcp-terraform/presentation-hcp-terraform/) |
+| `hcp-terraform-hcp-workspaces` | Workspaces : un mot, deux sens, deux stratégies de rattachement | l3 | TF-PROFESSIONAL | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/hcp-terraform/workspaces-hcp/) |
+| `hcp-terraform-remote-runs` | Le flux qu'un run renvoie, et les trois façons de le lancer | l3 | TF-PROFESSIONAL | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/hcp-terraform/remote-runs/) |
+| `hcp-terraform-variable-sets` | Quinze niveaux de précédence, et une inversion | l3 | TF-PROFESSIONAL | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/hcp-terraform/variable-sets/) |
+| `hcp-terraform-shared-credentials` | Les identifiants ne vivent ni dans le code, ni dans le state | l3 | TF-PROFESSIONAL | shell + floci | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/hcp-terraform/credentials-partage/) |
+| `hcp-terraform-projects-teams` | Les permissions s'additionnent, elles ne s'écrasent pas | l3 | TF-PROFESSIONAL | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/hcp-terraform/projects-equipes/) |
+| `hcp-terraform-policy-as-code` | Policy as code : qui bloque un run, et qui peut passer outre | l3 | TF-PROFESSIONAL | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/hcp-terraform/policy-as-code/) |
+| `hcp-terraform-premier-run-distant` | Le premier run distant, pour de vrai (optionnel, demande un compte) | l3 | TF-PROFESSIONAL | shell + compte HCP | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/hcp-terraform/remote-runs/) |
 
 ### Associate Certification (004)
 
 | Lab (id) | Titre | Niveau | Certif | Runtime | Guide compagnon |
 |---|---|---|---|---|---|
-| `certifications-associate-essential-commands` | Les commandes que l'examen attend, faites plutôt que récitées | l4 | TF-ASSOCIATE | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/certifications/associate/exercices/) |
-| `certifications-associate-mock-004` | Associate 004 : examen blanc | l4 | TF-ASSOCIATE | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/certifications/associate/exercices/) |
+| `certifications-associate-essential-commands` | Les commandes que l'examen attend, faites plutôt que récitées | l4 | TF-ASSOCIATE | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/certifications/associate/exercices/) |
+| `certifications-associate-mock-004` | Associate 004 : examen blanc | l4 | TF-ASSOCIATE | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/certifications/associate/exercices/) |
 
 ### Professional Certification (capstones by objective)
 
 | Lab (id) | Titre | Niveau | Certif | Runtime | Guide compagnon |
 |---|---|---|---|---|---|
-| `certifications-professional-capstone1-resource-lifecycle` | Pro · Objectif 1 : cycle de vie, import et réconciliation de drift | l4 | TF-PROFESSIONAL | shell + floci | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/certifications/professional/exercices/) |
-| `certifications-professional-capstone2-dynamic-config` | Pro · Objectif 2 : configuration dynamique et troubleshooting | l4 | TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/certifications/professional/exercices/) |
-| `certifications-professional-capstone3-collaborative-workflows` | Pro · Objectif 3 : workflows collaboratifs | l4 | TF-PROFESSIONAL | shell + floci | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/certifications/professional/exercices/) |
-| `certifications-professional-capstone4-modules` | Pro · Objectif 4 : créer, maintenir et utiliser des modules | l4 | TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/certifications/professional/exercices/) |
-| `certifications-professional-capstone5-providers` | Pro · Objectif 5 : configurer et utiliser les providers | l4 | TF-PROFESSIONAL | shell + floci | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/certifications/professional/exercices/) |
-| `certifications-professional-capstone6-hcp` | Pro · Objectif 6 : HCP Terraform, là où les sous-objectifs se croisent | l4 | TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/certifications/professional/exercices/) |
-| `certifications-professional-mock-pro` | Pro · Examen blanc intégratif : les six objectifs d'une traite | l4 | TF-PROFESSIONAL | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/certifications/professional/exercices/) |
+| `certifications-professional-capstone1-resource-lifecycle` | Pro · Objectif 1 : cycle de vie, import et réconciliation de drift | l4 | TF-PROFESSIONAL | shell + floci | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/certifications/professional/exercices/) |
+| `certifications-professional-capstone2-dynamic-config` | Pro · Objectif 2 : configuration dynamique et troubleshooting | l4 | TF-PROFESSIONAL | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/certifications/professional/exercices/) |
+| `certifications-professional-capstone3-collaborative-workflows` | Pro · Objectif 3 : workflows collaboratifs | l4 | TF-PROFESSIONAL | shell + floci | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/certifications/professional/exercices/) |
+| `certifications-professional-capstone4-modules` | Pro · Objectif 4 : créer, maintenir et utiliser des modules | l4 | TF-PROFESSIONAL | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/certifications/professional/exercices/) |
+| `certifications-professional-capstone5-providers` | Pro · Objectif 5 : configurer et utiliser les providers | l4 | TF-PROFESSIONAL | shell + floci | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/certifications/professional/exercices/) |
+| `certifications-professional-capstone6-hcp` | Pro · Objectif 6 : HCP Terraform, là où les sous-objectifs se croisent | l4 | TF-PROFESSIONAL | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/certifications/professional/exercices/) |
+| `certifications-professional-mock-pro` | Pro · Examen blanc intégratif : les six objectifs d'une traite | l4 | TF-PROFESSIONAL | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/certifications/professional/exercices/) |
 
 ### Level exams
 
 | Lab (id) | Titre | Niveau | Certif | Runtime | Guide compagnon |
 |---|---|---|---|---|---|
-| `level-exams-write-provision` | Épreuve de niveau A : écrire et provisionner un environnement de démonstration | l2 | - | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/parcours/) |
-| `level-exams-operate-state` | Épreuve de niveau B : reprendre l'exploitation d'une plateforme | l3 | - | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/parcours/) |
-| `level-exams-modularize` | Épreuve de niveau C : faire d'un copier-coller un module versionné | l3 | - | shell | [guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/parcours/) |
+| `level-exams-write-provision` | Épreuve de niveau A : écrire et provisionner un environnement de démonstration | l2 | - | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/parcours/) |
+| `level-exams-operate-state` | Épreuve de niveau B : reprendre l'exploitation d'une plateforme | l3 | - | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/parcours/) |
+| `level-exams-modularize` | Épreuve de niveau C : faire d'un copier-coller un module versionné | l3 | - | shell | [guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/parcours/) |
 
 _91 labs, table générée par `scripts/gen_catalog.py`._
 <!-- LABS:END -->

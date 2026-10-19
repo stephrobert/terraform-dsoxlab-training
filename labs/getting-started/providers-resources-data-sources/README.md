@@ -108,4 +108,4 @@ the lab stays replayable without reapplying everything.
 
 Exam objective targeted: **2b**, supported by **5b**.
 
-Reference: [providers, resources and data sources](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/decouvrir/providers-resources-data-sources/)
+Reference: [providers, resources and data sources](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/decouvrir/providers-resources-data-sources/)

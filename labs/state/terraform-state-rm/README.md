@@ -307,4 +307,4 @@ dsoxlab hint state-terraform-state-rm
 
 Exam sub-objective: **1e** (inspect and manipulate state), Associate level.
 
-Reference: [terraform state rm](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/terraform-state-rm/)
+Reference: [terraform state rm](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/terraform-state-rm/)

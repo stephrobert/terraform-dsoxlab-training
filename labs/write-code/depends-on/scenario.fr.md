@@ -50,4 +50,4 @@ Les tests pilotent Terraform et ne lisent jamais les fichiers `.tf`.
 
 Aucun de ces contrôles ne passe sur un répertoire vide, ni sur la configuration de départ, dont l'apply s'arrête en erreur.
 
-Référence : https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/depends-on/
+Référence : https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/depends-on/

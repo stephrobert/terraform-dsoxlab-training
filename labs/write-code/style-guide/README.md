@@ -125,4 +125,4 @@ dsoxlab hint write-code-style-guide
 Exam objectives: **2a** (validate the configuration) and **2e** (typing
 variables and outputs).
 
-Reference: [The Terraform style guide](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/style-guide-terraform/)
+Reference: [The Terraform style guide](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/style-guide-terraform/)

@@ -91,4 +91,4 @@ monolith already produces a plan identical to itself.
 
 Exam objective targeted: **2e**, supported by **2a**.
 
-Reference: [structuring a Terraform project](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/decouvrir/structure-projet-terraform/)
+Reference: [structuring a Terraform project](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/decouvrir/structure-projet-terraform/)

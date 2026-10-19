@@ -42,4 +42,4 @@ Les tests n'ouvrent jamais les `.tf` de l'apprenant et ne parsent aucune sortie 
 3. `terraform show -json` et `terraform output -json` : `value_wo_version` vaut `1`, présent dans le state.
 4. `terraform plan -detailed-exitcode` retourne 0 juste après l'apply.
 
-Référence : https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/gestion-donnees-sensibles/write-only-arguments/
+Référence : https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/gestion-donnees-sensibles/write-only-arguments/
