@@ -102,4 +102,4 @@ La VM et son disque sont détruits en sortie, quoi qu'il arrive.
 
 Sous-objectif d'examen visé : **1b**.
 
-Référence : [créer une VM avec libvirt](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/premieres-infras/vm-libvirt/)
+Référence : [créer une VM avec libvirt](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/premieres-infras/vm-libvirt/)

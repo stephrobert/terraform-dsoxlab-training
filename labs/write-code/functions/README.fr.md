@@ -9,7 +9,7 @@ plan. Ce lab enchaîne ces pièges, puis ajoute ce que presque aucun tutoriel ne
 traite : les fonctions exposées par un provider.
 
 Guide de référence :
-[Les fonctions Terraform](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/fonctions-terraform/)
+[Les fonctions Terraform](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/fonctions-terraform/)
 
 ## Prérequis
 

@@ -92,4 +92,4 @@ devant un état que vous n'avez pas produit.
 
 Sous-objectif d'examen visé : **1e**, avec appui sur **1c**.
 
-Référence : [déboguer un apply](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/premieres-infras/debug-apply/)
+Référence : [déboguer un apply](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/premieres-infras/debug-apply/)

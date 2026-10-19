@@ -51,4 +51,4 @@ Les tests n'ouvrent jamais les `.tf` de l'apprenant pour les parser. Ils lancent
 8. Le `.gitignore` ignore `.terraform/` et `terraform.tfstate*`, et aucun motif n'ignore `.terraform.lock.hcl`.
 9. `terraform plan -detailed-exitcode` retourne 0 juste après l'apply.
 
-Référence : https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/style-guide-terraform/
+Référence : https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/style-guide-terraform/

@@ -42,4 +42,4 @@ The tests never open the learner's `.tf` files and never parse human output. The
 3. `terraform show -json` and `terraform output -json`: `value_wo_version` is `1`, present in the state.
 4. `terraform plan -detailed-exitcode` returns 0 right after apply.
 
-Reference: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/gestion-donnees-sensibles/write-only-arguments/
+Reference: https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/gestion-donnees-sensibles/write-only-arguments/

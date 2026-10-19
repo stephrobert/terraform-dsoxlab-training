@@ -13,7 +13,7 @@ skills:
 - reuse
 distros:
 - debian13
-doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/parcours/
+doc_url: https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/parcours/
 runtime:
   type: shell
   workdir: challenge/work

@@ -37,4 +37,4 @@ Les tests pilotent Terraform et ne lisent jamais les `.tf` de l'apprenant. La fi
 
 Aucun de ces contrôles ne passe sur un `challenge/work` vide, ni sur un répertoire où l'apprenant se serait contenté d'un `init` suivi d'un `apply`.
 
-Référence : https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/comprendre-state/
+Référence : https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/comprendre-state/

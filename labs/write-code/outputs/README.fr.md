@@ -126,4 +126,4 @@ dsoxlab hint write-code-outputs
 Sous-objectifs d'examen visés : **2f** (données sensibles) et **2e** (outputs et
 types complexes).
 
-Référence : [Les outputs en Terraform](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/outputs-terraform/)
+Référence : [Les outputs en Terraform](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/outputs-terraform/)

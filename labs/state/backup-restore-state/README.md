@@ -186,4 +186,4 @@ dsoxlab hint state-backup-restore-state
 Target exam sub-objective: **1e** (manage state), Associate and Professional
 level.
 
-Reference: [back up and restore the state](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/sauvegarder-restaurer-state/)
+Reference: [back up and restore the state](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/sauvegarder-restaurer-state/)

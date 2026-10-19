@@ -201,4 +201,4 @@ dsoxlab hint modules-module-local
 
 Sous-objectif d'examen visé : **4b** (utiliser un module), niveau Associate.
 
-Référence : [utiliser un module local](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/module-local/)
+Référence : [utiliser un module local](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/module-local/)

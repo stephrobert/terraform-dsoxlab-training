@@ -100,4 +100,4 @@ verifies on the Floci side that no extra instance exists: no destroy, no create.
 
 Exam objective targeted: **1e**.
 
-Reference: [import, moved and drift](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/aws/import-moved-drift/)
+Reference: [import, moved and drift](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/aws/import-moved-drift/)

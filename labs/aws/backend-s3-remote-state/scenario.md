@@ -93,4 +93,4 @@ changes the state all the others read. Counter-tests must therefore save the
 state object beforehand and restore it between runs, and the reference solution
 must be captured while the bucket holds the matching state.
 
-Reference: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/aws/backend-s3-remote-state/
+Reference: https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/aws/backend-s3-remote-state/

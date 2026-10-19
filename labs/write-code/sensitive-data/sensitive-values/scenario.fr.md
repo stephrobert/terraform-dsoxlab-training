@@ -41,4 +41,4 @@ Les tests n'ouvrent jamais les `.tf` de l'apprenant. Ils lisent `terraform show 
 3. `terraform output -json` : `empreinte` n'est pas sensible et fait 64 caractères hexadécimaux.
 4. `terraform plan -detailed-exitcode` retourne 0 juste après l'apply.
 
-Référence : https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/gestion-donnees-sensibles/sensitive-terraform/
+Référence : https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/gestion-donnees-sensibles/sensitive-terraform/

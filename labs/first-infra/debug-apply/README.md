@@ -88,4 +88,4 @@ you did not produce.
 
 Exam objective targeted: **1e**, supported by **1c**.
 
-Reference: [debugging an apply](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/premieres-infras/debug-apply/)
+Reference: [debugging an apply](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/premieres-infras/debug-apply/)

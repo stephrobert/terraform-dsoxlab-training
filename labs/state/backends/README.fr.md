@@ -77,4 +77,4 @@ dsoxlab hint state-backends
 
 Sous-objectif d'examen visé : **3b** (remote state), niveau Professional.
 
-Référence : [Les backends Terraform](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/backends-terraform/)
+Référence : [Les backends Terraform](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/backends-terraform/)

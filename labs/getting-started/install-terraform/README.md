@@ -105,4 +105,4 @@ All five proofs fail if you merely installed the binary: that is deliberate.
 
 Exam objective targeted: **3a**.
 
-Reference: [version constraints and the lock file](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/version-constraints-terraform/)
+Reference: [version constraints and the lock file](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/version-constraints-terraform/)

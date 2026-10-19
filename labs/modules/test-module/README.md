@@ -185,4 +185,4 @@ It runs **offline**, with no provider at all.
 
 Target exam sub-objective: **4d** (test a module).
 
-Reference: [testing a module](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/tester-module/)
+Reference: [testing a module](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/tester-module/)

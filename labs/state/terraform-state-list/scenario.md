@@ -98,4 +98,4 @@ None of these checks passes on an empty directory, nor on a state that was never
 queried: the five answers can only come from `terraform state list`, its `-id`
 option and its filtering addresses.
 
-Reference: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/terraform-state-list/
+Reference: https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/terraform-state-list/

@@ -106,4 +106,4 @@ the environment and the files, never by reading back your HCL.
 
 Exam objective targeted: **2e**.
 
-Reference: [variables and outputs](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/premieres-infras/variables-outputs/)
+Reference: [variables and outputs](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/premieres-infras/variables-outputs/)

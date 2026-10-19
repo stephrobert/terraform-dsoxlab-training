@@ -119,4 +119,4 @@ Il se joue **hors ligne**, avec les providers `local` et `random`.
 
 Sous-objectif d'examen visé : **3d**, avec **3b** en appui.
 
-Référence : [monorepo vs repo par stack](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/monorepo-vs-repo-par-stack/)
+Référence : [monorepo vs repo par stack](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/monorepo-vs-repo-par-stack/)

@@ -48,4 +48,4 @@ Les tests n'ouvrent jamais les `.tf` de l'apprenant et ne parsent aucune sortie 
 6. `terraform plan -var 'longueur_mot_de_passe=8'` sort avec un code retour non nul : le `precondition` de l'output bloque le plan.
 7. `terraform plan -detailed-exitcode` retourne 0 juste après l'apply. Un code 2 fait échouer le lab.
 
-Référence : https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/outputs-terraform/
+Référence : https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/outputs-terraform/

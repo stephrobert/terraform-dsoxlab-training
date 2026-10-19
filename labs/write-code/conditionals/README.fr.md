@@ -232,4 +232,4 @@ quoi** porte le contrôle, et **doit-il bloquer** ?
 Sous-objectif d'examen visé : **2a** (Terraform Authoring and Operations
 Professional).
 
-Référence : [Valider les entrées d'une configuration Terraform](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/conditions-terraform/)
+Référence : [Valider les entrées d'une configuration Terraform](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/conditions-terraform/)

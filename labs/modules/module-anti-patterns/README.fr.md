@@ -132,4 +132,4 @@ Il se joue **hors ligne**.
 
 Sous-objectif d'examen visé : **4c** (refactorer une configuration existante).
 
-Référence : [anti-patterns des modules](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/anti-patterns-modules/)
+Référence : [anti-patterns des modules](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/anti-patterns-modules/)

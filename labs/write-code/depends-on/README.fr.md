@@ -143,7 +143,7 @@ more resources than necessary. »
 Quand le besoin n'est pas d'ordonner mais de **remplacer** une ressource dès
 qu'une autre change, `depends_on` n'est pas le bon outil : c'est
 `replace_triggered_by`, dans le bloc `lifecycle`. Le sujet est traité dans
-[le bloc lifecycle Terraform](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/lifecycle-terraform/).
+[le bloc lifecycle Terraform](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/lifecycle-terraform/).
 
 ## À vous de jouer
 
@@ -161,4 +161,4 @@ dsoxlab hint write-code-depends-on
 Sous-objectif d'examen visé : **2d** (Terraform Authoring and Operations
 Professional).
 
-Référence : [depends_on en Terraform](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/depends-on/)
+Référence : [depends_on en Terraform](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/depends-on/)

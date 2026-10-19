@@ -415,7 +415,7 @@ labs/troubleshooting/verbosite/ansible.cfg
 
 # ── Outillage de CORRECTION des guides du blog (pas du contenu du dépôt) ──
 # Ces fichiers servent à PRODUIRE et suivre la réécriture des guides
-# blog.stephane-robert.info ; ils ne font pas partie du catalogue de labs.
+# www.stephane-robert.info ; ils ne font pas partie du catalogue de labs.
 # On ne commite que ce qui fait fonctionner le dépôt, pas ce qui le construit.
 #
 # - audit-terraform.md      : feuille de route (audit des guides à corriger)

@@ -93,4 +93,4 @@ puisque le monolithe produit déjà un plan identique à lui-même.
 
 Sous-objectif d'examen visé : **2e**, avec **2a** en appui.
 
-Référence : [structurer un projet Terraform](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/decouvrir/structure-projet-terraform/)
+Référence : [structurer un projet Terraform](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/decouvrir/structure-projet-terraform/)

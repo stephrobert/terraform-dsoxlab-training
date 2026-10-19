@@ -37,4 +37,4 @@ The tests never open a `.tf`. They read what Terraform writes.
 3. **Partial config**: in a **copy** of the directory, `terraform init` **without** `-backend-config` resolves `path` to `null` (a hardcoded path would show up here), and `init -reconfigure -backend-config=prod.local.tfbackend` resolves to `etat/prod`. The same block, two locations: that is the proof of partialness.
 4. **Idempotence**: `plan -detailed-exitcode` returns `0`.
 
-Reference: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/backends-terraform/
+Reference: https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/backends-terraform/

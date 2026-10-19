@@ -52,4 +52,4 @@ Les tests n'ouvrent jamais les `.tf` de l'apprenant et ne parsent aucune sortie 
 4. `terraform show -json` : deux `random_pet` dans le state.
 5. `terraform plan -detailed-exitcode` retourne 0 juste après l'apply.
 
-Référence : https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/providers-terraform/
+Référence : https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/providers-terraform/

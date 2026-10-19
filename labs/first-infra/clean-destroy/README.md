@@ -95,4 +95,4 @@ would pass on a mutilated plan.
 
 Exam objective targeted: **1d**, supported by **1e**.
 
-Reference: [destroying cleanly](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/premieres-infras/destroy-propre/)
+Reference: [destroying cleanly](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/premieres-infras/destroy-propre/)

@@ -98,4 +98,4 @@ green before any work.
 
 Exam objective targeted: **4**, and above all **4d**.
 
-Reference: [Professional exercises](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/certifications/professional/exercices/)
+Reference: [Professional exercises](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/certifications/professional/exercices/)

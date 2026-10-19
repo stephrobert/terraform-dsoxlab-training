@@ -15,7 +15,7 @@ skills:
 - refactoring
 distros:
 - debian13
-doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/bloc-removed/
+doc_url: https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/bloc-removed/
 certification_tags:
 - tf-professional
 runtime:

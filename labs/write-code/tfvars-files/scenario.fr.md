@@ -39,4 +39,4 @@ Les tests n'ouvrent jamais les `.tf` de l'apprenant. Ils lisent `terraform outpu
 3. `region` vaut `eu-west-3`.
 4. `terraform plan -detailed-exitcode` retourne 0 juste après l'apply.
 
-Référence : https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/fichiers-tfvars/
+Référence : https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/fichiers-tfvars/

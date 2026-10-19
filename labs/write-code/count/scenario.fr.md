@@ -41,4 +41,4 @@ Les tests pilotent Terraform et ne lisent jamais les fichiers `.tf`.
 
 Aucun de ces contrôles ne passe sur un répertoire vide, ni si l'apprenant détruit puis recrée au lieu de réadresser.
 
-Référence : https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/count-terraform/
+Référence : https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/count-terraform/

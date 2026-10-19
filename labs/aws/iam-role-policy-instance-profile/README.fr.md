@@ -130,4 +130,4 @@ dsoxlab hint aws-iam-role-policy-instance-profile
 
 Sous-objectif d'examen visé : **2b** (utiliser des data sources).
 
-Référence : [IAM, rôle, policy et instance profile](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/aws/iam-role-policy-instance-profile/)
+Référence : [IAM, rôle, policy et instance profile](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/aws/iam-role-policy-instance-profile/)

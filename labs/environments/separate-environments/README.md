@@ -136,4 +136,4 @@ It runs **offline**, with the `local` backend.
 
 Target exam sub-objective: **3b** (backends and partial configuration).
 
-Reference: [separating dev, staging and prod](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/separer-environnements/)
+Reference: [separating dev, staging and prod](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/separer-environnements/)

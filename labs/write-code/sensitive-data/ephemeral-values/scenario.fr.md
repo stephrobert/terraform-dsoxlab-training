@@ -45,4 +45,4 @@ Les tests n'ouvrent jamais les `.tf` de l'apprenant et ne parsent aucune sortie 
 3. `terraform output -json` : `jeton_masque` vaut `null`. `ephemeralasnull()` neutralise l'éphémère ; une valeur non éphémère serait ressortie telle quelle, donc ce `null` prouve le caractère éphémère.
 4. `terraform plan -detailed-exitcode` retourne 0 juste après l'apply.
 
-Référence : https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/gestion-donnees-sensibles/ephemeral-values/
+Référence : https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/gestion-donnees-sensibles/ephemeral-values/

@@ -180,4 +180,4 @@ dsoxlab hint write-code-for-each
 Sous-objectif d'examen visé : **2d** (Terraform Authoring and Operations
 Professional), les meta-arguments.
 
-Référence : [for_each Terraform](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/for-each-terraform/)
+Référence : [for_each Terraform](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/for-each-terraform/)

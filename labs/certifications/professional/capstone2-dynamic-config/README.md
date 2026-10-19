@@ -125,4 +125,4 @@ your files.
 
 Exam objective targeted: **2**, across its six sub-objectives.
 
-Reference: [Professional exercises](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/certifications/professional/exercices/)
+Reference: [Professional exercises](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/certifications/professional/exercices/)

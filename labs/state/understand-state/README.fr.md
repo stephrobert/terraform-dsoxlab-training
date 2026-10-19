@@ -85,4 +85,4 @@ dsoxlab hint state-understand-state
 
 Sous-objectif d'examen visé : **1e**, niveau Professional.
 
-Référence : [Comprendre le state](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/comprendre-state/)
+Référence : [Comprendre le state](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/comprendre-state/)

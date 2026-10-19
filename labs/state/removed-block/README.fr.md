@@ -241,4 +241,4 @@ dsoxlab hint state-removed-block
 Sous-objectifs d'examen visés : **1e** (gérer le state) et **4c** (refactorer une
 configuration), niveau Professional.
 
-Référence : [le bloc removed](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/bloc-removed/)
+Référence : [le bloc removed](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/bloc-removed/)

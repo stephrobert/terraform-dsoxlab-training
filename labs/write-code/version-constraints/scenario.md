@@ -43,4 +43,4 @@ The tests never open the learner's `.tf` files. They read `terraform version -js
 3. `.terraform.lock.hcl` contains at least two `h1:` hashes and the `2.5.1` version.
 4. `terraform apply` succeeds (the literal required_version is satisfied), then `terraform plan -detailed-exitcode` returns 0.
 
-Reference: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/version-constraints-terraform/
+Reference: https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/version-constraints-terraform/

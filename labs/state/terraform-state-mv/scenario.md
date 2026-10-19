@@ -82,4 +82,4 @@ applied.
   plus create cannot fake.
 - No test ever reads the content of the learner's `.tf` files.
 
-Reference: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/terraform-state-mv/
+Reference: https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/terraform-state-mv/

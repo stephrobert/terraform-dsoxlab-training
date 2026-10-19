@@ -179,4 +179,4 @@ dsoxlab hint write-code-dynamic-blocks
 Exam objective targeted: **2d** (Terraform Authoring and Operations
 Professional).
 
-Reference: [dynamic blocks in Terraform](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/blocs-dynamiques/)
+Reference: [dynamic blocks in Terraform](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/blocs-dynamiques/)

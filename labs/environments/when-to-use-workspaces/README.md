@@ -127,4 +127,4 @@ It runs **offline**, on the `local` and `random` providers.
 
 Exam sub-objective covered: **3d**.
 
-Reference: [when to use workspaces](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/quand-utiliser-workspaces/)
+Reference: [when to use workspaces](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/quand-utiliser-workspaces/)

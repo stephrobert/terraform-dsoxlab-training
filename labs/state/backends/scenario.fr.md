@@ -37,4 +37,4 @@ Les tests n'ouvrent jamais un `.tf`. Ils lisent ce que Terraform écrit.
 3. **Config partielle** : dans une **copie** du dossier, `terraform init` **sans** `-backend-config` résout `path` à `null` (un chemin codé en dur ressortirait ici), et `init -reconfigure -backend-config=prod.local.tfbackend` résout sur `etat/prod`. Le même bloc, deux emplacements : c'est la preuve du caractère partiel.
 4. **Idempotence** : `plan -detailed-exitcode` rend `0`.
 
-Référence : https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/backends-terraform/
+Référence : https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/backends-terraform/

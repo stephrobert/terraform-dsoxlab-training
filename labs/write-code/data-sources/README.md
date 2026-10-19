@@ -248,4 +248,4 @@ in this plan?".
 Exam objective targeted: **2b** (Terraform Authoring and Operations
 Professional).
 
-Reference: [Terraform data sources](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/data-sources/)
+Reference: [Terraform data sources](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/data-sources/)

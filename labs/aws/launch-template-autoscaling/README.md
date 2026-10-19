@@ -109,4 +109,4 @@ success, because a lab neutralised to make the tests pass would exit 0.
 
 Exam objective targeted: **1b**.
 
-Reference: [launch template and autoscaling](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/aws/launch-template-autoscaling/)
+Reference: [launch template and autoscaling](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/aws/launch-template-autoscaling/)

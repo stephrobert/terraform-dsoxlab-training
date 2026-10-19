@@ -138,4 +138,4 @@ Il se joue **hors ligne**, avec le backend `local`.
 
 Sous-objectif d'examen visé : **3b** (backends et configuration partielle).
 
-Référence : [séparer dev, staging et prod](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/separer-environnements/)
+Référence : [séparer dev, staging et prod](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/separer-environnements/)

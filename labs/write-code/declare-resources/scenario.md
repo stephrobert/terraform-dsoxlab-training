@@ -61,4 +61,4 @@ empty directory, nor without the references wired.
   `create_before_destroy`, where the absence of the rule would give
   `["delete", "create"]`.
 
-Reference: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/declarer-ressources/
+Reference: https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/declarer-ressources/

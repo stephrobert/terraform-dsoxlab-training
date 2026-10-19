@@ -1,7 +1,7 @@
 ---
 # Source de vérité de l'ordre des labs et de leur regroupement en sections.
 # Calqué sur le parcours du blog :
-#   https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/parcours/
+#   https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/parcours/
 #
 # Chaque entrée `sections[].labs[]` est un chemin relatif depuis `labs/`. Le lab
 # existe pour dsoxlab si et seulement si `labs/<ce-chemin>/lab.yaml` existe : ce
@@ -15,7 +15,7 @@ repo:
   id: terraform-dsoxlab-training
   category: terraform           # 'ansible' | 'kubernetes' | 'linux' | 'terraform' | …
   title: "Terraform Training : Associate & Professional 2026"
-  blog_url: "https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/parcours/"
+  blog_url: "https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/parcours/"
   # Où `dsoxlab support --issue` dépose le rapport d'un apprenant.
   #
   # Sans ce champ, dsoxlab retombe sur `git remote get-url origin`, ce qui

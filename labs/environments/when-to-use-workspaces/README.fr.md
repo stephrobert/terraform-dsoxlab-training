@@ -131,4 +131,4 @@ Il se joue **hors ligne**, avec les providers `local` et `random`.
 
 Sous-objectif d'examen visé : **3d**.
 
-Référence : [quand utiliser les workspaces](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/quand-utiliser-workspaces/)
+Référence : [quand utiliser les workspaces](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/quand-utiliser-workspaces/)

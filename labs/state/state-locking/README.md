@@ -118,4 +118,4 @@ dsoxlab hint state-state-locking
 
 Target exam objective: **3b** (state locking), Professional level.
 
-Reference: [Locking the Terraform state](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/verrouillage-state/)
+Reference: [Locking the Terraform state](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/verrouillage-state/)

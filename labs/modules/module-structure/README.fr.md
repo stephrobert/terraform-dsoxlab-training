@@ -190,4 +190,4 @@ dsoxlab hint modules-module-structure
 Sous-objectif d'examen visé : **4a** (écrire et utiliser des modules), niveau
 Associate et Professional.
 
-Référence : [structure standard d'un module](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/structure-module/)
+Référence : [structure standard d'un module](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/structure-module/)

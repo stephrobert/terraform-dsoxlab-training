@@ -133,4 +133,4 @@ Il se joue **hors ligne**, avec les providers `local` et `random`.
 
 Sous-objectif d'examen visé : **3c**.
 
-Référence : [les workspaces Terraform](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/workspace/)
+Référence : [les workspaces Terraform](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/workspace/)

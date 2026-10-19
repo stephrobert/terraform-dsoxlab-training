@@ -43,4 +43,4 @@ The tests drive Terraform and never read the `.tf` files.
 
 None of these checks passes on an empty directory, nor if the learner merely copies the blocks without attaching them to the right resource.
 
-Reference: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/lifecycle-terraform/
+Reference: https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/lifecycle-terraform/

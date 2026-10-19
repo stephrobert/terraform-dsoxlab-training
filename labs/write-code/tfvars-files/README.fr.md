@@ -65,4 +65,4 @@ dsoxlab hint write-code-tfvars-files
 
 Sous-objectif d'examen visé : **3c** (fournir les valeurs des variables).
 
-Référence : [Les fichiers tfvars en Terraform](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/fichiers-tfvars/)
+Référence : [Les fichiers tfvars en Terraform](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/fichiers-tfvars/)

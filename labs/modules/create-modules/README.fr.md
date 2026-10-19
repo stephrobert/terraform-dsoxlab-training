@@ -242,4 +242,4 @@ dsoxlab hint modules-create-modules
 Sous-objectif d'examen visé : **4a** (écrire et utiliser des modules), niveau
 Associate et Professional.
 
-Référence : [créer des modules](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/creation-modules/)
+Référence : [créer des modules](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/creation-modules/)

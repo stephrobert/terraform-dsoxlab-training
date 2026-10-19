@@ -125,4 +125,4 @@ vos fichiers.
 
 Objectif d'examen visé : **2**, dans ses six sous-objectifs.
 
-Référence : [Exercices Professional](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/certifications/professional/exercices/)
+Référence : [Exercices Professional](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/certifications/professional/exercices/)

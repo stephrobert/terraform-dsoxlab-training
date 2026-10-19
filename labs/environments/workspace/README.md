@@ -133,4 +133,4 @@ It runs **offline**, on the `local` and `random` providers.
 
 Exam sub-objective covered: **3c**.
 
-Reference: [Terraform workspaces](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/workspace/)
+Reference: [Terraform workspaces](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/workspace/)

@@ -48,4 +48,4 @@ The tests never open the learner's `.tf` files and parse no human output. They d
 6. `terraform plan -var 'longueur_mot_de_passe=8'` exits non-zero: the output's `precondition` blocks the plan.
 7. `terraform plan -detailed-exitcode` returns 0 right after apply. A code 2 fails the lab.
 
-Reference: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/outputs-terraform/
+Reference: https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/outputs-terraform/

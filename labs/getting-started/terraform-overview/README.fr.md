@@ -173,4 +173,4 @@ dsoxlab hint getting-started-terraform-overview
 
 Sous-objectif d'examen visé : **1e** (state, import, dérive).
 
-Référence : [Présentation de Terraform](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/decouvrir/presentation-terraform/)
+Référence : [Présentation de Terraform](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/decouvrir/presentation-terraform/)

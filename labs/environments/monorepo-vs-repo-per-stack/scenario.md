@@ -64,4 +64,4 @@ substring search over the raw output fails to find it and lets a published secre
 through. The first version of the test did exactly that, and its counter-test
 passed 7/7 while the secret was in fact exposed.
 
-Reference: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/monorepo-vs-repo-par-stack/
+Reference: https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/monorepo-vs-repo-par-stack/

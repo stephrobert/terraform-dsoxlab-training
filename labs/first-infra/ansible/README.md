@@ -99,4 +99,4 @@ more than a constant.
 
 Exam objective targeted: **2e**, supported by **1e**.
 
-Reference: [Terraform and Ansible](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/premieres-infras/ansible/)
+Reference: [Terraform and Ansible](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/premieres-infras/ansible/)

@@ -84,4 +84,4 @@ dsoxlab hint write-code-sensitive-data-sensitive-values
 
 Sous-objectif d'examen visé : **2f** (données sensibles).
 
-Référence : [sensitive en Terraform](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/gestion-donnees-sensibles/sensitive-terraform/)
+Référence : [sensitive en Terraform](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/gestion-donnees-sensibles/sensitive-terraform/)

@@ -94,4 +94,4 @@ assez longtemps pour qu'un verrou soit **observable**.
 
 Sous-objectif d'examen visé : **3c**.
 
-Référence : [exécuter Terraform en automation](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/terraform-en-automation/)
+Référence : [exécuter Terraform en automation](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/terraform-en-automation/)

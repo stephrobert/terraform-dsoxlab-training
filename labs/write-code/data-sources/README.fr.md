@@ -250,4 +250,4 @@ change-t-elle dans ce plan ? ».
 Sous-objectif d'examen visé : **2b** (Terraform Authoring and Operations
 Professional).
 
-Référence : [Les data sources Terraform](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/data-sources/)
+Référence : [Les data sources Terraform](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/data-sources/)

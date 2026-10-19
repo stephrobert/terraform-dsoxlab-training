@@ -113,4 +113,4 @@ dans le `PATH`. Le réseau n'est nécessaire que pour le premier `init`.
 Sous-objectif d'examen visé : **1c**, déroulé dans un cycle complet **1a**
 `init`, **1b** `plan`, **1c** `apply`, **1d** `destroy`.
 
-Référence : [première infrastructure](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/premieres-infras/premiere-infrastructure/)
+Référence : [première infrastructure](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/premieres-infras/premiere-infrastructure/)

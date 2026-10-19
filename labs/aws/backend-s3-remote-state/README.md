@@ -119,4 +119,4 @@ you**, on `http://localhost:14566`. No AWS account is needed.
 
 Exam sub-objective covered: **3b**, with **3d** in support.
 
-Reference: [S3 backend and terraform_remote_state](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/aws/backend-s3-remote-state/)
+Reference: [S3 backend and terraform_remote_state](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/aws/backend-s3-remote-state/)

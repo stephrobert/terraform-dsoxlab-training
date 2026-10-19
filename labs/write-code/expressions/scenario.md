@@ -42,4 +42,4 @@ The tests never open the learner's `.tf` files and parse no human output. They d
 4. `perm_effective` is `0777` by default; a replay with `-var perm_forcee=0600` makes it `0600`, then the state is restored.
 5. `terraform plan -detailed-exitcode` returns 0 right after apply.
 
-Reference: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/expressions-terraform/
+Reference: https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/expressions-terraform/

@@ -100,4 +100,4 @@ The VM and its disk are destroyed on exit, whatever happens.
 
 Exam objective targeted: **1b**.
 
-Reference: [creating a VM with libvirt](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/premieres-infras/vm-libvirt/)
+Reference: [creating a VM with libvirt](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/premieres-infras/vm-libvirt/)

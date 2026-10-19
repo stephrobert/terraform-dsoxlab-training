@@ -115,4 +115,4 @@ et **une** sortante.
 
 Sous-objectif d'examen visé : **2d**, les méta-arguments.
 
-Référence : [security group, subnet et instance](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/aws/sg-subnet-instance/)
+Référence : [security group, subnet et instance](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/aws/sg-subnet-instance/)

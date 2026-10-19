@@ -57,4 +57,4 @@ contrôle ne passe sur un répertoire vide, ni sans câbler les références.
   affiche `["create", "delete"]` dans cet ordre, signature de
   `create_before_destroy`, là où l'absence de la règle donnerait `["delete", "create"]`.
 
-Référence : https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/declarer-ressources/
+Référence : https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/declarer-ressources/

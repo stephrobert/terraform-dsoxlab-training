@@ -48,4 +48,4 @@ Les tests pilotent Terraform et ne lisent jamais les fichiers `.tf` ni les `.tfv
 
 Aucun de ces contrôles ne passe sur un `challenge/work` vide : le premier plan n'y trouve aucune variable ni aucune ressource.
 
-Référence : https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/variables-par-environnement/
+Référence : https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/variables-par-environnement/

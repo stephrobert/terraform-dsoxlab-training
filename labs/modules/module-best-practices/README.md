@@ -167,4 +167,4 @@ It runs **offline**.
 
 Target exam sub-objective: **5b** (provider configurations in modules).
 
-Reference: [module best practices](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/bonnes-pratiques-modules/)
+Reference: [module best practices](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/bonnes-pratiques-modules/)

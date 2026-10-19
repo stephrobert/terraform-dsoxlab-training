@@ -17,7 +17,7 @@ skills:
 - plan-json
 distros:
 - debian13
-doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/gestion-donnees-sensibles/sensitive-terraform/
+doc_url: https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/gestion-donnees-sensibles/sensitive-terraform/
 certification_tags:
 - tf-associate
 - tf-professional

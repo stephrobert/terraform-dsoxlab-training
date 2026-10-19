@@ -39,4 +39,4 @@ The tests never open the learner's `.tf` files.
 - State 5 is proven by exit codes on `plan -detailed-exitcode`: with `TF_VAR_env` exported to another value, the plan stays stable (auto.tfvars wins); with `-var`, it proposes a change.
 - `terraform plan -detailed-exitcode` must return 0 after the final apply.
 
-Reference: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/variables-terraform/
+Reference: https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/variables-terraform/

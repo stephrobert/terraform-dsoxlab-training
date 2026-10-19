@@ -83,4 +83,4 @@ type, no cloud account, no bill.
 
 Target exam objective: **2f** (manage sensitive data), Professional level.
 
-Reference: [Write-only arguments in Terraform](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/gestion-donnees-sensibles/write-only-arguments/)
+Reference: [Write-only arguments in Terraform](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/gestion-donnees-sensibles/write-only-arguments/)

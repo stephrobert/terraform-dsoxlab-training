@@ -43,4 +43,4 @@ Les tests pilotent Terraform et ne lisent jamais les fichiers de l'apprenant.
 
 Aucun de ces contrôles ne passe sur un répertoire vide, ni sur un state jamais interrogé : les cinq réponses ne peuvent venir que de `terraform state list`, de son option `-id` et de ses adresses de filtrage.
 
-Référence : https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/terraform-state-list/
+Référence : https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/terraform-state-list/

@@ -14,7 +14,7 @@ skills:
 - gitignore
 distros:
 - debian13
-doc_url: https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/organiser-repo-terraform/
+doc_url: https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/organiser-repo-terraform/
 certification_tags:
 - tf-professional
 runtime:

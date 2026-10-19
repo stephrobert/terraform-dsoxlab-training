@@ -184,4 +184,4 @@ dsoxlab hint state-terraform-state-show
 
 Target exam objective: **1e** (inspect and manipulate state), Associate level.
 
-Reference: [terraform state show](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/terraform-state-show/)
+Reference: [terraform state show](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/state/terraform-state-show/)

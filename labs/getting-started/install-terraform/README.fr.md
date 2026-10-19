@@ -106,4 +106,4 @@ binaire : c'est délibéré.
 
 Sous-objectif d'examen visé : **3a**.
 
-Référence : [contraintes de version et lock file](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/version-constraints-terraform/)
+Référence : [contraintes de version et lock file](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/version-constraints-terraform/)

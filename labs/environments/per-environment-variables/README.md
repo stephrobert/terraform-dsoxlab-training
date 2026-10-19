@@ -114,4 +114,4 @@ It runs **offline**, on the `local` and `random` providers.
 
 Exam sub-objective covered: **2e**.
 
-Reference: [managing per-environment variables](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/variables-par-environnement/)
+Reference: [managing per-environment variables](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/environnements/variables-par-environnement/)

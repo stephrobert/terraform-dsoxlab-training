@@ -8,7 +8,7 @@ chains those traps, then adds what almost no tutorial covers: the functions a
 provider exposes.
 
 Reference guide:
-[Terraform functions](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/fonctions-terraform/)
+[Terraform functions](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/fonctions-terraform/)
 
 ## Prerequisites
 

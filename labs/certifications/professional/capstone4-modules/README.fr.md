@@ -100,4 +100,4 @@ les rendait verts avant tout travail.
 
 Objectif d'examen visé : **4**, et surtout **4d**.
 
-Référence : [Exercices Professional](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/certifications/professional/exercices/)
+Référence : [Exercices Professional](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/certifications/professional/exercices/)

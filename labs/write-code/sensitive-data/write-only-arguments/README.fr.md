@@ -87,4 +87,4 @@ Le lab démarre tout seul un émulateur AWS local (Floci) : aucune commande Dock
 Sous-objectif d'examen visé : **2f** (gérer les données sensibles), niveau
 Professional.
 
-Référence : [Les arguments write-only en Terraform](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/gestion-donnees-sensibles/write-only-arguments/)
+Référence : [Les arguments write-only en Terraform](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/gestion-donnees-sensibles/write-only-arguments/)

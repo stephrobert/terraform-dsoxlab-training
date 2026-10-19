@@ -169,4 +169,4 @@ dsoxlab hint getting-started-terraform-overview
 
 Exam sub-objective covered: **1e** (state, import, drift).
 
-Reference: [Terraform overview](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/decouvrir/presentation-terraform/)
+Reference: [Terraform overview](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/decouvrir/presentation-terraform/)

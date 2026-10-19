@@ -87,4 +87,4 @@ dsoxlab hint certifications-professional-mock-pro
 
 Objectif visé : les **six** du programme Professional.
 
-Référence : [Exercices Professional](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/certifications/professional/exercices/)
+Référence : [Exercices Professional](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/certifications/professional/exercices/)

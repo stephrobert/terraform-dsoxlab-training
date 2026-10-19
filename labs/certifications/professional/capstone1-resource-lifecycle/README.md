@@ -107,4 +107,4 @@ or at the provider.
 
 Exam objective targeted: **1**, and above all **1e**.
 
-Reference: [Professional exercises](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/certifications/professional/exercices/)
+Reference: [Professional exercises](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/certifications/professional/exercices/)

@@ -93,4 +93,4 @@ dsoxlab hint write-code-sensitive-data-ephemeral-values
 
 Exam objective: **2f** (managing sensitive data), Professional level.
 
-Reference: [Ephemeral values in Terraform](https://blog.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/gestion-donnees-sensibles/ephemeral-values/)
+Reference: [Ephemeral values in Terraform](https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/ecrire-code/gestion-donnees-sensibles/ephemeral-values/)
