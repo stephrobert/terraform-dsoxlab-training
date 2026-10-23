@@ -52,7 +52,7 @@ jobs:
           persist-credentials: false
 
       - name: Plumber compliance scan
-        uses: getplumber/plumber@d3536bae4727b9290d9e69ee25c4350ddbcd91cd # v0.6.0
+        uses: getplumber/plumber@5d34fa28379dea9ba8993ddc36dec8b973fe1504 # v0.7.0
         with:
           version: "v0.4.3"
           verify-attestation: "true"   # check the binary's SLSA provenance before running
