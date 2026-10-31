@@ -14,6 +14,7 @@ passer ce qu'il doit arreter.
 
 from __future__ import annotations
 
+import os
 import subprocess
 from pathlib import Path
 
@@ -23,6 +24,17 @@ RACINE = Path(__file__).resolve().parents[1]
 OUTIL = RACINE / "tests" / "outils" / "verdicts_et_commun_separes.py"
 
 
+def _env_sans_git() -> dict[str, str]:
+    # Lance depuis un hook de commit, ce test herite de GIT_DIR et de
+    # GIT_INDEX_FILE. Dans un worktree, ces chemins sont ABSOLUS et visent le
+    # vrai depot : `git init`, `git config` et `git add -A` du depot jetable
+    # ecrivaient alors dans sa configuration (core.bare, identite « Banc ») et
+    # remplacaient l'index du worktree, et l'outil lisait l'index du worktree
+    # au lieu de celui du depot jetable. Constate le 2026-10-31. Sans ces
+    # variables, git ne voit que le depot jetable.
+    return {k: v for k, v in os.environ.items() if not k.startswith("GIT_")}
+
+
 def _git(depot: Path, *args: str) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
         ["git", "-C", str(depot), *args],
@@ -30,6 +42,7 @@ def _git(depot: Path, *args: str) -> subprocess.CompletedProcess[str]:
         capture_output=True,
         text=True,
         timeout=30,
+        env=_env_sans_git(),
     )
 
 
@@ -72,6 +85,7 @@ def _jouer(depot: Path) -> subprocess.CompletedProcess[str]:
         capture_output=True,
         text=True,
         timeout=30,
+        env=_env_sans_git(),
     )
 
 
