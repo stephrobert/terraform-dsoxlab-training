@@ -90,8 +90,13 @@ class Verdict:
 
 def _dsoxlab(*args: str, timeout: int = 900) -> subprocess.CompletedProcess[str]:
     env = dict(os.environ, LAB_HOME=str(RACINE))
+    commande = ["dsoxlab", *args]
+    # dsoxlab exige --yes sans terminal : « y » sur l'entrée ne suffit plus, et
+    # un clean refusé (rc=2) laissait le livrable du passage précédent.
+    if args and args[0] == "clean" and "--yes" not in args:
+        commande.append("--yes")
     return subprocess.run(
-        ["dsoxlab", *args],
+        commande,
         cwd=RACINE,
         env=env,
         input="y\n",
@@ -220,7 +225,14 @@ def valider(identifiant: str, lab: Path) -> Verdict:
     avant = _conteneurs()
 
     try:
-        _dsoxlab("clean", identifiant, timeout=300)
+        nettoyage = _dsoxlab("clean", identifiant, timeout=300)
+        if nettoyage.returncode != 0:
+            # Un clean refusé laisse l'état du passage précédent : le sens « 0 »
+            # mesurerait l'ancienne réponse.
+            v.verdict = "ROUGE"
+            v.pourquoi = (f"`clean` a échoué (rc={nettoyage.returncode}) : "
+                          f"{(nettoyage.stderr or nettoyage.stdout)[-200:]}")
+            return v
 
         pose = _dsoxlab("run", identifiant)
         if pose.returncode != 0:
