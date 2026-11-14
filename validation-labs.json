@@ -1,7 +1,7 @@
 {
-  "genere_le": "2026-10-12 20:36:23",
+  "genere_le": "2026-10-19 17:49:13",
   "terraform": "Terraform v1.16.1",
-  "dsoxlab": "dsoxlab 0.3.5",
+  "dsoxlab": "dsoxlab 0.5.4",
   "labs": {
     "aws-backend-s3-remote-state": {
       "id": "aws-backend-s3-remote-state",
@@ -10,7 +10,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "9/9",
-      "duree_s": 38.1,
+      "duree_s": 24.4,
       "traces": [],
       "pourquoi": ""
     },
@@ -21,7 +21,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "7/7",
-      "duree_s": 74.2,
+      "duree_s": 67.9,
       "traces": [],
       "pourquoi": ""
     },
@@ -32,7 +32,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "6/6",
-      "duree_s": 64.5,
+      "duree_s": 68.7,
       "traces": [],
       "pourquoi": ""
     },
@@ -43,7 +43,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "8/8",
-      "duree_s": 17.5,
+      "duree_s": 17.6,
       "traces": [],
       "pourquoi": ""
     },
@@ -54,7 +54,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "11/11",
-      "duree_s": 136.9,
+      "duree_s": 126.2,
       "traces": [],
       "pourquoi": ""
     },
@@ -65,7 +65,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "12/12",
-      "duree_s": 90.0,
+      "duree_s": 77.7,
       "traces": [],
       "pourquoi": ""
     },
@@ -76,7 +76,7 @@
       "score_avant": 0,
       "score_apres": 90,
       "tests": "8/8",
-      "duree_s": 12.9,
+      "duree_s": 11.4,
       "traces": [],
       "pourquoi": ""
     },
@@ -87,7 +87,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "10/10",
-      "duree_s": 10.0,
+      "duree_s": 6.1,
       "traces": [],
       "pourquoi": ""
     },
@@ -98,7 +98,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "5/5",
-      "duree_s": 71.8,
+      "duree_s": 66.9,
       "traces": [],
       "pourquoi": ""
     },
@@ -109,7 +109,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "9/9",
-      "duree_s": 9.3,
+      "duree_s": 7.8,
       "traces": [],
       "pourquoi": ""
     },
@@ -120,7 +120,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "8/8",
-      "duree_s": 9.8,
+      "duree_s": 9.0,
       "traces": [],
       "pourquoi": ""
     },
@@ -131,7 +131,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "6/6",
-      "duree_s": 7.6,
+      "duree_s": 5.9,
       "traces": [],
       "pourquoi": ""
     },
@@ -142,7 +142,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "6/6",
-      "duree_s": 68.3,
+      "duree_s": 61.6,
       "traces": [],
       "pourquoi": ""
     },
@@ -153,7 +153,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "16/16",
-      "duree_s": 4.7,
+      "duree_s": 4.0,
       "traces": [],
       "pourquoi": ""
     },
@@ -164,7 +164,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "16/16",
-      "duree_s": 14.0,
+      "duree_s": 11.7,
       "traces": [],
       "pourquoi": ""
     },
@@ -175,7 +175,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "7/7",
-      "duree_s": 6.7,
+      "duree_s": 7.3,
       "traces": [],
       "pourquoi": ""
     },
@@ -186,7 +186,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "8/8",
-      "duree_s": 11.3,
+      "duree_s": 7.6,
       "traces": [],
       "pourquoi": ""
     },
@@ -197,7 +197,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "12/12",
-      "duree_s": 9.2,
+      "duree_s": 9.1,
       "traces": [],
       "pourquoi": ""
     },
@@ -208,7 +208,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "6/6",
-      "duree_s": 10.0,
+      "duree_s": 7.5,
       "traces": [],
       "pourquoi": ""
     },
@@ -219,7 +219,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "10/10",
-      "duree_s": 63.5,
+      "duree_s": 63.6,
       "traces": [],
       "pourquoi": ""
     },
@@ -230,7 +230,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "9/9",
-      "duree_s": 9.5,
+      "duree_s": 9.2,
       "traces": [],
       "pourquoi": ""
     },
@@ -241,7 +241,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "8/8",
-      "duree_s": 8.1,
+      "duree_s": 6.2,
       "traces": [],
       "pourquoi": ""
     },
@@ -252,7 +252,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "7/7",
-      "duree_s": 6.2,
+      "duree_s": 6.3,
       "traces": [],
       "pourquoi": ""
     },
@@ -263,7 +263,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "5/5",
-      "duree_s": 7.0,
+      "duree_s": 7.1,
       "traces": [],
       "pourquoi": ""
     },
@@ -274,7 +274,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "5/5",
-      "duree_s": 9.6,
+      "duree_s": 9.8,
       "traces": [],
       "pourquoi": ""
     },
@@ -285,7 +285,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "6/6",
-      "duree_s": 10.5,
+      "duree_s": 8.8,
       "traces": [],
       "pourquoi": ""
     },
@@ -296,7 +296,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "8/8",
-      "duree_s": 7.2,
+      "duree_s": 6.9,
       "traces": [],
       "pourquoi": ""
     },
@@ -307,7 +307,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "6/6",
-      "duree_s": 6.7,
+      "duree_s": 6.3,
       "traces": [],
       "pourquoi": ""
     },
@@ -318,7 +318,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "7/7",
-      "duree_s": 52.6,
+      "duree_s": 50.0,
       "traces": [],
       "pourquoi": ""
     },
@@ -329,7 +329,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "5/5",
-      "duree_s": 6.4,
+      "duree_s": 6.5,
       "traces": [],
       "pourquoi": ""
     },
@@ -340,7 +340,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "8/8",
-      "duree_s": 8.0,
+      "duree_s": 7.9,
       "traces": [],
       "pourquoi": ""
     },
@@ -351,7 +351,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "4/4",
-      "duree_s": 8.2,
+      "duree_s": 8.1,
       "traces": [],
       "pourquoi": ""
     },
@@ -362,7 +362,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "7/7",
-      "duree_s": 6.6,
+      "duree_s": 6.5,
       "traces": [],
       "pourquoi": ""
     },
@@ -373,7 +373,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "8/8",
-      "duree_s": 6.4,
+      "duree_s": 6.1,
       "traces": [],
       "pourquoi": ""
     },
@@ -384,7 +384,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "9/9",
-      "duree_s": 12.0,
+      "duree_s": 11.7,
       "traces": [],
       "pourquoi": ""
     },
@@ -395,7 +395,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "8/8",
-      "duree_s": 15.9,
+      "duree_s": 15.1,
       "traces": [],
       "pourquoi": ""
     },
@@ -417,7 +417,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "15/15",
-      "duree_s": 3.9,
+      "duree_s": 3.8,
       "traces": [],
       "pourquoi": ""
     },
@@ -428,7 +428,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "8/8",
-      "duree_s": 3.4,
+      "duree_s": 3.2,
       "traces": [],
       "pourquoi": ""
     },
@@ -439,7 +439,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "13/13",
-      "duree_s": 2.9,
+      "duree_s": 2.6,
       "traces": [],
       "pourquoi": ""
     },
@@ -450,7 +450,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "7/7",
-      "duree_s": 66.8,
+      "duree_s": 60.7,
       "traces": [],
       "pourquoi": ""
     },
@@ -461,7 +461,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "13/13",
-      "duree_s": 2.6,
+      "duree_s": 2.3,
       "traces": [],
       "pourquoi": ""
     },
@@ -472,7 +472,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "12/12",
-      "duree_s": 3.5,
+      "duree_s": 3.6,
       "traces": [],
       "pourquoi": ""
     },
@@ -483,7 +483,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "8/8",
-      "duree_s": 85.4,
+      "duree_s": 93.3,
       "traces": [],
       "pourquoi": ""
     },
@@ -505,7 +505,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "10/10",
-      "duree_s": 65.8,
+      "duree_s": 47.7,
       "traces": [],
       "pourquoi": ""
     },
@@ -516,7 +516,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "10/10",
-      "duree_s": 118.1,
+      "duree_s": 99.1,
       "traces": [],
       "pourquoi": ""
     },
@@ -527,7 +527,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "13/13",
-      "duree_s": 73.2,
+      "duree_s": 69.9,
       "traces": [],
       "pourquoi": ""
     },
@@ -538,7 +538,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "8/8",
-      "duree_s": 8.2,
+      "duree_s": 8.3,
       "traces": [],
       "pourquoi": ""
     },
@@ -549,7 +549,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "8/8",
-      "duree_s": 8.9,
+      "duree_s": 7.8,
       "traces": [],
       "pourquoi": ""
     },
@@ -560,7 +560,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "9/9",
-      "duree_s": 5.2,
+      "duree_s": 4.8,
       "traces": [],
       "pourquoi": ""
     },
@@ -571,7 +571,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "8/8",
-      "duree_s": 7.9,
+      "duree_s": 7.7,
       "traces": [],
       "pourquoi": ""
     },
@@ -582,7 +582,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "11/11",
-      "duree_s": 11.4,
+      "duree_s": 10.6,
       "traces": [],
       "pourquoi": ""
     },
@@ -593,7 +593,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "7/7",
-      "duree_s": 9.5,
+      "duree_s": 9.1,
       "traces": [],
       "pourquoi": ""
     },
@@ -604,7 +604,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "8/8",
-      "duree_s": 6.0,
+      "duree_s": 5.9,
       "traces": [],
       "pourquoi": ""
     },
@@ -615,7 +615,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "8/8",
-      "duree_s": 2.6,
+      "duree_s": 2.5,
       "traces": [],
       "pourquoi": ""
     },
@@ -626,7 +626,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "9/9",
-      "duree_s": 7.0,
+      "duree_s": 6.9,
       "traces": [],
       "pourquoi": ""
     },
@@ -637,7 +637,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "4/4",
-      "duree_s": 7.1,
+      "duree_s": 7.2,
       "traces": [],
       "pourquoi": ""
     },
@@ -648,7 +648,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "4/4",
-      "duree_s": 3.7,
+      "duree_s": 3.6,
       "traces": [],
       "pourquoi": ""
     },
@@ -670,7 +670,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "7/7",
-      "duree_s": 7.1,
+      "duree_s": 6.9,
       "traces": [],
       "pourquoi": ""
     },
@@ -688,13 +688,13 @@
     "state-terraform-state-list": {
       "id": "state-terraform-state-list",
       "chemin": "state/terraform-state-list",
-      "verdict": "VALIDE",
-      "score_avant": 0,
-      "score_apres": 100,
-      "tests": "14/14",
-      "duree_s": 5.2,
+      "verdict": "ROUGE",
+      "score_avant": 57,
+      "score_apres": null,
+      "tests": null,
+      "duree_s": 5.0,
       "traces": [],
-      "pourquoi": ""
+      "pourquoi": "8 test(s) sur 14 passent AVANT tout travail. Un test vert sur l'état de départ n'est pas un test, c'est une hypothèse du setup."
     },
     "state-terraform-state-mv": {
       "id": "state-terraform-state-mv",
@@ -703,7 +703,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "5/5",
-      "duree_s": 4.1,
+      "duree_s": 4.0,
       "traces": [],
       "pourquoi": ""
     },
@@ -714,7 +714,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "6/6",
-      "duree_s": 6.1,
+      "duree_s": 6.0,
       "traces": [],
       "pourquoi": ""
     },
@@ -725,7 +725,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "12/12",
-      "duree_s": 7.5,
+      "duree_s": 5.7,
       "traces": [],
       "pourquoi": ""
     },
@@ -736,7 +736,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "5/5",
-      "duree_s": 5.4,
+      "duree_s": 5.7,
       "traces": [],
       "pourquoi": ""
     },
@@ -758,7 +758,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "8/8",
-      "duree_s": 9.6,
+      "duree_s": 6.4,
       "traces": [],
       "pourquoi": ""
     },
@@ -769,7 +769,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "11/11",
-      "duree_s": 7.5,
+      "duree_s": 7.2,
       "traces": [],
       "pourquoi": ""
     },
@@ -780,7 +780,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "7/7",
-      "duree_s": 5.7,
+      "duree_s": 5.3,
       "traces": [],
       "pourquoi": ""
     },
@@ -791,7 +791,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "8/8",
-      "duree_s": 7.6,
+      "duree_s": 7.4,
       "traces": [],
       "pourquoi": ""
     },
@@ -802,7 +802,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "8/8",
-      "duree_s": 5.6,
+      "duree_s": 5.4,
       "traces": [],
       "pourquoi": ""
     },
@@ -813,7 +813,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "6/6",
-      "duree_s": 5.0,
+      "duree_s": 4.8,
       "traces": [],
       "pourquoi": ""
     },
@@ -824,7 +824,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "9/9",
-      "duree_s": 12.6,
+      "duree_s": 8.5,
       "traces": [],
       "pourquoi": ""
     },
@@ -835,7 +835,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "9/9",
-      "duree_s": 3.4,
+      "duree_s": 3.3,
       "traces": [],
       "pourquoi": ""
     },
@@ -846,7 +846,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "12/12",
-      "duree_s": 3.7,
+      "duree_s": 3.6,
       "traces": [],
       "pourquoi": ""
     },
@@ -857,7 +857,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "10/10",
-      "duree_s": 8.2,
+      "duree_s": 8.1,
       "traces": [],
       "pourquoi": ""
     },
@@ -868,7 +868,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "9/9",
-      "duree_s": 5.3,
+      "duree_s": 6.5,
       "traces": [],
       "pourquoi": ""
     },
@@ -879,7 +879,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "8/8",
-      "duree_s": 4.6,
+      "duree_s": 4.4,
       "traces": [],
       "pourquoi": ""
     },
@@ -890,7 +890,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "6/6",
-      "duree_s": 4.1,
+      "duree_s": 3.9,
       "traces": [],
       "pourquoi": ""
     },
@@ -901,7 +901,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "5/5",
-      "duree_s": 3.9,
+      "duree_s": 3.7,
       "traces": [],
       "pourquoi": ""
     },
@@ -912,7 +912,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "4/4",
-      "duree_s": 4.8,
+      "duree_s": 4.3,
       "traces": [],
       "pourquoi": ""
     },
@@ -923,20 +923,20 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "4/4",
-      "duree_s": 3.5,
+      "duree_s": 3.4,
       "traces": [],
       "pourquoi": ""
     },
     "write-code-sensitive-data-vault-secrets": {
       "id": "write-code-sensitive-data-vault-secrets",
       "chemin": "write-code/sensitive-data/vault-secrets",
-      "verdict": "VALIDE",
-      "score_avant": 0,
-      "score_apres": 100,
-      "tests": "4/4",
-      "duree_s": 5.9,
+      "verdict": "SKIP",
+      "score_avant": null,
+      "score_apres": null,
+      "tests": null,
+      "duree_s": 2.2,
       "traces": [],
-      "pourquoi": ""
+      "pourquoi": "avant le travail, les 4 tests collectés ont tous skippé : le lab n'est pas prêt sur ce poste (répertoire de travail non préparé, service arrêté, machine injoignable)"
     },
     "write-code-sensitive-data-write-only-arguments": {
       "id": "write-code-sensitive-data-write-only-arguments",
@@ -945,7 +945,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "4/4",
-      "duree_s": 29.9,
+      "duree_s": 29.6,
       "traces": [],
       "pourquoi": ""
     },
@@ -967,7 +967,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "4/4",
-      "duree_s": 4.1,
+      "duree_s": 4.0,
       "traces": [],
       "pourquoi": ""
     },
@@ -978,7 +978,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "5/5",
-      "duree_s": 6.2,
+      "duree_s": 6.0,
       "traces": [],
       "pourquoi": ""
     },
@@ -989,7 +989,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "8/8",
-      "duree_s": 5.1,
+      "duree_s": 5.2,
       "traces": [],
       "pourquoi": ""
     },
