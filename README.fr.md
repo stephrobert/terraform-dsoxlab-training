@@ -46,7 +46,7 @@ s'installe **séparément**.
   déclarent Floci dans `runtime.services`, et dsoxlab le démarre tout seul.
 - **Docker**, pour le lab `vault-secrets` : il démarre un serveur
   `hashicorp/vault:1.21` en mode développement, déclaré de la même façon.
-- **Un jeton HCP Terraform** : **un seul lab sur 88 en exige un**, et il est
+- **Un jeton HCP Terraform** : **un seul lab en exige un**, et il est
   optionnel. Sans jeton, ses tests se skippent au lieu d'échouer. Voir
   [`docs/hcp-token.fr.md`](./docs/hcp-token.fr.md).
 
@@ -100,35 +100,18 @@ prérempli par `dsoxlab support --issue`.
 
 ## Comment ça marche
 
-### Le contrat déclaratif, à deux niveaux
+### Le moteur, documenté là où il vit
 
-Le catalogue est décrit par des données, pas par du code, ce qui laisse le
-moteur `dsoxlab` agnostique du domaine :
+Ce catalogue se joue avec `dsoxlab`, qui documente lui-même son contrat et ses
+commandes. Ce README ne les répète pas, pour ne pas dériver quand le moteur
+change (issue dsoxlab #201) :
 
-- **`meta.yml`**, à la racine, déclare l'identité du dépôt et l'**ordre** des
-  sections affichées par `list-labs` ;
-- **`lab.yaml`**, par lab, déclare ses `skills`, son `level`, son `runtime`
-  (type, fixtures, services), ses `distros`, son `doc_url` et un bloc
-  `validation`. Un `lab.fr.yaml` surcharge le `title` et la `description` en
-  français, et rien d'autre.
-
-`dsoxlab validate-structure` contrôle tout le contrat : `meta.yml` bien formé,
-chaque lab référencé présent avec un `lab.yaml` valide, chaque fichier de test et
-de fixture déclaré réellement là, et chaque lien relatif d'un README qui mène
-quelque part.
-
-### Le cycle de vie d'un lab
-
-```bash
-dsoxlab list-labs              # parcourir le catalogue
-dsoxlab show      <id>         # métadonnées et état d'un lab
-dsoxlab run       <id>         # poser l'état de départ
-dsoxlab challenge <id>         # lire la mission, sans pas-à-pas
-dsoxlab hint      <id>         # révéler un indice (déduit du score)
-dsoxlab check     <id>         # lancer les tests, calculer et enregistrer le score
-dsoxlab clean     <id>         # retirer le répertoire de travail
-dsoxlab progress               # avancement par section, score moyen
-```
+- le contrat : `meta.yml`, `lab.yaml`, `lab.<langue>.yaml`, les runtimes et
+  leurs champs : [contrat](https://github.com/stephrobert/dsoxlab/blob/main/docs/contract-v1.fr.md) ;
+- les commandes et la vie d'un lab, de `run` à `check` :
+  [commandes](https://github.com/stephrobert/dsoxlab/blob/main/docs/commands.fr.md) et [jouer un lab](https://github.com/stephrobert/dsoxlab/blob/main/docs/learner.fr.md) ;
+- écrire un lab, et ce que contrôle `validate-structure` :
+  [guide de l'auteur](https://github.com/stephrobert/dsoxlab/blob/main/docs/catalog-author.fr.md).
 
 ### Les runtimes
 

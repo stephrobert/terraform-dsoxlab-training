@@ -45,7 +45,7 @@ installed **separately**.
   `runtime.services`, and dsoxlab starts it for you.
 - **Docker**, for the `vault-secrets` lab: it starts a `hashicorp/vault:1.21`
   server in development mode, declared the same way.
-- **An HCP Terraform token**: **exactly one lab out of 88 requires one**, and it
+- **An HCP Terraform token**: **exactly one lab requires one**, and it
   is optional. Without a token its tests skip instead of failing. See
   [`docs/hcp-token.md`](./docs/hcp-token.md).
 
@@ -97,34 +97,18 @@ in the catalog: open an issue, and `dsoxlab support --issue` arrives pre-filled.
 
 ## How it works
 
-### The declarative contract (two levels)
+### The engine, documented where it lives
 
-The catalog is described by data, not code, which keeps the `dsoxlab` engine
-domain-agnostic:
+This catalog is played by `dsoxlab`, which documents its own contract and
+commands. This README does not repeat them, so that it cannot drift when the
+engine changes (dsoxlab issue #201):
 
-- **`meta.yml`** at the root declares the repository identity and the **order**
-  of the sections shown by `list-labs`;
-- **`lab.yaml`** per lab declares its `skills`, `level`, `runtime` (type,
-  fixtures, services), `distros`, `doc_url` and a `validation` block. A
-  `lab.fr.yaml` overrides `title` and `description` in French, and nothing else.
-
-`dsoxlab validate-structure` checks the whole contract: `meta.yml` is well
-formed, every referenced lab exists with a valid `lab.yaml`, every declared test
-and fixture file is really there, and every relative link in a README leads
-somewhere.
-
-### The lab lifecycle
-
-```bash
-dsoxlab list-labs              # browse the catalog
-dsoxlab show      <id>         # metadata and status of one lab
-dsoxlab run       <id>         # set the starting state
-dsoxlab challenge <id>         # read the mission, no step-by-step
-dsoxlab hint      <id>         # reveal a hint (deducted from the score)
-dsoxlab check     <id>         # run the tests, compute and record the score
-dsoxlab clean     <id>         # remove the work directory
-dsoxlab progress               # per-section progress, average score
-```
+- the contract: `meta.yml`, `lab.yaml`, `lab.<lang>.yaml`, the runtimes and
+  their fields: [contract](https://github.com/stephrobert/dsoxlab/blob/main/docs/contract-v1.md);
+- the commands and the life of a lab, from `run` to `check`:
+  [commands](https://github.com/stephrobert/dsoxlab/blob/main/docs/commands.md) and [playing a lab](https://github.com/stephrobert/dsoxlab/blob/main/docs/learner.md);
+- writing a lab, and what `validate-structure` checks:
+  [catalog author guide](https://github.com/stephrobert/dsoxlab/blob/main/docs/catalog-author.md).
 
 ### Runtimes
 
