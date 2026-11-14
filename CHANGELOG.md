@@ -9,6 +9,17 @@ This repository is a **content catalog**, not a library: it is not versioned and
 publishes no releases. The entries below date changes to the catalog, and the
 unit that matters is the lab.
 
+## [Unreleased]
+
+### Changed
+
+- The README no longer copies the dsoxlab engine documentation (contract,
+  lab life cycle): it links to the pages where the engine documents itself
+  (dsoxlab#201). CONTRIBUTING no longer says no lab carries a `setup.yaml`:
+  the three level exams do, and the engine plays them on the local machine.
+  The README no longer counts "one lab out of 88" for the HCP token, a count
+  that had drifted (the catalog has 91 labs).
+
 ## [0.2.2] - 2026-10-23
 
 ### Added

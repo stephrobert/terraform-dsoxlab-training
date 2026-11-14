@@ -73,8 +73,12 @@ labs/<section>/<lab>/
 solution/<section>/<lab>/           # reference solution, encrypted with ansible-vault
 ```
 
-There is no `setup.yaml` or `cleanup.yaml` here: `runtime.fixtures` declares
-what gets copied, and `dsoxlab clean` removes the work directory. A lab that
+Most labs carry no `setup.yaml` or `cleanup.yaml`: `runtime.fixtures` declares
+what gets copied, and `dsoxlab clean` removes the work directory. The three
+level exams that prepare a terrain (`labs/level-exams/`) do carry them: `run`
+plays `setup.yaml` on your machine after the fixtures, and `clean` plays
+`cleanup.yaml` before removing the work directory (see
+[the catalog author guide](https://github.com/stephrobert/dsoxlab/blob/main/docs/catalog-author.md)). A lab that
 needs a service (the AWS section uses the Floci emulator) declares it under
 `runtime.services`, and dsoxlab starts it.
 

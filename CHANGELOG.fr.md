@@ -9,6 +9,17 @@ Ce dépôt est un **catalogue de contenu**, pas une bibliothèque : il n'est pas
 versionné et ne publie pas de release. Les entrées ci-dessous datent les
 changements du catalogue, et l'unité qui compte est le lab.
 
+## [Non publié]
+
+### Modifié
+
+- Le README ne recopie plus la documentation du moteur dsoxlab (contrat, cycle
+  de vie d'un lab) : il renvoie aux pages où le moteur se documente lui-même
+  (dsoxlab#201). Le CONTRIBUTING ne dit plus qu'aucun lab ne porte de
+  `setup.yaml` : les trois examens de niveau en portent, et le moteur les joue
+  sur le poste. Le README ne compte plus « un lab sur 88 » pour le jeton HCP,
+  un compte qui avait dérivé (le catalogue a 91 labs).
+
 ## [0.2.2] - 2026-10-23
 
 ### Ajouté
