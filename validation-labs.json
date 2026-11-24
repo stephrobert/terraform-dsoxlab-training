@@ -1,7 +1,7 @@
 {
-  "genere_le": "2026-10-12 20:36:23",
+  "genere_le": "2026-11-24 22:26:21",
   "terraform": "Terraform v1.16.1",
-  "dsoxlab": "dsoxlab 0.3.5",
+  "dsoxlab": "dsoxlab 0.11.1",
   "labs": {
     "aws-backend-s3-remote-state": {
       "id": "aws-backend-s3-remote-state",
@@ -21,7 +21,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "7/7",
-      "duree_s": 74.2,
+      "duree_s": 74.8,
       "traces": [],
       "pourquoi": ""
     },
@@ -516,7 +516,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "10/10",
-      "duree_s": 118.1,
+      "duree_s": 123.5,
       "traces": [],
       "pourquoi": ""
     },
@@ -692,7 +692,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "14/14",
-      "duree_s": 5.2,
+      "duree_s": 6.5,
       "traces": [],
       "pourquoi": ""
     },
@@ -868,7 +868,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "9/9",
-      "duree_s": 5.3,
+      "duree_s": 8.0,
       "traces": [],
       "pourquoi": ""
     },
@@ -978,7 +978,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "5/5",
-      "duree_s": 6.2,
+      "duree_s": 7.0,
       "traces": [],
       "pourquoi": ""
     },
@@ -989,7 +989,7 @@
       "score_avant": 0,
       "score_apres": 100,
       "tests": "8/8",
-      "duree_s": 5.1,
+      "duree_s": 6.3,
       "traces": [],
       "pourquoi": ""
     },
