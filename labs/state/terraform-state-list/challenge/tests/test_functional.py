@@ -25,6 +25,7 @@ Faits verifies sur Terraform 1.15.4 (local + random, hors ligne) :
   de 24 sur ce lab).
 """
 
+import re
 from collections.abc import Iterator
 from pathlib import Path
 
@@ -62,9 +63,28 @@ def _adresse_portant(instances: list[dict], identifiant: str, famille: str) -> s
     return None
 
 
+def _reponses_non_remplies() -> list[str]:
+    """Les variables restées sur leur placeholder (`"???"`, ou zéro pour le nombre)."""
+    texte = (WORKDIR / "reponses.auto.tfvars").read_text(encoding="utf-8")
+    valeurs = dict(re.findall(r'(?m)^\s*(\w+)\s*=\s*(.+?)\s*$', texte))
+    return sorted(nom for nom, v in valeurs.items() if v in ('"???"', "0"))
+
+
 @pytest.fixture(scope="module")
 def applied() -> Iterator[Path]:
     exiger_workdir(WORKDIR, LAB_ID)
+    # Les placeholders s'appliquent (il faut un state pour chercher) : sans cette
+    # garde, l'état de départ passait 8 contrôles sur 14 sans aucune réponse.
+    reste = _reponses_non_remplies()
+    if reste:
+        pytest.fail(
+            message(
+                en=f"reponses.auto.tfvars still holds placeholders: {', '.join(reste)}. "
+                "Fill in the five answers before checking.",
+                fr=f"reponses.auto.tfvars porte encore des placeholders : {', '.join(reste)}. "
+                "Remplissez les cinq réponses avant de valider.",
+            )
+        )
     init = terraform("init", "-input=false", "-no-color", cwd=WORKDIR)
     if init.returncode != 0:
         pytest.fail(
