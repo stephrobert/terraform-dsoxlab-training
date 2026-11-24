@@ -66,7 +66,7 @@ CITATION = re.compile(
     r"|(?:[Ee]xam )?objectives? targeted\s*:\s*\*{0,2}(\d[a-z]?)",
 )
 
-FICHIERS_LUS = ("scenario.fr.md", "scenario.md", "README.fr.md", "README.md")
+FICHIERS_LUS = ("challenge/README.fr.md", "challenge/README.md", "README.fr.md", "README.md")
 
 # La même citation, avec le libellé qui la suit : entre parenthèses, ou après
 # une virgule jusqu'à la fin de la phrase.

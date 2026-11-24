@@ -1,4 +1,17 @@
-# Épreuve de niveau B : reprendre l'exploitation d'une plateforme
+# La situation
+
+## La situation
+
+Vous arrivez dans l'équipe d'exploitation. La plateforme tourne : une machine
+`web`, une machine `db`, sur l'hôte libvirt de l'équipe, décrites dans le
+dossier `plateforme/` et dont le state vit dans le stockage S3 partagé.
+
+Cette nuit, quelque chose s'est mal passé. L'astreinte n'a laissé qu'une note :
+« la prod n'est plus propre, et on veut un environnement de dev qui ne puisse
+plus jamais la toucher ». Il n'y a ni cours ni indice dans cette épreuve : elle
+mesure ce que vous savez déjà faire.
+
+## Épreuve de niveau B : reprendre l'exploitation d'une plateforme
 
 Vous reprenez l'exploitation d'une plateforme déjà en service : deux machines
 libvirt, `web` et `db`, décrites dans `plateforme/` et dont le state vit dans
@@ -11,7 +24,7 @@ le constat fait partie du travail.
 
 Durée indicative : **90 minutes**. Aucun indice n'est proposé.
 
-## Ce qui est attendu
+### Ce qui est attendu
 
 Trois résultats, vérifiés sur l'état réel des machines, du stockage et des
 plans, jamais sur la forme de votre code :
@@ -35,7 +48,7 @@ plans, jamais sur la forme de votre code :
   Le script ne pose jamais de question, n'applique que le plan qui a été
   produit et donc relu, et ne laisse aucun fichier de plan derrière lui.
 
-## Les exigences d'exploitation
+### Les exigences d'exploitation
 
 L'équipe tient à quatre règles, que le harnais vérifiera :
 
@@ -45,7 +58,7 @@ L'équipe tient à quatre règles, que le harnais vérifiera :
 3. Rien ne recrée une machine pour « réparer » le state.
 4. Les deux environnements ne partagent **aucun** state.
 
-## Comment c'est noté
+### Comment c'est noté
 
 Le rapport donne un verdict par compétence : `state`, `refactor`,
 `environment`, `automate`. Une compétence en échec renvoie aux leçons qui

@@ -125,8 +125,6 @@ SANS_INDICE = {
 ATTENDUS = (
     "lab.yaml",
     "lab.fr.yaml",
-    "scenario.md",
-    "scenario.fr.md",
     "README.md",
     "README.fr.md",
     "challenge/README.md",

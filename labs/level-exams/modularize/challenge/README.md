@@ -1,4 +1,18 @@
-# Level C exam: turn copy-pasted code into a versioned module
+# The situation
+
+## The situation
+
+Six months ago, the data team copied the web team's machine configuration,
+then changed it its own way. Today, a fix made on one side never reaches the
+other, and nobody knows which of the two copies is the reference any more.
+
+The technical leadership decides: a single configuration, published as a
+versioned module. The data team wants to be able to freeze what it deploys;
+the web team, in production, wants the fixes without rewriting anything, and
+above all without losing its machines. There are no lessons and no hints in
+this exam: it measures what you already know how to do.
+
+## Level C exam: turn copy-pasted code into a versioned module
 
 Two teams copy-pasted the same libvirt machine configuration, and the two
 copies drifted apart. `equipe-web/` is **in service**: its two machines are
@@ -8,7 +22,7 @@ in `contexte.txt`.
 
 Indicative duration: **2 hours**. No hints are offered.
 
-## The module contract
+### The module contract
 
 One machine: a 6 GiB copy-on-write disk of the base image, and a domain that
 boots, with 1 vCPU, on the requested libvirt network.
@@ -24,7 +38,7 @@ The module is published in the repository, each version under its tag. It is
 grader will break the module (size values, rejection of an unknown size) and
 expects your tests to notice.
 
-## What is expected
+### What is expected
 
 Results, checked on the real state, never on the shape of your code:
 
@@ -39,7 +53,7 @@ Results, checked on the real state, never on the shape of your code:
   the published releases** of major version 1: it gets 1.1.0 without anyone
   touching its code, and will never get 2.0.0 by surprise.
 
-## How it is graded
+### How it is graded
 
 The report gives a verdict per skill: `modularize`, `reuse`. A failed skill
 points to the lessons that teach it.

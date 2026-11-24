@@ -1,4 +1,18 @@
-# Épreuve de niveau A : écrire et provisionner un environnement de démonstration
+# La situation
+
+## La situation
+
+L'équipe produit présente son application la semaine prochaine. Elle a
+besoin d'un environnement de démonstration sur l'hôte libvirt de l'équipe,
+et elle l'a décrit comme elle le pouvait : un catalogue de machines, avec un
+rôle et une taille pour chacune.
+
+Deux consignes accompagnent la demande : « la base ne doit jamais disparaître
+par erreur », et « le secret de l'application ne doit traîner nulle part ».
+Il n'y a ni cours ni indice dans cette épreuve : elle mesure ce que vous savez
+déjà faire.
+
+## Épreuve de niveau A : écrire et provisionner un environnement de démonstration
 
 Une équipe produit a besoin d'un environnement de démonstration sur l'hôte
 libvirt de l'équipe : un réseau isolé et quelques machines, décrites par un
@@ -7,7 +21,7 @@ racine de votre répertoire de travail, et vous le déployez.
 
 Durée indicative : **45 minutes**. Aucun indice n'est proposé.
 
-## Ce que vous recevez
+### Ce que vous recevez
 
 - `entrees.auto.tfvars.json` : le préfixe de tout ce que vous créez, la plage
   du réseau, l'image cloud de base et le chemin de la clé publique de
@@ -20,7 +34,7 @@ Durée indicative : **45 minutes**. Aucun indice n'est proposé.
 Ne modifiez pas ces fichiers : le harnais vous donnera d'autres catalogues et
 observera ce que votre code en fait.
 
-## Ce qui est attendu
+### Ce qui est attendu
 
 Des résultats, vérifiés sur l'état réel des machines et des plans, jamais sur
 la forme de votre code :
@@ -47,7 +61,7 @@ la forme de votre code :
 - **Les versions des providers sont verrouillées**, et le verrou est conservé
   dans le répertoire de travail.
 
-## Comment c'est noté
+### Comment c'est noté
 
 Le rapport donne un verdict par compétence : `workflow`, `resource`,
 `parameterize`, `expression`, `guard`, `sensitive`. Une compétence en échec

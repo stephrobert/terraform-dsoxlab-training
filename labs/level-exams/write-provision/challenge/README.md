@@ -1,4 +1,17 @@
-# Level A exam: write and provision a demo environment
+# The situation
+
+## The situation
+
+The product team presents its application next week. It needs a demo
+environment on the team's libvirt host, and described it as best it could: a
+catalog of machines, with a role and a size for each.
+
+Two instructions come with the request: "the database must never disappear by
+mistake", and "the application secret must not be lying around anywhere".
+There are no lessons and no hints in this exam: it measures what you already
+know how to do.
+
+## Level A exam: write and provision a demo environment
 
 A product team needs a demo environment on the team's libvirt host: an
 isolated network and a few machines, described by a **catalog**. Nothing
@@ -7,7 +20,7 @@ directory, and you deploy it.
 
 Indicative duration: **45 minutes**. No hints are offered.
 
-## What you receive
+### What you receive
 
 - `entrees.auto.tfvars.json`: the prefix of everything you create, the
   network range, the base cloud image and the path of the operations team's
@@ -20,7 +33,7 @@ Indicative duration: **45 minutes**. No hints are offered.
 Do not modify these files: the grader will give you other catalogs and
 observe what your code does with them.
 
-## What is expected
+### What is expected
 
 Results, checked on the real state of the machines and the plans, never on
 the shape of your code:
@@ -47,7 +60,7 @@ the shape of your code:
 - **Provider versions are locked**, and the lock is kept in the working
   directory.
 
-## How it is graded
+### How it is graded
 
 The report gives a verdict per skill: `workflow`, `resource`, `parameterize`,
 `expression`, `guard`, `sensitive`. A failed skill points to the lessons that
