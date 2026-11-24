@@ -1,4 +1,19 @@
-# Épreuve de niveau C : faire d'un copier-coller un module versionné
+# La situation
+
+## La situation
+
+Il y a six mois, l'équipe data a copié la configuration de machine de
+l'équipe web, puis l'a modifiée à sa façon. Aujourd'hui, une correction faite
+d'un côté n'arrive jamais de l'autre, et personne ne sait plus laquelle des
+deux copies fait foi.
+
+La direction technique tranche : une seule configuration, publiée comme un
+module versionné. L'équipe data veut pouvoir figer ce qu'elle déploie ;
+l'équipe web, en production, veut les correctifs sans rien réécrire, et
+surtout sans perdre ses machines. Il n'y a ni cours ni indice dans cette
+épreuve : elle mesure ce que vous savez déjà faire.
+
+## Épreuve de niveau C : faire d'un copier-coller un module versionné
 
 Deux équipes ont copié-collé la même configuration de machine libvirt, et les
 deux copies ont divergé. `equipe-web/` est **en service** : ses deux machines
@@ -7,7 +22,7 @@ publier le module, l'image de base et le préfixe sont dans `contexte.txt`.
 
 Durée indicative : **2 heures**. Aucun indice n'est proposé.
 
-## Le contrat du module
+### Le contrat du module
 
 Une machine : un disque de 6 Gio en copie sur écriture de l'image de base, et
 un domaine qui démarre, avec 1 vCPU, sur le réseau libvirt demandé.
@@ -23,7 +38,7 @@ Le module est publié dans le dépôt, chaque version sous son tag. Il est
 abîmera le module (valeurs des tailles, refus d'une taille inconnue) et
 s'attend à ce que vos tests le voient.
 
-## Ce qui est attendu
+### Ce qui est attendu
 
 Des résultats, vérifiés sur l'état réel, jamais sur la forme de votre code :
 
@@ -39,7 +54,7 @@ Des résultats, vérifiés sur l'état réel, jamais sur la forme de votre code 
   la 1.1.0 sans qu'on touche à son code, et n'obtiendra jamais la 2.0.0 par
   surprise.
 
-## Comment c'est noté
+### Comment c'est noté
 
 Le rapport donne un verdict par compétence : `modularize`, `reuse`. Une
 compétence en échec renvoie aux leçons qui l'enseignent.

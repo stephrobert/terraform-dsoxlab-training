@@ -1,6 +1,71 @@
-# 🎯 Challenge: Pro, integrative mock exam
+# Pro, integrative mock exam
 
-## 📦 The starting point
+## The situation
+
+**Exam objectives targeted: all six**, under the conditions of the real sitting.
+
+The Terraform Authoring and Operations Professional exam lasts **four hours** and
+mixes multiple-choice questions with hands-on work: writing code, diagnosing,
+repairing. The Terraform documentation and the provider documentation are
+available during the exam.
+
+## Capability targeted
+
+Chain, within the allotted time and unaided, six tasks covering the six
+objectives. This is not a learning lab: it is a dress rehearsal, to be played
+once the six capstones are done, and in one sitting.
+
+## Where the learner starts
+
+`challenge/work` holds six directories, one per task, each deliberately
+imperfect. Files already laid down outside Terraform, a configuration that does
+not validate, three copies of one pair of resources, two root modules that
+ignore each other, a missing provider configuration, and twelve unanswered
+questions.
+
+The lab runs **offline**, on the `local` and `random` providers: no VM, no
+account, no emulator. That is a choice, and it has a price, stated below.
+
+## The state to reach
+
+1. **Objective 1**: adopt a file corrected by hand without overwriting that
+   correction, and reach a stable plan.
+2. **Objective 2**: fix three faults that `validate` names, replace three
+   resources with a single one driven by `for_each`, and make the plan refuse a
+   port outside the allowed range.
+3. **Objective 3**: publish a contract as outputs from one root module, consume
+   it from the other, with nothing hard-coded.
+4. **Objective 4**: factor three environments into a local module, with no
+   resource destroyed or recreated.
+5. **Objective 5**: attach a resource explicitly to a second provider
+   configuration, set the permissions in the right place, and write a version
+   constraint that brackets the series.
+6. **Objective 6**: answer the twelve HCP Terraform questions, against a global
+   threshold and a coverage requirement on the four sub-objectives.
+
+## How it is proven
+
+- **One test section per task**, independent of the others: a failed task does
+  not fail the following ones, and the score says which objective to revisit.
+- The proofs are read from state: `terraform show -json`, the state file, the
+  lock file, the real permissions on disk.
+- Three tasks require a **stable** plan afterwards, which rules out succeeding
+  through a detour that rebuilds on every run.
+
+## What this mock does not cover, and why
+
+Local providers cannot import: `local` and `null` both answer
+`Resource Import Not Implemented`. Import is therefore proven elsewhere, by
+`capstone1-resource-lifecycle` and `aws-import-moved-drift`, which have a real
+provider. Here, task 1 proves the other half of the same sub-objective, drift
+reconciliation.
+
+For the same reason, objective 5 is proven on attachment and version
+constraints, not on authenticating a remote provider.
+
+## 🎯 Challenge: Pro, integrative mock exam
+
+### 📦 The starting point
 
 `challenge/work` holds **six directories**, one per objective. Each carries its
 instructions as comments at the top of `main.tf`, and every `???` marks what is
@@ -18,46 +83,46 @@ left to write.
 The order is yours: each task is marked independently of the others. Start with
 what you know how to do, which is also how the exam is played.
 
-## ✅ What you must reach
+### ✅ What you must reach
 
-### `t1-derive/`, objective 1
+#### `t1-derive/`, objective 1
 
 1. `local_file.inventaire` manages `existant.txt`, and **its content is
    unchanged**.
 2. `terraform plan -detailed-exitcode` returns **0** after the apply.
 
-### `t2-dynamique/`, objective 2
+#### `t2-dynamique/`, objective 2
 
 3. The three faults are fixed: `terraform validate` passes.
 4. The three files come from **a single** resource, driven by `for_each`.
 5. Each file carries its port, and the variable **refuses at plan time** a port
    outside 1024-65535.
 
-### `t3-etats/`, objective 3
+#### `t3-etats/`, objective 3
 
 6. The base module publishes its identifier and its zone as outputs.
 7. The application reads them through a data source, **copying nothing**.
 8. Replaying the base with another zone makes the application follow.
 
-### `t4-module/`, objective 4
+#### `t4-module/`, objective 4
 
 9. The three environments go through a local module.
 10. **No resource is recreated**: the state identifiers are the ones from
     before, and the plan is stable.
 
-### `t5-providers/`, objective 5
+#### `t5-providers/`, objective 5
 
 11. A second provider configuration, **aliased**, renders `prive/`.
 12. `prive/` is 700 and `prive/note.txt` is 600; `public/` keeps the default.
 13. The provider constraint accepts the 2 series from 2.5 onwards and refuses
     3.0.
 
-### `t6-hcp/`, objective 6
+#### `t6-hcp/`, objective 6
 
 14. The **twelve** answers in `reponses.auto.tfvars`, with no `???` left.
 15. **A global score of at least 75 %**, and **no sub-objective below 50 %**.
 
-## 🧭 The answer format
+### 🧭 The answer format
 
 | Type | What is expected | Example |
 | --- | --- | --- |
@@ -74,7 +139,7 @@ terraform output score_par_sous_objectif   # which sub-objective is weak
 terraform output sans_reponse              # what is left to fill in
 ```
 
-## ⚠️ Three traps, all of them measured
+### ⚠️ Three traps, all of them measured
 
 **The content of `existant.txt`.** Describing it approximately gives a correct
 state, a stable plan, and a rewritten file: the hand-made correction is lost.
@@ -89,7 +154,7 @@ belong to the resource, and there are two of them.
 Replacing them with fingerprints of your own answers scores 100, and the test
 refuses that: it first checks that the twelve fingerprints are intact.
 
-## 🔍 Validation
+### 🔍 Validation
 
 ```bash
 dsoxlab check certifications-professional-mock-pro

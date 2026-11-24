@@ -1,4 +1,17 @@
-# Level B exam: take over the operation of a platform
+# The situation
+
+## The situation
+
+You join the operations team. The platform is running: a `web` machine and a
+`db` machine on the team's libvirt host, described in the `plateforme/` folder,
+their state stored in the shared S3 store.
+
+Last night, something went wrong. The on-call engineer left a single note:
+"prod is no longer clean, and we want a dev environment that can never touch it
+again". This exam has no lesson and no hint: it measures what you already know
+how to do.
+
+## Level B exam: take over the operation of a platform
 
 You take over the operation of a platform already in service: two libvirt
 machines, `web` and `db`, described in `plateforme/`, whose state lives in the
@@ -10,7 +23,7 @@ out is part of the work.
 
 Indicative duration: **90 minutes**. No hint is offered.
 
-## What is expected
+### What is expected
 
 Three results, checked on the real state of the machines, the store and the
 plans, never on the shape of your code:
@@ -33,7 +46,7 @@ plans, never on the shape of your code:
   The script never asks a question, applies only the plan that was produced and
   therefore reviewed, and leaves no plan file behind.
 
-## The operating rules
+### The operating rules
 
 The team holds to four rules, which the harness will check:
 
@@ -43,7 +56,7 @@ The team holds to four rules, which the harness will check:
 3. Nothing recreates a machine to "repair" the state.
 4. The two environments share **no** state.
 
-## How it is graded
+### How it is graded
 
 The report gives a verdict per skill: `state`, `refactor`, `environment`,
 `automate`. A failing skill points to the lessons that teach it.
