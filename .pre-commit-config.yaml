@@ -178,6 +178,13 @@ repos:
         pass_filenames: false
         always_run: true
 
+      - id: state-backends-rejouable
+        name: state-backends ne touche jamais au workdir, et nomme l'étape en échec
+        entry: uv run --no-project --with pytest --with pyyaml pytest tests/test_state_backends_rejouable.py -q
+        language: system
+        pass_filenames: false
+        always_run: true
+
       - id: meta-declare-les-labs
         name: tout lab livré est déclaré dans meta.yml, et réciproquement
         entry: uv run --no-project --with pytest --with pyyaml pytest tests/test_meta_declare_les_labs.py -q

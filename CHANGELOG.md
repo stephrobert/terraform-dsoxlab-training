@@ -11,6 +11,27 @@ unit that matters is the lab.
 
 ## [Unreleased]
 
+### Fixed
+
+- `state-backends`: a correct solution passed the first `dsoxlab check`, then
+  blocked every later one. The test renamed `backend.tf` in `challenge/work`
+  and migrated in place, so the next `init` hit "Backend configuration
+  changed", and a failure could leave `backend.tf` renamed to
+  `backend.tf.aside`. The test now plays the migration in a temporary copy and
+  never modifies `challenge/work`. A failing step (`init`, `apply`, migration)
+  is now a test failure that names the step, no longer a fixture error shown
+  as "not evaluated" with no message. `test_config_partielle` no longer
+  depends on the migration. `tests/test_state_backends_rejouable.py` guards
+  this with a fake `terraform`, so it runs in CI.
+- `terraform-state-mv`: a correct solution failed the second `check`. The
+  teardown destroyed the resources in the workdir; the next apply recreated
+  them with fresh values, and the test concluded the learner had recreated
+  them instead of moving them. That teardown is removed: `dsoxlab clean`
+  already removes the workdir.
+- `scripts/verify-solutions.py` plays every suite twice on the same
+  directory, as `dsoxlab check` does, and reports "NON REJOUABLE" for a suite
+  that goes green then red. A single run could see neither defect above.
+
 ### Changed
 
 - The README no longer copies the dsoxlab engine documentation (contract,

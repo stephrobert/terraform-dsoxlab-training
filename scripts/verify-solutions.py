@@ -14,7 +14,9 @@ Pour chaque lab disposant d'une solution :
 3. les fichiers de ``solution/<section>/<lab>/`` y sont **déchiffrés** par-dessus,
    via ``ansible-vault`` et le mot de passe local ``.vault-pass`` (jamais commité),
 4. la suite ``challenge/tests/test_functional.py`` du lab est jouée contre ce
-   répertoire, via la variable d'environnement ``LAB_WORKDIR``.
+   répertoire, via la variable d'environnement ``LAB_WORKDIR``, DEUX fois de
+   suite : ``dsoxlab check`` ne remet rien à zéro entre deux appels, et une
+   suite qui passe au premier puis échoue au second bloque l'apprenant.
 
 Le workdir de l'apprenant n'est jamais touché.
 
@@ -182,13 +184,28 @@ def rejouer(lab_rel: str, garder: bool = False) -> tuple[bool, str]:
     try:
         materialiser(lab_rel, tmp)
         env = dict(os.environ, LAB_WORKDIR=str(tmp))
-        proc = subprocess.run(
-            [sys.executable, "-m", "pytest", str(suite), "-q", "--no-header"],
-            cwd=REPO, env=env, capture_output=True, text=True, check=False,
-        )
-        resume = proc.stdout.strip().splitlines()
-        detail = resume[-1] if resume else "aucune sortie"
-        return proc.returncode == 0, detail
+
+        def jouer() -> tuple[int, str]:
+            proc = subprocess.run(
+                [sys.executable, "-m", "pytest", str(suite), "-q", "--no-header"],
+                cwd=REPO, env=env, capture_output=True, text=True, check=False,
+            )
+            resume = proc.stdout.strip().splitlines()
+            return proc.returncode, resume[-1] if resume else "aucune sortie"
+
+        # DEUX fois sur le même dossier, parce que c'est ce que vit l'apprenant :
+        # `dsoxlab check` ne remet rien à zéro entre deux appels. Une suite qui
+        # renomme, détruit ou supprime dans son workdir passe au premier et
+        # bloque au second. Mesuré le 2026-11-27 sur state-backends (22
+        # tentatives sur 66 bloquées en production) et terraform-state-mv ; une
+        # seule exécution ne pouvait voir ni l'un ni l'autre.
+        code, detail = jouer()
+        if code != 0:
+            return False, detail
+        code, detail = jouer()
+        if code != 0:
+            return False, f"NON REJOUABLE : vert au premier passage, puis {detail}"
+        return True, detail
     finally:
         if garder:
             print(f"    (répertoire conservé : {tmp})")
