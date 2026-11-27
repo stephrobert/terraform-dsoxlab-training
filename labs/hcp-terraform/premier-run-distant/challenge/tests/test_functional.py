@@ -21,12 +21,13 @@ Un apprenant qui n'a pas de compte ne doit pas voir une suite rouge : il doit
 lire où trouver ce qui manque. Le message renvoie au guide, et le lab reste à
 zéro sans pénaliser personne.
 
-## Ce que le teardown détruit, et pourquoi
+## Le ménage n'est pas ici
 
-Tout ce que le lab a créé dans l'organisation. Laisser traîner un projet et un
-workspace dans le compte de quelqu'un est pire que de lui demander de rejouer
-deux `terraform apply` de trente secondes, et un lab qui ne range pas derrière
-lui n'a pas sa place ici.
+Les tests ne détruisent rien. Le ménage vivait dans le teardown, qui supprimait
+projet et workspace après CHAQUE check : une solution juste échouait au check
+suivant, et un apprenant qui corrigeait une erreur devait tout reprovisionner.
+Il est désormais dans `cleanup.yaml`, que `dsoxlab clean` et `reset` jouent
+avant d'effacer le workdir.
 """
 
 from __future__ import annotations
@@ -34,10 +35,8 @@ from __future__ import annotations
 import json
 import os
 import subprocess
-import time
 import urllib.error
 import urllib.request
-from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
 
@@ -135,130 +134,9 @@ def _tf(*args: str, cwd: Path) -> subprocess.CompletedProcess[str]:
     )
 
 
-def _api_ecrire(chemin: str, jeton: str, methode: str, corps: dict | None = None):
-    """Comme `_api`, mais tolérante : le ménage ne doit jamais casser la suite."""
-    donnees = json.dumps(corps).encode() if corps is not None else None
-    requete = urllib.request.Request(
-        f"https://{HOTE}/api/v2{chemin}",
-        data=donnees,
-        method=methode,
-        headers={
-            "Authorization": f"Bearer {jeton}",
-            "Content-Type": "application/vnd.api+json",
-        },
-    )
-    try:
-        with urllib.request.urlopen(requete, timeout=60) as reponse:
-            texte = reponse.read().decode()
-            return reponse.status, (json.loads(texte) if texte.strip() else {})
-    except urllib.error.HTTPError as erreur:
-        return erreur.code, {}
-    except urllib.error.URLError:
-        return 0, {}
-
-
-def _ranger(organisation: str, jeton: str) -> None:
-    """Détruit ce que le lab a créé, dans l'ordre que la plateforme impose.
-
-    Trois choses mesurées le 2026-09-25 ont dicté cette fonction, et chacune a
-    coûté un essai :
-
-    1. **HCP refuse de supprimer un workspace qui gère des ressources.**
-
-           409 conflict : Workspace is currently managing 1 resources. A destroy
-           run must be applied to remove managed resources before the workspace
-           can be safely deleted
-
-       Il faut donc un run de destruction AVANT la suppression.
-
-    2. **Un `terraform destroy` de la plateforme casse à mi-chemin.** Il détruit
-       la variable du workspace, puis bute sur ce 409. Le workspace survit alors
-       sans sa variable, et le run de destruction échoue à son tour sur « The
-       root module input variable "message" is not set ». On repose donc la
-       variable si elle manque, au lieu de supposer l'état sain.
-
-    3. **Le state local ne survit pas au harnais**, qui réinitialise le workdir
-       entre deux exécutions. Un ménage qui en dépendrait ne trouverait plus
-       rien à détruire, alors que tout existe encore côté plateforme. Le ménage
-       passe donc par l'API, qui n'a besoin que des noms.
-    """
-    statut, ws = _api_ecrire(
-        f"/organizations/{organisation}/workspaces/{WORKSPACE_ATTENDU}", jeton, "GET"
-    )
-    if statut == 200 and ws:
-        identifiant = ws["data"]["id"]
-
-        if ws["data"]["attributes"].get("resource-count"):
-            _, variables = _api_ecrire(f"/workspaces/{identifiant}/vars", jeton, "GET")
-            presentes = [
-                v["attributes"]["key"] for v in (variables or {}).get("data", [])
-            ]
-            if VARIABLE_ATTENDUE not in presentes:
-                _api_ecrire(
-                    f"/workspaces/{identifiant}/vars",
-                    jeton,
-                    "POST",
-                    {
-                        "data": {
-                            "type": "vars",
-                            "attributes": {
-                                "key": VARIABLE_ATTENDUE,
-                                "value": "reposee-pour-le-menage",
-                                "category": "terraform",
-                                "sensitive": True,
-                            },
-                        }
-                    },
-                )
-
-            statut, run = _api_ecrire(
-                "/runs",
-                jeton,
-                "POST",
-                {
-                    "data": {
-                        "type": "runs",
-                        "attributes": {
-                            "is-destroy": True,
-                            "auto-apply": True,
-                            "message": "Ménage du lab premier-run-distant",
-                        },
-                        "relationships": {
-                            "workspace": {
-                                "data": {"type": "workspaces", "id": identifiant}
-                            }
-                        },
-                    }
-                },
-            )
-            if statut in (200, 201):
-                for _ in range(60):
-                    _, courant = _api_ecrire(f"/runs/{run['data']['id']}", jeton, "GET")
-                    etat = (courant or {}).get("data", {}).get("attributes", {}).get(
-                        "status"
-                    )
-                    if etat in (
-                        "applied",
-                        "errored",
-                        "canceled",
-                        "discarded",
-                        "planned_and_finished",
-                    ):
-                        break
-                    time.sleep(5)
-
-        _api_ecrire(f"/workspaces/{identifiant}/actions/safe-delete", jeton, "POST")
-
-    _, projets = _api_ecrire(f"/organizations/{organisation}/projects", jeton, "GET")
-    for projet in (projets or {}).get("data", []):
-        if projet["attributes"]["name"] == PROJET_ATTENDU:
-            _api_ecrire(f"/projects/{projet['id']}", jeton, "DELETE")
-            break
-
-
 @pytest.fixture(scope="module")
-def plateforme(jeton: str) -> Iterator[dict]:
-    """Les sorties de `plateforme/`, et le ménage à la fin."""
+def plateforme(jeton: str) -> dict:
+    """Les sorties de `plateforme/`. Le ménage est dans `cleanup.yaml`."""
     exiger_workdir(WORKDIR, LAB_ID)
     repertoire = WORKDIR / PLATEFORME
 
@@ -277,12 +155,7 @@ def plateforme(jeton: str) -> Iterator[dict]:
         )
         )
 
-    sorties = {c: v["value"] for c, v in json.loads(proc.stdout).items()}
-    yield sorties
-
-    organisation = sorties.get("organisation")
-    if organisation:
-        _ranger(organisation, jeton)
+    return {c: v["value"] for c, v in json.loads(proc.stdout).items()}
 
 
 @pytest.fixture(scope="module")

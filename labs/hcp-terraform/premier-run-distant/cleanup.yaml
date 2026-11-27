@@ -1,0 +1,78 @@
+---
+# Nettoyage du lab « premier run distant », joué par `dsoxlab clean` (et par
+# `reset`) AVANT l'effacement du répertoire de travail : les deux states locaux
+# sont encore là, et Terraform trouve le jeton tout seul.
+#
+# Ce ménage vivait dans le teardown du test, qui détruisait projet et workspace
+# après CHAQUE check. Une solution juste échouait donc au check suivant, et un
+# apprenant qui corrigeait une erreur devait tout reprovisionner.
+#
+# L'ordre est imposé par HCP Terraform (mesuré le 2026-09-25) :
+#   1. `application/` d'abord : un run de destruction vide le workspace. HCP
+#      refuse de supprimer un workspace qui gère encore des ressources (409).
+#   2. `plateforme/` ensuite : variable, réglages, workspace, projet.
+# Si 1 échoue, 2 n'est pas lancé : il supprimerait la variable, puis buterait
+# sur le 409, et laisserait un workspace sans la variable que son propre run de
+# destruction réclame.
+
+- name: Nettoyer le lab hcp-terraform-premier-run-distant
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars:
+    application: "{{ lab_workdir }}/application"
+    plateforme: "{{ lab_workdir }}/plateforme"
+  tasks:
+    - name: Voir si l'application a été initialisée
+      ansible.builtin.stat:
+        path: "{{ application }}/.terraform"
+      register: application_init
+
+    - name: Voir si la plateforme a un state
+      ansible.builtin.stat:
+        path: "{{ plateforme }}/terraform.tfstate"
+      register: plateforme_state
+
+    - name: Vider le workspace par un run de destruction distant
+      ansible.builtin.command:
+        cmd: terraform destroy -auto-approve -input=false -no-color
+        chdir: "{{ application }}"
+      register: destruction_application
+      when: application_init.stat.exists
+      changed_when:
+        - destruction_application.rc == 0
+        - "'Resources: 0 destroyed' not in destruction_application.stdout"
+      failed_when: false
+
+    # Un workspace déjà supprimé (second `clean`, ménage fait à la main) n'a plus
+    # rien à vider : ce n'est pas un échec. Mesuré le 2026-11-27, la CLI répond
+    # alors « error starting operation: workspace premier-run-distant not found ».
+    - name: Retenir si le workspace existait encore
+      ansible.builtin.set_fact:
+        workspace_absent: >-
+          {{ application_init.stat.exists
+             and 'workspace premier-run-distant not found' in destruction_application.stderr }}
+
+    - name: Arrêter si le workspace n'a pas pu être vidé
+      ansible.builtin.fail:
+        msg: |
+          Le run de destruction de `application/` a échoué. La plateforme n'est pas
+          détruite : HCP Terraform refuse de supprimer un workspace qui gère encore
+          des ressources, et un destroy partiel laisserait le workspace sans sa
+          variable.
+
+          Corrigez la cause ci-dessous, puis relancez `dsoxlab clean`.
+
+          {{ (destruction_application.stderr | default(''))[-1500:] }}
+      when:
+        - application_init.stat.exists
+        - destruction_application.rc != 0
+        - not workspace_absent | bool
+
+    - name: Détruire le projet, le workspace et sa variable
+      ansible.builtin.command:
+        cmd: terraform destroy -auto-approve -input=false -no-color
+        chdir: "{{ plateforme }}"
+      register: destruction_plateforme
+      when: plateforme_state.stat.exists
+      changed_when: "'Resources: 0 destroyed' not in destruction_plateforme.stdout"

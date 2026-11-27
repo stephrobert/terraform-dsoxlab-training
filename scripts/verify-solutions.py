@@ -210,7 +210,36 @@ def rejouer(lab_rel: str, garder: bool = False) -> tuple[bool, str]:
         if garder:
             print(f"    (répertoire conservé : {tmp})")
         else:
+            echec = nettoyer(lab_rel, tmp)
+            if echec:
+                print(f"    ⚠ ménage incomplet : {echec}")
             shutil.rmtree(tmp, ignore_errors=True)
+
+
+def nettoyer(lab_rel: str, workdir: Path) -> str | None:
+    """Joue le ``cleanup.yaml`` du lab, comme ``dsoxlab clean``. Rend l'échec, ou None.
+
+    Les tests ne détruisent plus rien (une suite qui range après elle n'est pas
+    rejouable). Ce qu'une solution crée HORS du workdir, un projet HCP
+    Terraform par exemple, ne disparaît donc qu'ici : effacer le répertoire
+    temporaire ne le toucherait pas.
+    """
+    playbook = LABS / lab_rel / "cleanup.yaml"
+    if not playbook.is_file():
+        return None
+    binaire = shutil.which("ansible-playbook")
+    if binaire is None:
+        return f"ansible-playbook introuvable, {playbook.name} n'a pas été joué"
+    proc = subprocess.run(
+        [binaire, "-i", "localhost,", "-c", "local", str(playbook),
+         "-e", f"lab_workdir={workdir}", "-e", f"lab_id={lab_rel.replace('/', '-')}",
+         "-e", f"lab_state_dir={workdir / '.etat'}"],
+        cwd=REPO, capture_output=True, text=True, check=False,
+        stdin=subprocess.DEVNULL,
+    )
+    if proc.returncode != 0:
+        return (proc.stdout + proc.stderr).strip()[-800:]
+    return None
 
 
 def main() -> int:

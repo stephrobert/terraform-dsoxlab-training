@@ -130,13 +130,17 @@ def _etat_courant() -> dict:
     return json.loads(proc.stdout)
 
 
-def _identifiants_de_depart(joue: Path) -> set[str]:
+def _identifiants_de_depart() -> set[str]:
     """Les identifiants figes dans la fixture, avant tout refactor.
 
     Ils sont relus depuis le state FOURNI, et non depuis une liste ecrite ici :
     une constante recopiee finirait par mentir le jour ou la fixture change.
+
+    La fixture se cherche depuis CE fichier (tests/ -> challenge/ -> lab), pas
+    depuis le workdir : celui-ci peut vivre hors du lab (LAB_WORKDIR, banc de
+    verify-solutions), et le test echouait alors sur une solution juste.
     """
-    reference = joue.parent.parent / "fixtures" / "terraform.tfstate"
+    reference = Path(__file__).resolve().parents[2] / "fixtures" / "terraform.tfstate"
     assert reference.is_file(), message(
         en=f"The reference state cannot be found: {reference}",
         fr=f"Le state de référence est introuvable : {reference}",
@@ -217,7 +221,7 @@ def test_aucune_ressource_n_a_ete_recreee(joue: Path, etat: dict) -> None:
     """
     _exiger_refactor_fait(etat)
 
-    avant = _identifiants_de_depart(joue)
+    avant = _identifiants_de_depart()
     apres = set(_adresses_et_identifiants(etat).values())
 
     perdus = avant - apres
