@@ -32,6 +32,18 @@ changements du catalogue, et l'unité qui compte est le lab.
 - `scripts/verify-solutions.py` joue chaque suite deux fois sur le même
   dossier, comme `dsoxlab check`, et signale « NON REJOUABLE » une suite verte
   puis rouge. Une seule exécution ne voyait aucun des deux défauts ci-dessus.
+- `premier-run-distant` : une solution juste échouait au deuxième `check`. Le
+  test supprimait le projet et le workspace HCP Terraform après chaque check :
+  un apprenant qui corrigeait une erreur devait tout reprovisionner. Les tests
+  ne détruisent plus rien. Le ménage passe dans le `cleanup.yaml` du lab, que
+  `dsoxlab clean` et `reset` jouent : un destroy dans `application/` d'abord,
+  qui vide le workspace, puis dans `plateforme/`. Si le premier échoue, le
+  second n'est pas lancé. `scripts/verify-solutions.py` joue le `cleanup.yaml`
+  d'un lab avant d'effacer son répertoire temporaire.
+- `capstone4-modules` : une solution juste échouait quand le workdir vivait
+  hors du lab (`LAB_WORKDIR`, `verify-solutions.py`) : le test cherchait le
+  state de référence à côté du workdir. Il le cherche désormais depuis le
+  fichier de test.
 
 ### Modifié
 
