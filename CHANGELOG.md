@@ -23,6 +23,14 @@ unit that matters is the lab.
   as "not evaluated" with no message. `test_config_partielle` no longer
   depends on the migration. `tests/test_state_backends_rejouable.py` guards
   this with a fake `terraform`, so it runs in CI.
+- `terraform-state-mv`: a correct solution failed the second `check`. The
+  teardown destroyed the resources in the workdir; the next apply recreated
+  them with fresh values, and the test concluded the learner had recreated
+  them instead of moving them. That teardown is removed: `dsoxlab clean`
+  already removes the workdir.
+- `scripts/verify-solutions.py` plays every suite twice on the same
+  directory, as `dsoxlab check` does, and reports "NON REJOUABLE" for a suite
+  that goes green then red. A single run could see neither defect above.
 
 ### Changed
 

@@ -124,8 +124,12 @@ def applied() -> Iterator[Path]:
             f"\n{app.stderr[-1500:]}",
         )
         )
+    # Aucun `destroy` ici. Il détruisait les ressources de l'apprenant après
+    # chaque check : au suivant, l'apply les recréait avec des valeurs neuves,
+    # et test_les_valeurs_dorigine_ont_survecu accusait une solution juste
+    # d'avoir recréé ses objets (mesuré le 2026-11-27). `dsoxlab clean` retire
+    # le workdir, state compris : c'est là que vit le ménage.
     yield WORKDIR
-    terraform("destroy", "-auto-approve", "-input=false", "-no-color", cwd=WORKDIR)
 
 
 # --------------------------------------------------------------------------
