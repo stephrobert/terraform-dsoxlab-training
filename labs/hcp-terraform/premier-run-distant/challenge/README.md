@@ -66,9 +66,8 @@ The central test looks for a run in the `applied` state on the created workspace
 local can fabricate that. Another reads the remote state version and its outputs, which
 only exist because the run computed them over there.
 
-The teardown destroys everything the lab created in the organization. Leaving a project and
-a workspace behind in someone's account is worse than asking them to replay two
-thirty-second applies, and a lab that does not tidy up has no place here.
+The tests destroy nothing: a check can be run again after a fix without provisioning
+everything again. Tidying up is a separate step, `dsoxlab clean`, described below.
 
 ## 🎯 Challenge: make a run execute at HashiCorp
 
@@ -124,10 +123,18 @@ The apply in `application/` prints a URL. Open it: you will see the run you just
 triggered, its logs, its plan, and the button you would have used had you
 confirmed from the UI rather than from the CLI.
 
-### 🧹 The check tidies up
+### 🧹 Tidy up when you are done
 
-`dsoxlab check` destroys the project and workspace it created. To validate again,
-replay both applies: they take about thirty seconds each.
+`dsoxlab check` leaves everything in place. Once the lab is finished, remove the
+project and the workspace from your account:
+
+```bash
+dsoxlab clean hcp-terraform-premier-run-distant
+```
+
+It runs a destroy in `application/` first, which empties the workspace, then in
+`plateforme/`. HCP Terraform refuses to delete a workspace that still manages
+resources, hence this order.
 
 ### 🔍 Validation
 
@@ -135,7 +142,7 @@ replay both applies: they take about thirty seconds each.
 dsoxlab check hcp-terraform-premier-run-distant
 ```
 
-Nine tests, all reading the **HCP Terraform API**. The central one looks for a
+Seven tests, all reading the **HCP Terraform API**. The central one looks for a
 run in the `applied` state: a `terraform apply` played locally, unattached,
 leaves no trace there.
 

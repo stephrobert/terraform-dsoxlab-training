@@ -101,13 +101,13 @@ dsoxlab check hcp-terraform-premier-run-distant
 dsoxlab hint hcp-terraform-premier-run-distant
 ```
 
-Neuf tests, tous lisant l'**API de HCP Terraform** : un state local dirait ce que
+Sept tests, tous lisant l'**API de HCP Terraform** : un state local dirait ce que
 vous avez demandé, jamais ce que la plateforme a fait. Le test central cherche un
 run à l'état `applied`, que rien en local ne peut fabriquer.
 
-**Le check range derrière lui** : il détruit le projet et le workspace qu'il a
-créés. Les laisser dans votre compte serait pire que de rejouer deux `apply` de
-trente secondes.
+**Le check ne détruit rien** : vous pouvez le relancer autant qu'il faut. Une
+fois le lab terminé, `dsoxlab clean hcp-terraform-premier-run-distant` retire le
+projet et le workspace de votre compte.
 
 Sous-objectifs d'examen visés : **6a** et **6b**, en pratique.
 

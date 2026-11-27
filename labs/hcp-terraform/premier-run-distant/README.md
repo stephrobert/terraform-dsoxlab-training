@@ -100,13 +100,13 @@ dsoxlab check hcp-terraform-premier-run-distant
 dsoxlab hint hcp-terraform-premier-run-distant
 ```
 
-Nine tests, all reading the **HCP Terraform API**: a local state would say what
+Seven tests, all reading the **HCP Terraform API**: a local state would say what
 you asked for, never what the platform did. The central one looks for a run in
 the `applied` state, which nothing local can fabricate.
 
-**The check tidies up**: it destroys the project and the workspace it created.
-Leaving them behind in your account would be worse than replaying two
-thirty-second applies.
+**The check destroys nothing**: you can run it as often as you need. When you
+are done, `dsoxlab clean hcp-terraform-premier-run-distant` removes the project
+and the workspace from your account.
 
 Exam objectives targeted: **6a** and **6b**, in practice.
 
