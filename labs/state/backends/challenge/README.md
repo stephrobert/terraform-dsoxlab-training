@@ -19,7 +19,7 @@ Configure a backend in **partial configuration** (the block sets no `path`), fee
 - `dev.local.tfbackend`: one line, `path = "???"`.
 - `backend.tf` and `prod.local.tfbackend`: **absent**, to be created.
 
-The test **orchestrates** the migration like a real switch to a backend: it first applies with the **implicit local backend** (no `backend.tf`), captures the `lineage`, then adds `backend.tf` and runs `terraform init -migrate-state -backend-config=dev.local.tfbackend`.
+The test **orchestrates** the migration like a real switch to a backend: it first applies with the **implicit local backend** (no `backend.tf`), captures the `lineage`, then adds `backend.tf` and runs `terraform init -migrate-state -backend-config=dev.local.tfbackend`. It does all this in a **temporary copy** of your `.tf` and `.tfbackend` files: `challenge/work` is never modified, so you can run `dsoxlab check` as many times as you like. When a step fails, the message names it (step 1 `init`, step 2 `apply`, step 3 migration) and shows Terraform's answer.
 
 ## The target state
 

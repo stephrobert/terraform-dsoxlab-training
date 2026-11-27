@@ -11,6 +11,20 @@ changements du catalogue, et l'unité qui compte est le lab.
 
 ## [Non publié]
 
+### Corrigé
+
+- `state-backends` : une solution juste passait le premier `dsoxlab check`,
+  puis bloquait tous les suivants. Le test renommait `backend.tf` dans
+  `challenge/work` et migrait sur place : l'`init` suivant tombait sur
+  « Backend configuration changed », et un échec pouvait laisser `backend.tf`
+  renommé en `backend.tf.aside`. Le test joue désormais la migration dans une
+  copie temporaire et ne modifie jamais `challenge/work`. Une étape en échec
+  (`init`, `apply`, migration) devient un échec de test qui nomme l'étape, et
+  non plus une erreur de fixture affichée « non évalué » sans message.
+  `test_config_partielle` ne dépend plus de la migration.
+  `tests/test_state_backends_rejouable.py` tient la règle avec un faux
+  `terraform`, donc en CI.
+
 ### Modifié
 
 - Le README ne recopie plus la documentation du moteur dsoxlab (contrat, cycle

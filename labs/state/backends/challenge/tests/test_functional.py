@@ -1,25 +1,57 @@
 """Tests fonctionnels du lab « un backend, deux environnements, zero chemin en dur ».
 
 Le test ORCHESTRE la migration : il applique d'abord avec le backend local
-implicite (backend.tf mis de cote), capture le lineage, puis remet backend.tf et
-migre avec -backend-config. Il prouve ensuite que le state a MIGRE (meme lineage)
-et non ete recree, que le backend est resolu, et que le bloc est bien partiel.
+implicite (sans backend.tf), capture le lineage, puis ajoute backend.tf et
+migre avec -backend-config. Il prouve ensuite que le state a MIGRE (meme
+lineage) et non ete recree, que le backend est resolu, et que le bloc est bien
+partiel.
+
+Tout se joue dans une COPIE JETABLE de la configuration de l'apprenant
+-------------------------------------------------------------------
+
+`challenge/work` n'est jamais modifie : ni renomme, ni initialise, ni applique.
+On copie ses `.tf`, ses `.tfbackend` et son `.terraform.lock.hcl` dans un
+repertoire temporaire, et la migration se joue la. Le repertoire disparait a
+la fin du module, y compris sur un echec ou un Ctrl-C.
+
+Avant, la fixture renommait backend.tf dans le workdir, initialisait et
+migrait sur place. Deux defauts en sortaient (mesures sur dsoxlab 0.11.2 et
+Terraform 1.16.1) :
+
+- une solution juste passait au premier check puis BLOQUAIT tous les suivants :
+  `.terraform/terraform.tfstate` gardait le backend `etat/dev`, et l'`init`
+  sans backend.tf tombait sur « Backend configuration changed » ;
+- un echec avant le `yield` laissait backend.tf renomme en backend.tf.aside.
+
+Un echec nomme son etape, il ne bloque pas
+-----------------------------------------
+
+Une etape qui echoue (init, apply, migration) n'est pas une erreur de fixture :
+c'est la configuration de l'apprenant que Terraform refuse. Elle devient donc
+un ECHEC des tests qui en dependent, avec un message qui nomme l'etape et la
+reponse de Terraform. Une erreur de fixture s'affiche « non evalue » sans
+aucun message, et l'apprenant ne sait pas quoi corriger.
+`test_config_partielle` ne depend pas de la migration : il a sa propre copie,
+et reste evalue quand la migration echoue.
 
 Principe : on ne lit jamais un `.tf`. On lit ce que Terraform ecrit :
 `.terraform/terraform.tfstate` (backend resolu), `state pull` (lineage/serial),
 `show -json`, et des codes retour.
 
-Faits verifies sur Terraform 1.15.4 (random + local, hors ligne) :
+Faits verifies sur Terraform 1.16.1 (random + local, hors ligne) :
 - une config partielle `backend "local" {}` resout `path` a null sans
   -backend-config, et au chemin fourni avec ;
 - `init -migrate-state` preserve le lineage : c'est une migration, pas un apply
   neuf ;
-- le bloc backend rejette une variable (voir le guide, non teste ici).
+- `path = var.chemin_state` fait echouer un `init` sans -backend-config sur
+  « Variables not allowed ».
 """
 
 import json
 import shutil
+import tempfile
 from collections.abc import Iterator
+from dataclasses import dataclass
 from pathlib import Path
 
 import pytest
@@ -28,62 +60,21 @@ from conftest import exiger_workdir, message, show_json, terraform, workdir_lab
 
 WORKDIR = workdir_lab(__file__)
 LAB_ID = "state-backends"
-CONFIGS = ("versions.tf", "main.tf", "variables.tf", "backend.tf",
-           "dev.local.tfbackend", "prod.local.tfbackend")
+#: Ce que le test emprunte au workdir. Rien d'autre : ni `.terraform`, ni state,
+#: ni `etat/`, qui sont les traces des essais de l'apprenant.
+MOTIFS_DE_CONFIG = ("*.tf", "*.tfbackend", ".terraform.lock.hcl")
 
 
-def _lineage(cwd: Path) -> str:
-    pull = terraform("state", "pull", cwd=cwd)
-    pull.check_returncode()
-    return json.loads(pull.stdout)["lineage"]
+def _copier_la_config(vers: Path, *, avec_backend: bool = True) -> None:
+    """Copie la configuration de l'apprenant, a plat, dans `vers`."""
+    for motif in MOTIFS_DE_CONFIG:
+        for src in WORKDIR.glob(motif):
+            if src.is_file() and (avec_backend or src.name != "backend.tf"):
+                shutil.copy2(src, vers / src.name)
 
 
-@pytest.fixture(scope="module")
-def applied() -> Iterator[tuple[Path, str]]:
-    exiger_workdir(WORKDIR, LAB_ID)
-    backend_tf = WORKDIR / "backend.tf"
-    aside = WORKDIR / "backend.tf.aside"
-    # 1. Appliquer avec le backend local IMPLICITE : on met backend.tf de cote.
-    if backend_tf.exists():
-        backend_tf.rename(aside)
-    init0 = terraform("init", "-input=false", "-no-color", cwd=WORKDIR)
-    if init0.returncode != 0:
-        pytest.fail(message(
-            en=f"`terraform init` (implicit) failed.\n{init0.stderr[-1000:]}",
-            fr=f"`terraform init` (implicite) a échoué.\n{init0.stderr[-1000:]}",
-        ))
-    app = terraform("apply", "-auto-approve", "-input=false", "-no-color", cwd=WORKDIR)
-    if app.returncode != 0:
-        pytest.fail(message(
-            en=f"`terraform apply` failed.\n{app.stderr[-1200:]}",
-            fr=f"`terraform apply` a échoué.\n{app.stderr[-1200:]}",
-        ))
-    lineage_initial = _lineage(WORKDIR)
-    # 2. Remettre backend.tf et MIGRER vers le backend configure.
-    if aside.exists():
-        aside.rename(backend_tf)
-    else:
-        pytest.fail(message(
-            en="backend.tf missing: add a `backend \"local\" {}` block.",
-            fr="backend.tf absent : ajoutez un bloc `backend \"local\" {}`.",
-        ))
-    mig = terraform(
-        "init", "-migrate-state", "-force-copy", "-input=false", "-no-color",
-        "-backend-config=dev.local.tfbackend", cwd=WORKDIR,
-    )
-    if mig.returncode != 0:
-        pytest.fail(
-            message(
-            en="The migration `init -migrate-state -backend-config=dev…` failed. "
-            "A `???` in dev.local.tfbackend, or a backend block that is not partial?"
-            f"\n{mig.stderr[-1200:]}",
-            fr="La migration `init -migrate-state -backend-config=dev...` a échoué. "
-            "Un `???` dans dev.local.tfbackend, ou un bloc backend non partiel ?"
-            f"\n{mig.stderr[-1200:]}",
-        )
-        )
-    yield WORKDIR, lineage_initial
-    terraform("destroy", "-auto-approve", "-input=false", "-no-color", cwd=WORKDIR)
+def _sortie(proc) -> str:
+    return (proc.stderr or proc.stdout or "").strip()[-1200:]
 
 
 def _backend_resolu(cwd: Path) -> dict:
@@ -91,13 +82,86 @@ def _backend_resolu(cwd: Path) -> dict:
     return json.loads(raw)["backend"]
 
 
+@dataclass
+class Migration:
+    """Le resultat de la migration jouee dans la copie."""
+
+    cwd: Path
+    lineage_initial: str | None = None
+    echec: str | None = None
+
+
+def _migrer(cwd: Path) -> Migration:
+    """Joue les quatre etapes ; s'arrete a la premiere qui echoue, et la nomme."""
+    if not (WORKDIR / "backend.tf").is_file():
+        return Migration(cwd, echec=message(
+            en="backend.tf missing from challenge/work: the migration needs a "
+            "`backend \"local\"` block to migrate to.",
+            fr="backend.tf est absent de challenge/work : la migration a besoin d'un "
+            "bloc `backend \"local\"` vers lequel migrer.",
+        ))
+
+    # 1. Appliquer avec le backend local IMPLICITE : sans backend.tf.
+    _copier_la_config(cwd, avec_backend=False)
+    init0 = terraform("init", "-input=false", "-no-color", cwd=cwd)
+    if init0.returncode != 0:
+        return Migration(cwd, echec=message(
+            en="Step 1, `terraform init` without backend.tf, failed: the rest of the "
+            f"configuration does not initialise.\n{_sortie(init0)}",
+            fr="Étape 1, `terraform init` sans backend.tf, a échoué : le reste de la "
+            f"configuration ne s'initialise pas.\n{_sortie(init0)}",
+        ))
+    app = terraform("apply", "-auto-approve", "-input=false", "-no-color", cwd=cwd)
+    if app.returncode != 0:
+        return Migration(cwd, echec=message(
+            en=f"Step 2, `terraform apply` without backend.tf, failed.\n{_sortie(app)}",
+            fr=f"Étape 2, `terraform apply` sans backend.tf, a échoué.\n{_sortie(app)}",
+        ))
+    pull = terraform("state", "pull", cwd=cwd)
+    lineage_initial = json.loads(pull.stdout)["lineage"] if pull.returncode == 0 else None
+
+    # 2. Ajouter backend.tf et MIGRER vers le backend configure.
+    shutil.copy2(WORKDIR / "backend.tf", cwd / "backend.tf")
+    mig = terraform(
+        "init", "-migrate-state", "-force-copy", "-input=false", "-no-color",
+        "-backend-config=dev.local.tfbackend", cwd=cwd,
+    )
+    if mig.returncode != 0:
+        return Migration(cwd, lineage_initial, echec=message(
+            en="Step 3, the migration `terraform init -migrate-state "
+            "-backend-config=dev.local.tfbackend`, failed. A `???` left in "
+            f"dev.local.tfbackend, or a backend block that is not partial?\n{_sortie(mig)}",
+            fr="Étape 3, la migration `terraform init -migrate-state "
+            "-backend-config=dev.local.tfbackend`, a échoué. Un `???` resté dans "
+            f"dev.local.tfbackend, ou un bloc backend non partiel ?\n{_sortie(mig)}",
+        ))
+    return Migration(cwd, lineage_initial)
+
+
+@pytest.fixture(scope="module")
+def migration() -> Iterator[Migration]:
+    exiger_workdir(WORKDIR, LAB_ID)
+    with tempfile.TemporaryDirectory(prefix="state-backends-") as repertoire:
+        # Les ressources (random_pet, local_file sous path.module) vivent dans
+        # la copie : retirer le repertoire suffit, aucun destroy n'est utile.
+        yield _migrer(Path(repertoire))
+
+
+def _exiger_la_migration(m: Migration) -> Path:
+    if m.echec:
+        pytest.fail(m.echec)
+    return m.cwd
+
+
 # --------------------------------------------------------------------------
 # 1. Le state a MIGRE (meme lineage), il n'a pas ete recree
 # --------------------------------------------------------------------------
 
-def test_migration_conserve_le_lineage(applied: tuple[Path, str]) -> None:
-    cwd, lineage_initial = applied
-    assert _lineage(cwd) == lineage_initial, message(
+def test_migration_conserve_le_lineage(migration: Migration) -> None:
+    cwd = _exiger_la_migration(migration)
+    pull = terraform("state", "pull", cwd=cwd)
+    lineage = json.loads(pull.stdout)["lineage"] if pull.returncode == 0 else None
+    assert lineage is not None and lineage == migration.lineage_initial, message(
         en="The lineage changed: the state was recreated, not migrated. A fresh `apply` "
         "would have made a different lineage.",
         fr="Le lineage a changé : le state a été recréé, pas migré. Un `apply` neuf "
@@ -115,8 +179,8 @@ def test_migration_conserve_le_lineage(applied: tuple[Path, str]) -> None:
 # 2. Le backend est resolu sur l'emplacement dev
 # --------------------------------------------------------------------------
 
-def test_backend_resolu_sur_dev(applied: tuple[Path, str]) -> None:
-    cwd, _ = applied
+def test_backend_resolu_sur_dev(migration: Migration) -> None:
+    cwd = _exiger_la_migration(migration)
     be = _backend_resolu(cwd)
     assert be["type"] == "local", message(
         en=f"backend type = {be['type']}, expected local.",
@@ -136,19 +200,27 @@ def test_backend_resolu_sur_dev(applied: tuple[Path, str]) -> None:
 
 # --------------------------------------------------------------------------
 # 3. La config est PARTIELLE : null sans -backend-config, prod avec
+#    Independant de la migration : sa propre copie, sans state.
 # --------------------------------------------------------------------------
 
-def test_config_partielle(applied: tuple[Path, str], tmp_path: Path) -> None:
-    cwd, _ = applied
+def test_config_partielle(tmp_path: Path) -> None:
+    exiger_workdir(WORKDIR, LAB_ID)
+    assert (WORKDIR / "backend.tf").is_file(), message(
+        en="backend.tf missing from challenge/work: add a `backend \"local\"` block.",
+        fr="backend.tf est absent de challenge/work : ajoutez un bloc `backend \"local\"`.",
+    )
     copie = tmp_path / "copie"
     copie.mkdir()
-    for f in CONFIGS:
-        src = cwd / f
-        if src.exists():
-            shutil.copy2(src, copie / f)
+    _copier_la_config(copie)
 
     sans = terraform("init", "-input=false", "-no-color", cwd=copie)
-    sans.check_returncode()
+    assert sans.returncode == 0, message(
+        en="`terraform init` without -backend-config failed. A partial block must "
+        f"initialise on its own; a variable in the backend block cannot.\n{_sortie(sans)}",
+        fr="`terraform init` sans -backend-config a échoué. Un bloc partiel doit "
+        "s'initialiser seul ; une variable dans le bloc backend, non.\n"
+        f"{_sortie(sans)}",
+    )
     assert _backend_resolu(copie)["config"].get("path") is None, message(
         en="Without -backend-config, a partial block must resolve path to null. A path "
         "hard-coded in backend.tf would show up here.",
@@ -156,11 +228,19 @@ def test_config_partielle(applied: tuple[Path, str], tmp_path: Path) -> None:
         "codé en dur dans backend.tf ressortirait ici.",
     )
 
+    assert (copie / "prod.local.tfbackend").is_file(), message(
+        en="prod.local.tfbackend missing: the prod environment needs its own file.",
+        fr="prod.local.tfbackend est absent : l'environnement prod a besoin de son "
+        "propre fichier.",
+    )
     prod = terraform(
         "init", "-reconfigure", "-input=false", "-no-color",
         "-backend-config=prod.local.tfbackend", cwd=copie,
     )
-    prod.check_returncode()
+    assert prod.returncode == 0, message(
+        en=f"`terraform init -backend-config=prod.local.tfbackend` failed.\n{_sortie(prod)}",
+        fr=f"`terraform init -backend-config=prod.local.tfbackend` a échoué.\n{_sortie(prod)}",
+    )
     assert _backend_resolu(copie)["config"].get("path") == "etat/prod/terraform.tfstate", message(
         en="The same backend block must resolve to etat/prod with the prod "
         "-backend-config: that is the proof that the configuration is partial.",
@@ -173,8 +253,8 @@ def test_config_partielle(applied: tuple[Path, str], tmp_path: Path) -> None:
 # 4. Idempotence apres migration
 # --------------------------------------------------------------------------
 
-def test_idempotence(applied: tuple[Path, str]) -> None:
-    cwd, _ = applied
+def test_idempotence(migration: Migration) -> None:
+    cwd = _exiger_la_migration(migration)
     p = terraform("plan", "-input=false", "-detailed-exitcode", "-no-color", cwd=cwd)
     assert p.returncode == 0, message(
         en=f"plan -detailed-exitcode returns {p.returncode}, expected 0: the migrated state "
